@@ -1,6 +1,7 @@
 package mysqlTest;
 
 
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Random;
 
@@ -365,7 +366,7 @@ public class Driver {
 				doSQL(Id, 28, 3, para, paraType);
 				break;
 			case 29:
-				c_balance = -10.0;
+				c_balance = 10.0;
 				c_data = Support.MakeAlphaString(300,500);
 				c_w_id = Support.RandomNumber(min_ware,max_ware);
 				c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
@@ -378,7 +379,7 @@ public class Driver {
 				doSQL(Id, 29, 5, para, paraType);
 				break;
 			case 30:
-				c_balance = -10.0;
+				c_balance = 10.0;
 				c_w_id = Support.RandomNumber(min_ware,max_ware);
 				c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				c_id = Support.RandomNumber(1, Driver.CUST_PER_DIST);
@@ -447,26 +448,22 @@ public class Driver {
 			success = doSQLOnce(threadId, sqlId, paraNumber, para, paraType);
 //			long end = System.nanoTime();
 			
-//			if((end-start)>(Main.timeInterval*1000000)){
-//				break;
-//			}			
-			if(success && Driver.IsActive){
-				Main.success[threadId]++;
-				Main.success2[threadId][(int) Main.currentInterval]++;
-//				Main.time[threadId][(int) Main.currentInterval] += end - start;
+			if(success && sqlId > 20){
+				try {
+					Tenant.tenants[threadId].conn.commit();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			if(success && Driver.IsActive && Main.startCount){
+//				Main.tmpList.add(new Long(end-start));
+				Main.queryThisInterval ++;
 				return;
-			}else if(!success && Driver.IsActive){
-				//System.out.println("thread id: "+threadId +"; sql id: "+sqlId+"; i= "+i+" : retrying");
+			}else if(!success && Driver.IsActive & Main.startCount){
 				System.out.print(".");
-				Main.retry[threadId]++;
 			}else if(!Driver.IsActive){
 				return;
 			}
-		}
-		
-		if(Driver.IsActive){
-			Main.retry[threadId]--;
-			Main.failure[threadId]++;
 		}
 	}
 
@@ -492,15 +489,12 @@ public class Driver {
 				}
 			}
 			Tenant.statements[threadId][sqlId].execute();
-			if(Tenant.statements[threadId][sqlId]==null || Tenant.statements[threadId][sqlId].getUpdateCount()==-1){
-				Main.nullExecute[threadId]++;
-			}
 			return true;
 			//System.out.println(threadId +" sta "+sqlId+" : "+ Tenant.statements[threadId][sqlId].toString());
 		} catch (Exception e) {
 			e.printStackTrace();
+			new java.util.Scanner(System.in).nextLine();
 			System.out.println("thread id: "+threadId +"; sql id: "+sqlId+"; i= "+i+" : exception??");
-			Main.exception[threadId] ++;
 			return false;
 		}
 	}
