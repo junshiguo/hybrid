@@ -22,11 +22,11 @@ public class Main {
 	public static long queryThisInterval = 0;
 
 	public static void main(String[] args){
-		numberOfThread = 50;
-		timeInterval = 30000; //5 min
+		numberOfThread = 1000;
+		timeInterval = 300000; //5 min
 		intervalNumber = 2;
-		double base = 0.5;
-		double step = 0.0;
+		double base = 0.0;
+		double step = 0.02 ;
 		boolean copyTable = false;
 //		test.CopyTables(numberOfThread);
 		//*******************init para from args*****************//
@@ -36,13 +36,22 @@ public class Main {
 		if(args.length > 1){
 			timeInterval = Long.parseLong(args[1])*1000;
 		}
-		if(args.length > 2 && args[2] != null){
-			int b = Integer.parseInt(args[2]);
+		if(args.length > 2){
+			intervalNumber = Integer.parseInt(args[2]);
+		}
+		if(args.length > 3){
+			base = Double.parseDouble(args[3]);
+		}
+		if(args.length > 4){
+			step = Double.parseDouble(args[4]);
+		}
+		if(args.length > 5 && args[5] != null){
+			int b = Integer.parseInt(args[5]);
 			if(b == 0) copyTable = false;
 			else copyTable = true;
 		}			
 		
-		initDBPara("jdbc:mysql://127.0.0.1/tpcc10", "root", "root");
+		initDBPara("jdbc:mysql://10.20.2.111/tpcc10", "remote", "remote");
 		Tenant.init(numberOfThread, Main.dbURL, Main.dbUserName, Main.dbPassword, copyTable);
 		
 		Driver.IsActive = true;

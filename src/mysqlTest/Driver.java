@@ -457,7 +457,9 @@ public class Driver {
 			}
 			if(success && Driver.IsActive && Main.startCount){
 //				Main.tmpList.add(new Long(end-start));
-				Main.queryThisInterval ++;
+//				synchronized(this){
+					Main.queryThisInterval ++;
+//				}
 				return;
 			}else if(!success && Driver.IsActive & Main.startCount){
 				System.out.print(".");

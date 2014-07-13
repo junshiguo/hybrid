@@ -19,7 +19,7 @@ public class Main {
 	public static long queryThisInterval = 0;
 
 	public static void main(String[] args){
-		numberOfThread = 50;
+		numberOfThread = 1000;
 		timeInterval = 30000; //5 min
 		intervalNumber = 2;
 		double base = 0.5;
