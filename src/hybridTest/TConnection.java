@@ -17,6 +17,12 @@ public class TConnection extends Thread {
 	public Connection conn;
 	public Client voltdbConn;
 	public Statement[] statements;
+	public boolean doSQLNow = false;  //set in Tenant. very important
+	
+	public int sqlId;
+	public Object[] para;
+	public int[] paraType;
+	public int paraNumber;
 	
 	public TConnection(int id, String url, String username, String password, String serverlist){
 		this.tenantId = id;
@@ -41,13 +47,24 @@ public class TConnection extends Thread {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
-		
+		while(true){
+			if(doSQLNow){
+				doSQL(sqlId, para, paraType, paraNumber);
+				doSQLNow = false;
+			}
+		}
 	}
 	
-	public boolean doSQL(int sqlId, Object[] para, Object[] paraType){
+	public boolean doSQL(int sqlId, Object[] para, int[] paraType, int paraNumber){
 		
 		return false;
+	}
+	
+	public void setPara(int sqlId, Object[] para, int[] paraType, int paraNumber){
+		this.sqlId = sqlId;
+		this.para = para;
+		this.paraType = paraType;
+		this.paraNumber = paraNumber;
 	}
 	
 	public void sqlPrepare() throws SQLException{

@@ -9,6 +9,7 @@ public class Main {
 
 	public static int[] ValueQT = { 20, 60, 100 };  // per minute
 	public static double[] ValueDS = {6.9, 38.7, 142.4 };  // MB
+	public static double[] ValueWP = { 0.6, 0.2 };  // +-0.05
 	public static double[] PercentQT = { 0.5, 0.3, 0.2 };
 	public static double[] PercentDS = { 0.3, 0.5, 0.2 };
 	public static double[] PercentWH = { 0.4, 0.6 };  // 0.4 for write heavy and 0.6 for read heavy
@@ -43,6 +44,7 @@ public class Main {
 	public static boolean retriverWorking = false;
 	public static boolean onlyMysql = true;
 	public static long testTime = 600000; //10 mins
+	public static boolean isActive = true;
 	
 	public static void main(String[] args){
 		tenantNumber = 50;
