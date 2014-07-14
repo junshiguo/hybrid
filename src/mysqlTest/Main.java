@@ -25,7 +25,7 @@ public class Main {
 		numberOfThread = 1000;
 		timeInterval = 300000; //5 min
 		intervalNumber = 2;
-		double base = 0.0;
+		double base = 0.50;
 		double step = 0.02 ;
 		boolean copyTable = false;
 //		test.CopyTables(numberOfThread);
@@ -58,6 +58,7 @@ public class Main {
 		for(int i=0; i<numberOfThread; i++){
 			Tenant.tenants[i].start();
 		}
+		System.out.println("************init finished*****************");
 		try { //wait all thread connect to mysql and prepare statements and warm up
 			Thread.sleep(30000);
 		} catch (InterruptedException e1) {
@@ -73,6 +74,7 @@ public class Main {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		System.out.println("***************mysql test start now***************");
 		for(int i=0; i<intervalNumber; i++){
 			try {
 				for(int j=0; j<numberOfThread; j++){

@@ -49,8 +49,12 @@ public class Main {
 		0.536, 0.59, 0.65, 0.74, 0.764, 0.8,
 		0.824, 0.86, 0.9, 0.96, 0.976, 1.0
 		};
-	public static int QTMatrix[] = {20,20,20,20,20,20,60,60,60,60,60,60,100,100,100,100,100,100};
-	public static double DSMatrix[] = {6.9,6.9,6.9,6.9,6.9,6.9,38.7,38.7,38.7,38.7,38.7,38.7,142.4,142.4,142.4,142.4,142.4,142.4};
+	public static int QTMatrix[] = {ValueQT[0],ValueQT[0],ValueQT[0],ValueQT[0],ValueQT[0],ValueQT[0],
+		ValueQT[1],ValueQT[1],ValueQT[1],ValueQT[1],ValueQT[1],ValueQT[1],
+		ValueQT[2],ValueQT[2],ValueQT[2],ValueQT[2],ValueQT[2],ValueQT[2],};
+	public static double DSMatrix[] = {ValueDS[0],ValueDS[0],ValueDS[1],ValueDS[1],ValueDS[2],ValueDS[2],
+		ValueDS[0],ValueDS[0],ValueDS[1],ValueDS[1],ValueDS[2],ValueDS[2],
+		ValueDS[0],ValueDS[0],ValueDS[1],ValueDS[1],ValueDS[2],ValueDS[2]};
 	public static boolean WHMatrix[] = {true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false};
 	public static boolean[] usingVoltdb;
 	public static int[] throughputPerTenant; //planned throughput
@@ -65,6 +69,8 @@ public class Main {
 	public static boolean retriverWorking = false;
 	public static boolean onlyMysql = true;
 	public static long testTime = 600000; //10 mins
+	public static long intervalTime = 60000; //1 min
+	public static long intervalNumber = 10;
 	public static boolean isActive = true;
 	
 	public static void main(String[] args){
@@ -72,20 +78,45 @@ public class Main {
 		TYPE = 1;
 		onlyMysql = true;
 		testTime = 600000;
+		intervalTime = 60000;
 		isVoltdbUsed = false;
 		int waitTime = 30000;
 		init();
 		
+		for(int i = 0; i < tenantNumber; i++){
+			tenants[i].start();
+		}
+		try {
+			Thread.sleep(waitTime);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		Main.setConcurrency(0.1);
+		Main.setQT();
+		Main.isActive = true; //****************start test***************************//
+		for(int i=0; i<intervalNumber; i++){
+			try {
+				Thread.sleep(intervalTime);
+				Main.setQT();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		Main.isActive = false;//******************end test**************************//
+		System.exit(1);
 		
 	}
 	
 	public static void init(){
+		intervalNumber = testTime / intervalTime;
 		tenantNumber = (int) (totalTenantNumber*PercentTenantSplits[TYPE]);
 		if(TYPE != 0){
 			IDStart = (int) (totalTenantNumber*PercentTenantSplitsSum[TYPE-1]);
 		}else{
 			IDStart = 0;
 		}
+		Main.QTMax = QTMatrix[TYPE];
 		tenants = new Tenant[tenantNumber];
 		usingVoltdb = new boolean[tenantNumber];
 		throughputPerTenant = new int[tenantNumber];
@@ -95,17 +126,6 @@ public class Main {
 			usingVoltdb[i] = false;
 			throughputPerTenant[i] = 0;
 			latePerTenant[i] = 0;
-		}
-		switch(TYPE){
-		case 0: case 1: case 2: case 3: case 4: case 5:
-			QTMax = 20; 
-			break;
-		case 6: case 7: case 8: case 9: case 10: case 11:
-			QTMax = 60;
-			break;
-		case 12: case 13: case 14: case 15: case 16: case 17:
-			QTMax = 100;
-			break;
 		}
 	}
 
