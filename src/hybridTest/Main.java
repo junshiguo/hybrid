@@ -1,8 +1,13 @@
 package hybridTest;
 
+import java.util.Random;
+
+import utility.Support;
+
 public class Main {
 	public static int totalTenantNumber;
 	public static int tenantNumber;
+	public static Tenant[] tenants;
 	public static int IDStart;
 	public static int TYPE = 0;
 	public static int QTMax;
@@ -17,7 +22,6 @@ public class Main {
 	public static double[] PercentQT = { 0.5, 0.3, 0.2 };
 	public static double[] PercentDS = { 0.3, 0.5, 0.2 };
 	public static double[] PercentWH = { 0.4, 0.6 };  // 0.4 for write heavy and 0.6 for read heavy
-	public static Tenant[] tenants;
 	public static double[]  PercentTenantSplits  = {
 		0.06	//QT: 20, DS: 6.9, write heavy
 		,0.09	//QT: 20, DS: 6.9, read heavy
@@ -45,6 +49,9 @@ public class Main {
 		0.536, 0.59, 0.65, 0.74, 0.764, 0.8,
 		0.824, 0.86, 0.9, 0.96, 0.976, 1.0
 		};
+	public static int QTMatrix[] = {20,20,20,20,20,20,60,60,60,60,60,60,100,100,100,100,100,100};
+	public static double DSMatrix[] = {6.9,6.9,6.9,6.9,6.9,6.9,38.7,38.7,38.7,38.7,38.7,38.7,142.4,142.4,142.4,142.4,142.4,142.4};
+	public static boolean WHMatrix[] = {true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false};
 	public static boolean[] usingVoltdb;
 	public static int[] throughputPerTenant; //planned throughput
 	public static int[] latePerTenant; //late requests
@@ -79,10 +86,12 @@ public class Main {
 		}else{
 			IDStart = 0;
 		}
+		tenants = new Tenant[tenantNumber];
 		usingVoltdb = new boolean[tenantNumber];
 		throughputPerTenant = new int[tenantNumber];
 		latePerTenant = new int[tenantNumber];
 		for(int i = 0; i < tenantNumber; i++){
+			tenants[i] = new Tenant(i+IDStart, DSMatrix[i], QTMatrix[i], WHMatrix[i], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
 			usingVoltdb[i] = false;
 			throughputPerTenant[i] = 0;
 			latePerTenant[i] = 0;
@@ -105,7 +114,35 @@ public class Main {
 	}
 	
 	public static void setQT(){
-		
+		int activeTenantNumber = (int) (tenantNumber * concurrency);
+		int[] activeTenant = Support.Rands(IDStart, tenantNumber, activeTenantNumber);
+		boolean[] flags = new boolean[tenantNumber];
+		for(int i = 0; i < activeTenantNumber; i++){
+			flags[activeTenant[i]] = true; 
+		}
+		for(int i = 0; i < tenantNumber; i++){
+			if(flags[i]){
+				Main.throughputPerTenant[i] = Main.QTMax;
+			}else{
+				Random ran = new Random();
+				switch(Main.QTMax){
+				case 20:
+					Main.throughputPerTenant[i] = 0;
+					break;
+				case 60:
+					int tt = ran.nextInt(2);
+					if(tt == 1)	Main.throughputPerTenant[i] = 20;
+					else Main.throughputPerTenant[i] = 40;
+					break;
+				case 100:
+					int ttt = ran.nextInt(3);
+					if(ttt == 0)	Main.throughputPerTenant[i] = 20;
+					else if(ttt == 1) Main.throughputPerTenant[i] = 40;
+					else Main.throughputPerTenant[i] = 60;
+					break;
+				}
+			}
+		}
 	}
 	
 }

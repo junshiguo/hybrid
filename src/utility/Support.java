@@ -4,14 +4,41 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /*
- * ¸ÃÀàÖÐ¶¼ÊÇÒýÓÃ×Ôtpcc-mysqlµÄº¯Êý£¬ÔÚËæ»úÉú³ÉÊý¾ÝÌîµ½sqlÓï¾äÖÐÊ±ÓÃµ½
+ * ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tpcc-mysqlï¿½Äºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½îµ½sqlï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ãµï¿½
  */
 public class Support {
 	public static Random ran = new Random();
 	public static int first = 1;
 	public static int C, C_255 = 0, C_1023 = 0, C_8191 = 0;
+	
+	public static int[] Rands(int start, int total, int nn){
+		int[] ret = new int[nn];
+		if(nn > total){
+			return null;
+		}
+		int count = 0;
+		Random ran = new Random();
+		while(count < nn){
+			int tmp = ran.nextInt(total);
+			boolean flag = true;
+			for(int i = 0; i < count; i++){
+				if(ret[i] == tmp){
+					flag = false;
+					break;
+				}
+			}
+			if(flag){
+				ret[count] = tmp;
+				count++;
+			}
+		}
+		for(int i = 0; i < nn; i++){
+			ret[i] += start;
+		}
+		return ret;
+	}
 	/*
-	 * Ò»¸öÉú³ÉËæ»úÊýµÄº¯Êý£¬ÒýÓÃ×Ôtpcc-mysql´úÂë
+	 * Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tpcc-mysqlï¿½ï¿½ï¿½ï¿½
 	 */
 	public static int NURand (int A, int x, int y)
 	{
@@ -31,7 +58,7 @@ public class Support {
 		return (int) (((ran.nextInt(A) | ran.nextInt(y-x)+x) + C) % (y-x+1)) + x;
 	}
 	/*
-	 * ÓÃÓÚËæ»úÉú³Élast_name×Ö¶Î
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½last_nameï¿½Ö¶ï¿½
 	 */
 	public static String Lastname(int num){
 		String ret = null;
@@ -42,14 +69,14 @@ public class Support {
 		return ret;
 	}
 	/*
-	 * Éú³É[min,max]ÄÚµÄËæ»úÊý
+	 * ï¿½ï¿½ï¿½[min,max]ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	 */
 	public static int RandomNumber(int min,int max){
 		if(min == max) return min;
 		return ran.nextInt(max-min+1)+min;
 	}
 	/*
-	 * Ëæ»úÉú³É³¤¶ÈÔÚ[x,y]ÄÚµÄ×Ö·û´®£¬×Ö·û´®ÓÉ0-9a-zA-Z×é³É
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½É³ï¿½ï¿½ï¿½ï¿½ï¿½[x,y]ï¿½Úµï¿½ï¿½Ö·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½0-9a-zA-Zï¿½ï¿½ï¿½
 	 */
 	public static String MakeAlphaString(int x, int y){
 		String alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -62,7 +89,7 @@ public class Support {
 		return ret;
 	}
 	/*
-	 * Ëæ»úÉú³É³¤¶ÈÔÚ[x,y]ÄÚµÄ×Ö·û´®£¬×Ö·û´®ÓÉ0-9×é³É
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½É³ï¿½ï¿½ï¿½ï¿½ï¿½[x,y]ï¿½Úµï¿½ï¿½Ö·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½0-9ï¿½ï¿½ï¿½
 	 */
 	public static String MakeNumberString (int x, int y)
 	{

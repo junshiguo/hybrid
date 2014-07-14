@@ -4,6 +4,7 @@ public class Tenant extends Thread {
 	public int tenantId;
 	public double dataSize;
 	public int QT;
+	public int actualQT;  //actual throughput per minute
 	public boolean writeHeavy;
 	
 	public String dbURL;
@@ -11,7 +12,8 @@ public class Tenant extends Thread {
 	public String dbPassword;
 	public String voltdbServer;
 	public int connNumber;
-	public TConnection[] connections;
+	public int requestNumber; //requests per minute
+	public HConnection[] connections;
 	public HSequence sequence;
 	public Driver driver;
 	
@@ -25,14 +27,15 @@ public class Tenant extends Thread {
 		this.dbPassword = password;
 		this.voltdbServer = voltdbServer;
 		connNumber = QT/20;
-		connections = new TConnection[connNumber];
+		requestNumber = connNumber;
+		connections = new HConnection[connNumber];
 		for(int i = 0; i < connNumber; i++){
-			connections[i] = new TConnection(id, url, username, password, voltdbServer);
+			connections[i] = new HConnection(i, id, url, username, password, voltdbServer);
 		}
 		if(writeHeavy){
-			sequence = new HSequence(Main.ValueWP[0], connNumber);
+			sequence = new HSequence(Main.ValueWP[0], requestNumber);
 		}else{
-			sequence = new HSequence(Main.ValueWP[1], connNumber);
+			sequence = new HSequence(Main.ValueWP[1], requestNumber);
 		}
 		driver = new Driver();
 	}
@@ -50,7 +53,7 @@ public class Tenant extends Thread {
 		}
 		
 		while(Main.isActive){
-			for(int i = 0; i < connNumber; i++){
+			for(int i = 0; i < requestNumber; i++){
 				int sqlId = sequence.next();
 				driver.initiatePara(sqlId);
 				connections[i].setPara(sqlId, driver.para, driver.paraType, driver.paraNumber);
@@ -63,6 +66,16 @@ public class Tenant extends Thread {
 			}
 		}
 		
+	}
+	
+	public void setQT(int newqt){
+		this.actualQT = newqt;
+		requestNumber = actualQT/20;
+		if(writeHeavy){
+			sequence = new HSequence(Main.ValueWP[0], requestNumber);
+		}else{
+			sequence = new HSequence(Main.ValueWP[1], requestNumber);
+		}
 	}
 
 }

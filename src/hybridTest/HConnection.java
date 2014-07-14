@@ -8,7 +8,8 @@ import org.voltdb.client.Client;
 
 import utility.DBManager;
 
-public class TConnection extends Thread {
+public class HConnection extends Thread {
+	public int connId;
 	public int tenantId;
 	public String mysqlURL;
 	public String mysqlUsername;
@@ -24,7 +25,8 @@ public class TConnection extends Thread {
 	public int[] paraType;
 	public int paraNumber;
 	
-	public TConnection(int id, String url, String username, String password, String serverlist){
+	public HConnection(int connId, int id, String url, String username, String password, String serverlist){
+		this.connId = connId;
 		this.tenantId = id;
 		this.mysqlURL = url;
 		this.mysqlUsername = username;
