@@ -3,7 +3,7 @@
 import org.voltdb.*;
 
 public class Procedure31 extends VoltProcedure {
-	public final SQLStmt sql = new SQLStmt("UPDATE orders SET o_carrier_id = ? "
+	public final SQLStmt sql = new SQLStmt("UPDATE orders SET o_carrier_id = ? , is_update = 1 "
 			+ "WHERE tenant_id = ? AND o_id = ? AND o_d_id = ? AND o_w_id = ?");
 	
 	public long run(int tenant_id, int o_carrier_id, int o_id, int o_d_id, int o_w_id) throws VoltAbortException {

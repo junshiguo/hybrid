@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import org.voltdb.*;
 
 public class Procedure33 extends VoltProcedure {
-	public final SQLStmt sql = new SQLStmt("UPDATE customer SET c_balance = c_balance + ? , c_delivery_cnt = c_delivery_cnt + 1 "
+	public final SQLStmt sql = new SQLStmt("UPDATE customer SET c_balance = c_balance + ? , c_delivery_cnt = c_delivery_cnt + 1 , is_update = 1 "
 			+ "WHERE tenant_id = ? AND c_id = ? AND c_d_id = ? AND c_w_id = ?");
 	
 	public long run(int tenant_id, double c_balance, int c_id, int c_d_id, int c_w_id) throws VoltAbortException, ClassNotFoundException, SQLException {

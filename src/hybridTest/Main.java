@@ -19,8 +19,8 @@ public class Main {
 	public static int[] ValueQT = { 20, 60, 100 };  // per minute
 	public static double[] ValueDS = {6.9, 38.7, 142.4 };  // MB
 	public static double[] ValueWP = { 0.6, 0.2 };  // +-0.05
-	public static double[] PercentQT = { 0.5, 0.3, 0.2 };
-	public static double[] PercentDS = { 0.3, 0.5, 0.2 };
+	public static double[] PercentQT = { 0.3, 0.5, 0.2 };
+	public static double[] PercentDS = { 0.6, 0.3, 0.1 };
 	public static double[] PercentWH = { 0.4, 0.6 };  // 0.4 for write heavy and 0.6 for read heavy
 	public static double[]  PercentTenantSplits  = {
 		0.06	//QT: 20, DS: 6.9, write heavy
@@ -57,6 +57,7 @@ public class Main {
 		ValueDS[0],ValueDS[0],ValueDS[1],ValueDS[1],ValueDS[2],ValueDS[2]};
 	public static boolean WHMatrix[] = {true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false};
 	public static boolean[] usingVoltdb;
+	public static boolean[] partiallyUsingVoltdb;
 	public static int[] throughputPerTenant; //planned throughput
 	public static int[] latePerTenant; //late requests
 	public static double concurrency = 0.1;
@@ -119,11 +120,13 @@ public class Main {
 		Main.QTMax = QTMatrix[TYPE];
 		tenants = new Tenant[tenantNumber];
 		usingVoltdb = new boolean[tenantNumber];
+		partiallyUsingVoltdb = new boolean[tenantNumber];
 		throughputPerTenant = new int[tenantNumber];
 		latePerTenant = new int[tenantNumber];
 		for(int i = 0; i < tenantNumber; i++){
 			tenants[i] = new Tenant(i+IDStart, DSMatrix[i], QTMatrix[i], WHMatrix[i], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
 			usingVoltdb[i] = false;
+			partiallyUsingVoltdb[i] = false;
 			throughputPerTenant[i] = 0;
 			latePerTenant[i] = 0;
 		}

@@ -25,7 +25,7 @@ public class Main {
 		numberOfThread = 1000;
 		timeInterval = 300000; //5 min
 		intervalNumber = 2;
-		double base = 0.50;
+		double base = 0.34;
 		double step = 0.02 ;
 		boolean copyTable = false;
 //		test.CopyTables(numberOfThread);

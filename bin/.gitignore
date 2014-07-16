@@ -72,3 +72,7 @@
 /mysqlTest/
 /utility/
 /voltdbTest/
+/retrivers/
+/ProcedureSelectHistory.class
+/ProcedureSelectNewOrders.class
+/ProcedureSelectItem.class

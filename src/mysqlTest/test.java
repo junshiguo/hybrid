@@ -11,7 +11,7 @@ public class test {
 	public static PreparedStatement st;
 	
 	public static void main(String[] args){
-		CopyTables(1000);
+		CopyTables(3000);
 	}
 	
 	public static void CopyTables(int tenantNumber){
@@ -66,33 +66,6 @@ public class test {
 			for(int i=0; i<9; i++){
 				stmt.execute("DROP TABLE IF EXISTS "+tables[i]+id);
 				stmt.execute("CREATE TABLE "+tables[i]+id+" ("+columns[i]+" )Engine=InnoDB;");
-//				switch(i){
-//				case 0:
-//					stmt.execute("ALTER TABLE customer"+id+" ADD INDEX (c_w_id, c_d_id, c_id)");
-//					break;
-//				case 1:
-//					stmt.execute("ALTER TABLE district"+id+" ADD INDEX (d_w_id, d_id)");
-//					break;
-//				case 3:
-//					stmt.execute("ALTER TABLE item"+id+" ADD INDEX (i_id)");
-//					break;
-//				case 4:
-//					stmt.execute("ALTER TABLE new_orders"+id+" ADD INDEX (no_w_id, no_d_id, no_o_id)");
-//					break;
-//				case 5:
-//					stmt.execute("ALTER TABLE orders"+id+" ADD INDEX (o_w_id, o_d_id, o_id)");
-//					break;
-//				case 6:
-//					stmt.execute("ALTER TABLE order_line"+id+" ADD INDEX (ol_w_id, ol_d_id, ol_o_id)");
-//					break;
-//				case 7:
-//					stmt.execute("ALTER TABLE stock"+id+" ADD INDEX (s_w_id, s_i_id)");
-//					break;
-//				case 8:
-//					stmt.execute("ALTER TABLE warehouse"+id+" ADD INDEX (w_id)");
-//					break;
-//					default:
-//				}
 				stmt.execute("INSERT INTO "+tables[i]+id+" SELECT * FROM "+tables[i]);
 			}
 			stmt.execute("ALTER TABLE customer"+id+" ADD INDEX (c_w_id, c_d_id, c_id)");
