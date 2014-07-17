@@ -59,28 +59,24 @@ public class Main {
 	public static boolean[] usingVoltdb;
 	public static boolean[] partiallyUsingVoltdb;
 	public static int[] throughputPerTenant; //planned throughput
-	public static int[] latePerTenant; //late requests
 	public static double concurrency = 0.1;
 	
 //	public static boolean sendRequest = false;
 	public static boolean startCount = false;
-	public static boolean isVoltdbUsed = false;
 	public static double writePercent = 0.0; //set in performanceMonitor
-	public static boolean dataRetriving = false;
-	public static boolean retriverWorking = false;
 	public static boolean onlyMysql = true;
-	public static long testTime = 600000; //10 mins
-	public static long intervalTime = 60000; //1 min
-	public static long intervalNumber = 10;
+	public static long testTime = 900000; //15 mins
+	public static long intervalTime = 300000; //5 min, must be integer mins
+	public static long intervalNumber = 3;
+	public static long minPerInterval = 5;
 	public static boolean isActive = true;
 	
 	public static void main(String[] args){
 		totalTenantNumber = 1000;
 		TYPE = 1;
 		onlyMysql = true;
-		testTime = 600000;
-		intervalTime = 60000;
-		isVoltdbUsed = false;
+		testTime = 900000;
+		intervalTime = 300000;
 		int waitTime = 30000;
 		init();
 		
@@ -93,24 +89,31 @@ public class Main {
 			e.printStackTrace();
 		}
 		
+		System.out.println("******************hybrid test start******************");
 		Main.setConcurrency(0.1);
-		Main.setQT();
 		Main.isActive = true; //****************start test***************************//
 		for(int i=0; i<intervalNumber; i++){
+			Main.setQT();
+			//send data to PerformanceController: new QT
 			try {
-				Thread.sleep(intervalTime);
-				Main.setQT();
+//				Thread.sleep(intervalTime);
+				for(int j = 0; j < minPerInterval; j++){
+					Thread.sleep(60000);
+					//check throughput, send data to PerformanceController: lateTenant, lateQuery
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		Main.isActive = false;//******************end test**************************//
+		System.out.println("******************hybrid test complete******************");
 		System.exit(1);
 		
 	}
 	
 	public static void init(){
 		intervalNumber = testTime / intervalTime;
+		minPerInterval = intervalTime / 60000;
 		tenantNumber = (int) (totalTenantNumber*PercentTenantSplits[TYPE]);
 		if(TYPE != 0){
 			IDStart = (int) (totalTenantNumber*PercentTenantSplitsSum[TYPE-1]);
@@ -122,13 +125,11 @@ public class Main {
 		usingVoltdb = new boolean[tenantNumber];
 		partiallyUsingVoltdb = new boolean[tenantNumber];
 		throughputPerTenant = new int[tenantNumber];
-		latePerTenant = new int[tenantNumber];
 		for(int i = 0; i < tenantNumber; i++){
 			tenants[i] = new Tenant(i+IDStart, DSMatrix[i], QTMatrix[i], WHMatrix[i], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
 			usingVoltdb[i] = false;
 			partiallyUsingVoltdb[i] = false;
 			throughputPerTenant[i] = 0;
-			latePerTenant[i] = 0;
 		}
 	}
 

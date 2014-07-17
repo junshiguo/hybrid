@@ -1,10 +1,14 @@
 package hybridTest;
 
+import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.voltdb.client.Client;
+import org.voltdb.client.ClientResponse;
+import org.voltdb.client.ProcCallException;
 
 import utility.DBManager;
 
@@ -17,8 +21,9 @@ public class HConnection extends Thread {
 	public String voltdbServer;
 	public Connection conn;
 	public Client voltdbConn;
-	public Statement[] statements;
+	public PreparedStatement[] statements;
 	public boolean doSQLNow = false;  //set in Tenant. very important
+	public boolean isLate = false;
 	
 	public int sqlId;
 	public Object[] para;
@@ -32,7 +37,7 @@ public class HConnection extends Thread {
 		this.mysqlUsername = username;
 		this.mysqlPassword = password;
 		this.voltdbServer = serverlist;
-		statements = new Statement[35];
+		statements = new PreparedStatement[44];
 	}
 
 	public void run(){
@@ -51,15 +56,333 @@ public class HConnection extends Thread {
 		}
 		while(true){
 			if(doSQLNow){
-				doSQL(sqlId, para, paraType, paraNumber);
-				doSQLNow = false;
+				boolean success = doSQL(sqlId, para, paraType, paraNumber);
+				if(success == true){
+					PerformanceMonitor.actualThroughputPerTenant[this.tenantId]++;
+				}
+				if(this.isLate == false){
+					doSQLNow = false;
+				}else{
+					this.isLate = false;
+					this.doSQLNow = true;
+				}
 			}
 		}
 	}
 	
 	public boolean doSQL(int sqlId, Object[] para, int[] paraType, int paraNumber){
+		boolean success = false;
+		long start = System.nanoTime();
+		if(Main.onlyMysql == true){ //only mysql, for mysql test
+			success = doSQLInMysql(sqlId, paraNumber, para, paraType);
+		}else if(this.isPartiallUsingVoltdb() == true){ // this tenant partially uses voltdb
+			success = doSQLInVoltdb(sqlId, paraNumber, para, true, true);
+			if((!success && sqlId<21) || sqlId==15 || sqlId==18 || sqlId==19 || sqlId==34)
+				success = doSQLInMysql(sqlId, paraNumber, para, paraType);
+		}else if(this.isUsingVoltdb() == true){ // this tenant has all his data in voltdb
+			success = doSQLInVoltdb(sqlId, paraNumber, para, false, false);
+		}else{ // this tenant has all his data in mysql
+			success = doSQLInMysql(sqlId, paraNumber, para, paraType);
+		}
+		if(success && sqlId > 20){
+			try {
+				this.conn.commit();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		long end = System.nanoTime();
+		if(end - start > Main.intervalTime*1000000){
+			PerformanceMonitor.latePerTenant[this.tenantId] ++;
+			this.isLate = true;
+		}
+		return success;
+	}
+	
+	public boolean doSQLInMysql(int sqlId, int paraNumber, Object[] para,
+			int[] paraType) {
+		int i = 0;
+		try {
+			for (i = 0; i < paraNumber; i++) {
+				switch (paraType[i]) {
+				case 0:
+					statements[sqlId].setInt(i+1, (int) para[i]);
+					break;
+				case 1:
+					statements[sqlId].setString(i+1, (String)para[i]);
+					break;
+				case 2:
+					statements[sqlId].setFloat(i+1, (float)para[i]);
+					break;
+				case 3:
+					statements[sqlId].setDouble(i+1, (double)para[i]);
+					break;
+					default:
+				}
+			}
+			statements[sqlId].execute();
+			return true;
+			//System.out.println(threadId +" sta "+sqlId+" : "+ Tenant.statements[threadId][sqlId].toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("thread id: "+this.tenantId +"; sql id: "+sqlId+"; i= "+i+" : exception??");
+			return false;
+		}
+	}
+	
+	public boolean doSQLInVoltdb(int sqlId, int paraNumber, Object[] para, boolean checkUpdate, boolean careResult) {
+		//*******************************set parameters for volt procedures****************************************//
+		try {
+			ClientResponse response = null;
+			if(sqlId > 24 && sqlId < 34 && checkUpdate == true){//update
+				//******************check if data is in voltdb, if not, insert**********************//
+				insertForUpdate(sqlId, paraNumber, para);
+			}
+			//**********************communal part****************************//
+			switch(paraNumber){
+			case 1:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0]);
+				break;
+			case 2:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0], para[1]);
+				break;
+			case 3:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0], para[1], para[2]);
+				break;
+			case 4:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0], para[1], para[2], para[3]);
+				break;
+			case 5:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0], para[1], para[2], para[3], para[4]);
+				break;
+			case 6:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0], para[1], para[2], para[3], para[4], para[5]);
+				break;
+			case 7:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0], para[1], para[2], para[3], para[4], para[5], para[6]);
+				break;
+			case 8:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7]);
+				break;
+			case 9:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8]);
+				break;
+			case 10:
+				response = voltdbConn.callProcedure("Procedure"+sqlId, this.tenantId, para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9]);
+				break;
+			}
+			
+			if(response.getStatus() != ClientResponse.SUCCESS){
+				System.out.println("response failed");
+				return false;
+			}
+			if(careResult == false){
+				return true;
+			}
+			long rets = response.getResults()[0].asScalarLong();
+			if(rets == 0)
+				return false;
+			else return true;
+		} catch (IOException | ProcCallException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public void insertForUpdate(int sqlId, int paraNumber, Object[] para){
+		ClientResponse response = null;
+		ResultSet rs = null;
+		try{
+			switch(sqlId){
+			case 25:
+				response = voltdbConn.callProcedure("ProcedureSelectDistrict", this.tenantId, para[0], para[1]);
+				if (response.getStatus() != ClientResponse.SUCCESS) {
+					System.out.println("select for update response failed");
+					return;
+				}
+				if(response.getResults()[0].asScalarLong() == 0){ //insert needed
+					statements[35].setInt(1, (int) para[0]);
+					statements[35].setInt(2, (int) para[1]);
+					rs = statements[35].executeQuery();
+					while(rs.next()){
+						voltdbConn.callProcedure("ProcedureInsertDistrict", this.tenantId, rs.getInt("d_id"), rs.getInt("d_w_id"), 
+								rs.getString("d_name"), rs.getString("d_street_1"), rs.getString("d_street_2"), rs.getString("d_city"), 
+								rs.getString("d_state"), rs.getString("d_zip"),	rs.getDouble("d_tax"), rs.getDouble("d_ytd"), 
+								rs.getInt("d_next_o_id"), 0, 1);
+					}
+				}
+				break;
+			case 26:
+				response = voltdbConn.callProcedure("ProcedureSelectStock", this.tenantId, para[1], para[2]);
+				if (response.getStatus() != ClientResponse.SUCCESS) {
+					System.out.println("select for update response failed");
+					return;
+				}
+				if(response.getResults()[0].asScalarLong() == 0){
+					statements[36].setInt(1, (int) para[1]);
+					statements[36].setInt(2, (int) para[2]);
+					rs = statements[36].executeQuery();
+					while(rs.next()){
+						voltdbConn.callProcedure("ProcedureInsertStock", this.tenantId, rs.getInt("s_i_id"), rs.getInt("s_w_id"),
+								rs.getInt("s_quantity"), rs.getString("s_dist_01"), rs.getString("s_dist_02"), rs.getString("s_dist_03"), 
+								rs.getString("s_dist_04"), rs.getString("s_dist_05"), rs.getString("s_dist_06"), rs.getString("s_dist_07"), 
+								rs.getString("s_dist_08"), rs.getString("s_dist_09"), rs.getString("s_dist_10"), rs.getDouble("s_ytd"), 
+								rs.getInt("s_order_cnt"), rs.getInt("s_remote_cnt"), rs.getString("s_data"), 0, 1);
+					}
+				}
+				break;
+			case 27:
+				response = voltdbConn.callProcedure("ProcedureSelectWarehouse", this.tenantId, para[1]);
+				if (response.getStatus() != ClientResponse.SUCCESS) {
+					System.out.println("select for update response failed");
+					return;
+				}
+				if(response.getResults()[0].asScalarLong() == 0){
+					statements[37].setInt(1, (int) para[1]);
+					rs = statements[37].executeQuery();
+					while(rs.next()){
+						voltdbConn.callProcedure("ProcedureInsertWarehouse", this.tenantId, rs.getInt("w_id"), 
+								rs.getString("w_name"), rs.getString("w_street_1"), rs.getString("w_street_2"), rs.getString("w_city"), 
+								rs.getString("w_state"), rs.getString("w_zip"), rs.getDouble("w_tax"), rs.getDouble("w_ytd"), 
+								0, 1);
+					}
+				}
+				break;
+			case 28:
+				response = voltdbConn.callProcedure("ProcedureSelectDistrict", this.tenantId, para[2], para[1]);
+				if (response.getStatus() != ClientResponse.SUCCESS) {
+					System.out.println("select for update response failed");
+					return;
+				}
+				if(response.getResults()[0].asScalarLong() == 0){
+					statements[38].setInt(1, (int) para[1]);
+					statements[38].setInt(2, (int) para[2]);
+					rs = statements[38].executeQuery();
+					while(rs.next()){
+						voltdbConn.callProcedure("ProcedureInsertDistrict", this.tenantId, rs.getInt("d_id"), rs.getInt("d_w_id"), 
+								rs.getString("d_name"), rs.getString("d_street_1"), rs.getString("d_street_2"), rs.getString("d_city"), 
+								rs.getString("d_state"), rs.getString("d_zip"),	rs.getDouble("d_tax"), rs.getDouble("d_ytd"), 
+								rs.getInt("d_next_o_id"), 0, 1);
+					}
+				}
+				break;
+			case 29:
+				response = voltdbConn.callProcedure("ProcedureSelectCustomer", this.tenantId, para[2], para[3], para[4]);
+				if (response.getStatus() != ClientResponse.SUCCESS) {
+					System.out.println("select for update response failed");
+					return;
+				}
+				if(response.getResults()[0].asScalarLong() == 0){
+					statements[39].setInt(1, (int) para[2]);
+					statements[39].setInt(2, (int) para[3]);
+					statements[39].setInt(3, (int) para[4]);
+					rs = statements[39].executeQuery();
+					while(rs.next()){
+						voltdbConn.callProcedure("ProcedureInsertCustomer", this.tenantId, rs.getInt("c_id"), rs.getInt("c_d_id"), 
+								rs.getInt("c_w_id"), rs.getString("c_first"), rs.getString("c_middle"), rs.getString("c_last"),
+								rs.getString("c_street_1"), rs.getString("c_street_2"), rs.getString("c_city"),rs.getString("c_state"),
+								rs.getString("c_zip"), rs.getString("c_phone"), rs.getTimestamp("c_since"), 
+								rs.getString("c_credit"), rs.getInt("c_credit_lim"), rs.getDouble("c_discount"), rs.getDouble("c_balance"), 
+								rs.getDouble("c_ytd_payment"), rs.getInt("c_payment_cnt"), rs.getInt("c_delivery_cnt"), rs.getString("c_data"),
+								0, 1);
+					}
+				}
+				break;
+			case 30:
+				response = voltdbConn.callProcedure("ProcedureSelectCustomer", this.tenantId, para[1], para[2], para[3]);
+				if (response.getStatus() != ClientResponse.SUCCESS) {
+					System.out.println("select for update response failed");
+					return;
+				}
+				if(response.getResults()[0].asScalarLong() == 0){
+					statements[40].setInt(1, (int) para[1]);
+					statements[40].setInt(2, (int) para[2]);
+					statements[40].setInt(3, (int) para[3]);
+					rs = statements[40].executeQuery();
+					while(rs.next()){
+						voltdbConn.callProcedure("ProcedureInsertCustomer", this.tenantId, rs.getInt("c_id"), rs.getInt("c_d_id"), 
+								rs.getInt("c_w_id"), rs.getString("c_first"), rs.getString("c_middle"), rs.getString("c_last"),
+								rs.getString("c_street_1"), rs.getString("c_street_2"), rs.getString("c_city"),rs.getString("c_state"),
+								rs.getString("c_zip"), rs.getString("c_phone"), rs.getTimestamp("c_since"), 
+								rs.getString("c_credit"), rs.getInt("c_credit_lim"), rs.getDouble("c_discount"), rs.getDouble("c_balance"), 
+								rs.getDouble("c_ytd_payment"), rs.getInt("c_payment_cnt"), rs.getInt("c_delivery_cnt"), rs.getString("c_data"),
+								0, 1);
+					}
+				}
+				break;
+			case 31:
+				response = voltdbConn.callProcedure("ProcedureSelectOrders", this.tenantId, para[1], para[2], para[3]);
+				if (response.getStatus() != ClientResponse.SUCCESS) {
+					System.out.println("select for update response failed");
+					return;
+				}
+				if(response.getResults()[0].asScalarLong() == 0){
+					statements[41].setInt(1, (int) para[1]);
+					statements[41].setInt(2, (int) para[2]);
+					statements[41].setInt(3, (int) para[3]);
+					rs = statements[41].executeQuery();
+					while(rs.next()){
+						voltdbConn.callProcedure("ProcedureInsertOrders", this.tenantId, rs.getInt("o_id"), rs.getInt("o_d_id"),
+								rs.getInt("o_w_id"), rs.getInt("o_c_id"),
+								rs.getTimestamp("o_entry_d"), 
+								rs.getInt("o_carrier_id"), rs.getInt("o_ol_cnt"), rs.getInt("o_all_local"), 0, 1);
+					}
+				}
+				break;
+			case 32:
+				response = voltdbConn.callProcedure("ProcedureSelectOrderLine", this.tenantId, para[1], para[2], para[3]);
+				if (response.getStatus() != ClientResponse.SUCCESS) {
+					System.out.println("select for update response failed");
+					return;
+				}
+				if(response.getResults()[0].asScalarLong() == 0){
+					statements[42].setInt(1, (int) para[1]);
+					statements[42].setInt(2, (int) para[2]);
+					statements[42].setInt(3, (int) para[3]);
+					rs = statements[42].executeQuery();
+					while(rs.next()){
+						voltdbConn.callProcedure("ProcedureInsertOrderLine", this.tenantId, rs.getInt("ol_o_id"), rs.getInt("ol_d_id"), 
+								rs.getInt("ol_w_id"), rs.getInt("ol_number"), rs.getInt("ol_i_id"), rs.getInt("ol_supply_w_id"),
+								rs.getTimestamp("ol_delivery_d"), 
+								rs.getInt("ol_quantity"), rs.getDouble("ol_amount"), rs.getString("ol_dist_info"), 0, 1);
+					}
+				}
+				break;
+			case 33:
+				response = voltdbConn.callProcedure("ProcedureSelectCustomer", this.tenantId, para[3], para[2], para[1]);
+				if (response.getStatus() != ClientResponse.SUCCESS) {
+					System.out.println("select for update response failed");
+					return;
+				}
+				if(response.getResults()[0].asScalarLong() == 0){
+					statements[43].setInt(1, (int) para[1]);
+					statements[43].setInt(2, (int) para[2]);
+					statements[43].setInt(3, (int) para[3]);
+					rs = statements[43].executeQuery();
+					while(rs.next()){
+						voltdbConn.callProcedure("ProcedureInsertCustomer", this.tenantId, rs.getInt("c_id"), rs.getInt("c_d_id"), 
+								rs.getInt("c_w_id"), rs.getString("c_first"), rs.getString("c_middle"), rs.getString("c_last"),
+								rs.getString("c_street_1"), rs.getString("c_street_2"), rs.getString("c_city"),rs.getString("c_state"),
+								rs.getString("c_zip"), rs.getString("c_phone"), rs.getTimestamp("c_since"), 
+								rs.getString("c_credit"), rs.getInt("c_credit_lim"), rs.getDouble("c_discount"), rs.getDouble("c_balance"), 
+								rs.getDouble("c_ytd_payment"), rs.getInt("c_payment_cnt"), rs.getInt("c_delivery_cnt"), rs.getString("c_data"),
+								0, 1);
+					}
+				}
+				break;				
+			}
+		}catch(IOException | ProcCallException | SQLException e){
+			e.printStackTrace();
+		}
 		
-		return false;
+	}
+	
+	public boolean isUsingVoltdb(){
+		return Main.usingVoltdb[tenantId - Main.IDStart];
+	}
+	
+	public boolean isPartiallUsingVoltdb(){
+		return Main.partiallyUsingVoltdb[tenantId - Main.IDStart];
 	}
 	
 	public void setPara(int sqlId, Object[] para, int[] paraType, int paraNumber){
@@ -111,6 +434,17 @@ public class HConnection extends Thread {
 		statements[33] = conn.prepareStatement("UPDATE customer"+id+" SET c_balance = c_balance + ? , c_delivery_cnt = c_delivery_cnt + 1 WHERE c_id = ? AND c_d_id = ? AND c_w_id = ?");//
 		
 		statements[34] = conn.prepareStatement("DELETE FROM new_orders"+id+" WHERE no_o_id = ? AND no_d_id = ? AND no_w_id = ?");
+		//THE FOLLOWING STATEMENTS ARE USED IN VOLTDB PROCEDURES
+		//USING VOLTDB
+		statements[35] = conn.prepareStatement("SELECT * FROM district"+id+" WHERE d_id = ? AND d_w_id = ?");
+		statements[36] = conn.prepareStatement("SELECT * FROM stock"+id+" WHERE s_i_id = ? AND s_w_id = ?");
+		statements[37] = conn.prepareStatement("SELECT * FROM warehouse"+id+" WHERE w_id = ? ");
+		statements[38] = conn.prepareStatement("SELECT * FROM district"+id+" WHERE d_w_id = ? AND d_id = ? ");
+		statements[39] = conn.prepareStatement("SELECT * FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?");
+		statements[40] = conn.prepareStatement("SELECT * FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?");
+		statements[41] = conn.prepareStatement("SELECT * FROM orders"+id+" WHERE o_id = ? AND o_d_id = ? AND o_w_id = ?");
+		statements[42] = conn.prepareStatement("SELECT * FROM order_line"+id+" WHERE ol_o_id = ? AND ol_d_id = ? AND ol_w_id = ?");
+		statements[43] = conn.prepareStatement("SELECT * FROM customer"+id+" WHERE c_id = ? AND c_d_id = ? AND c_w_id = ?");
 	}
 
 }
