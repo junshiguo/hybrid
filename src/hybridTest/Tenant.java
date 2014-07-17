@@ -6,6 +6,7 @@ public class Tenant extends Thread {
 	public int QT;
 	public int actualQT;  //actual throughput per minute
 	public boolean writeHeavy;
+	public int doSQLNow = 0;
 	
 	public String dbURL;
 	public String dbUsername;
@@ -53,16 +54,14 @@ public class Tenant extends Thread {
 		}
 		
 		while(Main.isActive){
-			for(int i = 0; i < requestNumber; i++){
-				int sqlId = sequence.next();
-				driver.initiatePara(sqlId);
-				connections[i].setPara(sqlId, driver.para, driver.paraType, driver.paraNumber);
-				connections[i].doSQLNow = true;
-			}
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			if(this.doSQLNow > 0){
+				for(int i = 0; i < requestNumber; i++){
+					int sqlId = sequence.next();
+					driver.initiatePara(sqlId);
+					connections[i].setPara(sqlId, driver.para, driver.paraType, driver.paraNumber);
+					connections[i].doSQLNow ++;
+				}
+				this.doSQLNow --;
 			}
 		}
 		

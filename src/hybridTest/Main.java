@@ -98,7 +98,12 @@ public class Main {
 			try {
 //				Thread.sleep(intervalTime);
 				for(int j = 0; j < minPerInterval; j++){
-					Thread.sleep(60000);
+					for(int k = 0; k < 20; k++){ //send requests every 3 seconds, 20 times per minute
+						for(int id = 0; id < tenantNumber; id++){
+							tenants[id].doSQLNow++;
+						}
+						Thread.sleep(3000);
+					}
 					//check throughput, send data to PerformanceController: lateTenant, lateQuery
 				}
 			} catch (InterruptedException e) {

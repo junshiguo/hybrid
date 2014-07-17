@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Vector;
 
 import org.voltdb.client.Client;
 import org.voltdb.client.ClientResponse;
@@ -22,14 +23,22 @@ public class HConnection extends Thread {
 	public Connection conn;
 	public Client voltdbConn;
 	public PreparedStatement[] statements;
-	public boolean doSQLNow = false;  //set in Tenant. very important
-	public boolean isLate = false;
+	public int doSQLNow = 0;  //set in Tenant. very important
+	public Vector<WaitList> waitList;
 	
-	public int sqlId;
-	public Object[] para;
-	public int[] paraType;
-	public int paraNumber;
-	
+	public class WaitList{
+		public int sqlId;
+		public Object[] para;
+		public int[] paraType;
+		public int paraNumber;
+		public WaitList(int sqlId, Object[] para, int[] paraType, int paraNumber){
+			this.sqlId = sqlId;
+			this.para = para;
+			this.paraType = paraType;
+			this.paraNumber = paraNumber;
+		}
+	}
+
 	public HConnection(int connId, int id, String url, String username, String password, String serverlist){
 		this.connId = connId;
 		this.tenantId = id;
@@ -38,6 +47,7 @@ public class HConnection extends Thread {
 		this.mysqlPassword = password;
 		this.voltdbServer = serverlist;
 		statements = new PreparedStatement[44];
+		waitList = new Vector<WaitList>();
 	}
 
 	public void run(){
@@ -55,17 +65,11 @@ public class HConnection extends Thread {
 			e.printStackTrace();
 		}
 		while(true){
-			if(doSQLNow){
-				boolean success = doSQL(sqlId, para, paraType, paraNumber);
-				if(success == true){
-					PerformanceMonitor.actualThroughputPerTenant[this.tenantId]++;
-				}
-				if(this.isLate == false){
-					doSQLNow = false;
-				}else{
-					this.isLate = false;
-					this.doSQLNow = true;
-				}
+			if(doSQLNow > 0 && waitList.isEmpty() == false){
+				WaitList tmp = waitList.firstElement();
+				waitList.remove(0);
+				doSQL(tmp.sqlId, tmp.para, tmp.paraType, tmp.paraNumber);
+				this.doSQLNow --;
 			}
 		}
 	}
@@ -92,9 +96,11 @@ public class HConnection extends Thread {
 			}
 		}
 		long end = System.nanoTime();
-		if(end - start > Main.intervalTime*1000000){
-			PerformanceMonitor.latePerTenant[this.tenantId] ++;
-			this.isLate = true;
+		if(success == true){
+			PerformanceMonitor.timePerQuery.add(end - start);
+			PerformanceMonitor.actualThroughputPerTenant[this.tenantId]++;
+			if(sqlId <= 20)	PerformanceMonitor.readQuery++;
+			else PerformanceMonitor.writeQuery++;
 		}
 		return success;
 	}
@@ -386,10 +392,7 @@ public class HConnection extends Thread {
 	}
 	
 	public void setPara(int sqlId, Object[] para, int[] paraType, int paraNumber){
-		this.sqlId = sqlId;
-		this.para = para;
-		this.paraType = paraType;
-		this.paraNumber = paraNumber;
+		waitList.add(new WaitList(sqlId, para, paraType, paraNumber));
 	}
 	
 	public void sqlPrepare() throws SQLException{
