@@ -444,7 +444,7 @@ public class Driver {
 			int[] paraType) {
 		boolean success = true;
 //		long start = System.nanoTime();
-		for(int i=0; i<Main.MaxTry; i++){
+		for(int i=0; i<MMain.MaxTry; i++){
 			success = doSQLOnce(threadId, sqlId, paraNumber, para, paraType);
 //			long end = System.nanoTime();
 			
@@ -455,13 +455,13 @@ public class Driver {
 					e.printStackTrace();
 				}
 			}
-			if(success && Driver.IsActive && Main.startCount){
+			if(success && Driver.IsActive && MMain.startCount){
 //				Main.tmpList.add(new Long(end-start));
 //				synchronized(this){
-					Main.queryThisInterval ++;
+					MMain.queryThisInterval ++;
 //				}
 				return;
-			}else if(!success && Driver.IsActive & Main.startCount){
+			}else if(!success && Driver.IsActive & MMain.startCount){
 				System.out.print(".");
 			}else if(!Driver.IsActive){
 				return;

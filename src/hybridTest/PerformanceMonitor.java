@@ -59,7 +59,7 @@ public class PerformanceMonitor extends Thread {
 				long readNumber = readQuery;
 				long writeNumber = writeQuery;
 				writePercent = (writeNumber*1.0)/(readNumber+writeNumber);
-				//send data to PerformanceController using socket: throughput, writePercent
+				//send data to PerformanceController using socket: throughput, writePercent&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 				
 				ArrayList<Long> tmpList = new ArrayList<Long>(timePerQuery);
 				Iterator<Long> iter = tmpList.iterator();

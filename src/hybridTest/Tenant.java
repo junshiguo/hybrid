@@ -1,5 +1,7 @@
 package hybridTest;
 
+import hybridConfig.HConfig;
+
 public class Tenant extends Thread {
 	public int tenantId;
 	public double dataSize;
@@ -34,9 +36,9 @@ public class Tenant extends Thread {
 			connections[i] = new HConnection(i, id, url, username, password, voltdbServer);
 		}
 		if(writeHeavy){
-			sequence = new HSequence(Main.ValueWP[0], requestNumber);
+			sequence = new HSequence(HConfig.ValueWP[0], requestNumber);
 		}else{
-			sequence = new HSequence(Main.ValueWP[1], requestNumber);
+			sequence = new HSequence(HConfig.ValueWP[1], requestNumber);
 		}
 		driver = new Driver();
 	}
@@ -69,11 +71,14 @@ public class Tenant extends Thread {
 	
 	public void setQT(int newqt){
 		this.actualQT = newqt;
-		requestNumber = actualQT/20;
+		this.requestNumber = actualQT/20;
+		if(requestNumber == 0){
+			return;
+		}
 		if(writeHeavy){
-			sequence = new HSequence(Main.ValueWP[0], requestNumber);
+			sequence = new HSequence(HConfig.ValueWP[0], requestNumber);
 		}else{
-			sequence = new HSequence(Main.ValueWP[1], requestNumber);
+			sequence = new HSequence(HConfig.ValueWP[1], requestNumber);
 		}
 	}
 

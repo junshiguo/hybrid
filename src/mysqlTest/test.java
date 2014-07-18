@@ -11,13 +11,13 @@ public class test {
 	public static PreparedStatement st;
 	
 	public static void main(String[] args){
-		CopyTables(3000);
+		CopyTables(1000);
 	}
 	
 	public static void CopyTables(int tenantNumber){
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://10.20.2.111/tpcc10", "remote", "remote");
+			conn = DriverManager.getConnection("jdbc:mysql://10.20.2.211/tpcc10", "remote", "remote");
 			System.out.println("db connected~");
 		} catch (ClassNotFoundException | SQLException e1) {
 			e1.printStackTrace();

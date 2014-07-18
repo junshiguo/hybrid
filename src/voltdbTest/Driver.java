@@ -445,13 +445,13 @@ public class Driver {
 	public void doSQL(int threadId, int sqlId, int paraNumber, Object[] para,
 			int[] paraType) {
 		boolean success = true;
-		for(int i=0; i<Main.MaxTry; i++){
+		for(int i=0; i<VMain.MaxTry; i++){
 			success = doSQLOnce(threadId, sqlId, paraNumber, para, paraType);
 			
-			if(success && Driver.IsActive && Main.startCount){
-				Main.queryThisInterval ++;
+			if(success && Driver.IsActive && VMain.startCount){
+				VMain.queryThisInterval ++;
 				return;
-			}else if(!success && Driver.IsActive & Main.startCount){
+			}else if(!success && Driver.IsActive & VMain.startCount){
 //				System.out.print(".");
 				System.out.println("sql failure! tenant id: "+threadId+", sql id: "+sqlId);
 				System.exit(0);

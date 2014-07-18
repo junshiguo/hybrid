@@ -14,7 +14,7 @@ public class Tenant extends Thread {
 	public static void init(int numberOfConnection, String dbURL, String dbUserName, String dbPassword, boolean copyTable){
 		Tenant.statements = new PreparedStatement[numberOfConnection][35];
 		tenants = new Tenant[numberOfConnection];
-		Connection conn = DBManager.connectDB(Main.dbURL, Main.dbUserName, Main.dbPassword);
+		Connection conn = DBManager.connectDB(MMain.dbURL, MMain.dbUserName, MMain.dbPassword);
 //		try {
 //			Statement s = conn.createStatement();
 //			s.execute("SET GLOBAL connect_timeout=60");

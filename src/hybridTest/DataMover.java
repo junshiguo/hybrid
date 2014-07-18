@@ -17,10 +17,10 @@ import utility.DBManager;
 public class DataMover {
 	public Connection conn;
 	public Client voltdbConn;
-	public String dbURL = "jdbc:mysql://10.20.2.111/tpcc10";
+	public String dbURL = "jdbc:mysql://10.20.2.211/tpcc10";
 	public String dbUsername = "remote";
 	public String dbPassword = "remote";
-	public String voltdbServer = "10.20.2.111";
+	public String voltdbServer = "10.20.2.211";
 
 	public DataMover(String url, String username, String password, String voltdbServer){
 		this.dbURL = url;
@@ -153,6 +153,7 @@ public class DataMover {
 	}
 	
 	public void Voltdb2Mysql(int tenantId){
+		Main.partiallyUsingVoltdb[tenantId] = true;
 		CustomerRetriver cr = new CustomerRetriver(this.dbURL, this.dbUsername, this.dbPassword, this.voltdbServer, tenantId, 1);
 		cr.start();
 		DistrictRetriver dr = new DistrictRetriver(this.dbURL, this.dbUsername, this.dbPassword, this.voltdbServer, tenantId, 1);
