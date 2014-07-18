@@ -24,10 +24,10 @@ public class Main {
 	public static String dbPassword = "remote";
 	public static String voltdbServer = "10.20.2.211";
 
-	public static boolean[] usingVoltdb;
-	public static boolean[] partiallyUsingVoltdb;
-	public static int[] throughputPerTenant; //planned throughput
-	public static double concurrency = 0.1;
+	public static boolean[] usingVoltdb; //set by setDBState
+	public static boolean[] partiallyUsingVoltdb; //set by setDBState
+	public static int[] throughputPerTenant; //planned throughput, set by setQT()
+	public static double concurrency = 0.1; //set by setConcurrency
 	
 	public static int port = 8899;
 	public static Socket socket;
@@ -35,7 +35,7 @@ public class Main {
 	public static Writer writer;
 	
 //	public static boolean sendRequest = false;
-	public static boolean startCount = false;
+//	public static boolean startCount = false;
 //	public static double writePercent = 0.0; //set in performanceMonitor
 	public static boolean onlyMysql = true;
 	public static long testTime = 900000; //15 mins
@@ -163,6 +163,12 @@ public class Main {
 			}
 			Main.tenants[i].setQT(Main.throughputPerTenant[i]);
 		}
+	}
+	
+	public static void setDBState(int tenantId, boolean usingV, boolean usingPV){
+		int index = tenantId - Main.IDStart;
+		Main.usingVoltdb[index] = usingV;
+		Main.partiallyUsingVoltdb[index] = usingPV;
 	}
 	
 }

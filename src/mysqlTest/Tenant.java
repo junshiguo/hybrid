@@ -15,12 +15,6 @@ public class Tenant extends Thread {
 		Tenant.statements = new PreparedStatement[numberOfConnection][35];
 		tenants = new Tenant[numberOfConnection];
 		Connection conn = DBManager.connectDB(MMain.dbURL, MMain.dbUserName, MMain.dbPassword);
-//		try {
-//			Statement s = conn.createStatement();
-//			s.execute("SET GLOBAL connect_timeout=60");
-//		} catch (SQLException e1) {
-//			e1.printStackTrace();
-//		}
 		for(int i=0; i<numberOfConnection; i++){
 			tenants[i] = new Tenant(i, dbURL, dbUserName, dbPassword, copyTable, conn);
 		}
@@ -65,10 +59,10 @@ public class Tenant extends Thread {
 			System.out.println("DB connection problem...");
 			return;
 		}
-		System.out.println("thread "+id+": db connected...");
+//		System.out.println("thread "+id+": db connected...");
 		try {
 			sqlPrepare0();
-			System.out.println("thread "+id+": sql prepared...");
+//			System.out.println("thread "+id+": sql prepared...");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("error in preparing sql!");

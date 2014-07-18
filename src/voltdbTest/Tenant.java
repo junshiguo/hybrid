@@ -10,12 +10,6 @@ public class Tenant extends Thread {
 	public static Tenant[] tenants;
 	public static void init(int numberOfConnection, String serverlist, boolean copyTable){
 		tenants = new Tenant[numberOfConnection];
-//		try {
-//			Statement s = conn.createStatement();
-//			s.execute("SET GLOBAL connect_timeout=60");
-//		} catch (SQLException e1) {
-//			e1.printStackTrace();
-//		}
 		for(int i=0; i<numberOfConnection; i++){
 			tenants[i] = new Tenant(i, serverlist, copyTable);
 		}
