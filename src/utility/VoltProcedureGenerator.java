@@ -31,7 +31,7 @@ public class VoltProcedureGenerator {
 						+ "		return 1;\n"
 						+ "	}\n"
 						+ "}");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure1_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
@@ -46,7 +46,7 @@ public class VoltProcedureGenerator {
 								+ "		return 1;\n"
 								+ "	}\n"
 								+ "}");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure2_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
@@ -61,7 +61,7 @@ public class VoltProcedureGenerator {
 				+ "		if(results[0].getRowCount() == 0)\n"
 				+ "			return 0;\n"
 				+ "		return 1;\n	}\n}");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure3_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
@@ -76,7 +76,7 @@ public class VoltProcedureGenerator {
 			+ "			return 0;\n"
 			+ "		return 1;\n"
 			+ "	}\n}");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure4_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
@@ -90,7 +90,7 @@ public class VoltProcedureGenerator {
 			+ "		if(results[0].getRowCount() == 0)\n"
 			+ "			return 0;\n"
 			+ "		return 1;\n	}\n}");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure5_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
@@ -103,155 +103,227 @@ public class VoltProcedureGenerator {
 						+ "		if(results[0].getRowCount() == 0 || results[0].fetchRow(0).getLong(0) == 0)\n"
 						+ "			return 0;\n"
 						+ "		return 1;\n	}\n}");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure6_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
-				out.write("");
-				out.flush();
+				out.write("import org.voltdb.*;\n" +
+						"public class Procedure6_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT c_id FROM customer"+tenantId+" "
+			+ "WHERE c_w_id = ? AND c_d_id = ? AND c_last = ? ORDER BY c_first\");\n" +
+			"	public long run(int c_w_id, int c_d_id, String c_last) throws VoltAbortException {\n" +
+			"		voltQueueSQL(sql, c_w_id, c_d_id, c_last);\n" +
+			"		VoltTable[] results = voltExecuteSQL();\n" +
+			"		if(results[0].getRowCount() == 0)\n" +
+			"			return 0;\n" +
+			"		return 1;\n	}\n}");
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure7_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
-				out.write("");
-				out.flush();
+				out.write("import org.voltdb.*;\n" +
+						"public class Procedure7_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT c_first, c_middle, c_last, c_street_1, c_street_2, c_city, c_state, c_zip, c_phone, c_credit, c_credit_lim, c_discount, c_balance, c_since "
+			+ "FROM customer"+tenantId+" WHERE c_id = ? AND c_w_id = ? AND c_d_id = ?\");\n" +
+			"	public long run(int c_id, int c_w_id, int c_d_id) throws VoltAbortException {\n" +
+			"		voltQueueSQL(sql, c_id, c_w_id, c_d_id);\n" +
+			"		VoltTable[] results = voltExecuteSQL();\n" +
+			"		if(results[0].getRowCount() == 0)\n" +
+			"			return 0;\n" +
+			"		return 1;\n	}\n}");
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure8_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
-				out.write("");
-				out.flush();
+				out.write("import org.voltdb.*;\n" +
+						"public class Procedure8_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT c_data FROM customer"+tenantId
+						+" WHERE c_id = ? AND c_w_id = ? AND c_d_id = ?\");\n" +
+						"	public long run(int c_id, int c_w_id, int c_d_id) throws VoltAbortException{\n" +
+						"		voltQueueSQL(sql, c_id, c_w_id, c_d_id);\n" +
+						"		VoltTable[] results = voltExecuteSQL();\n" +
+						"		if(results[0].getRowCount() == 0)\n" +
+						"			return 0;\n" +
+						"		return 1;\n	}\n}");
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure9_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
-				out.write("");
-				out.flush();
+				out.write("import org.voltdb.*;\n" +
+						"public class Procedure9_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT count(c_id) FROM customer"+tenantId +
+						" WHERE c_w_id = ? AND c_d_id = ? AND c_last = ?\");\n" +
+						"	public long run(int c_w_id, int c_d_id, String c_last) throws VoltAbortException {\n" +
+						"		voltQueueSQL(sql, c_w_id, c_d_id, c_last);\n" +
+						"		VoltTable[] results = voltExecuteSQL();\n" +
+						"		if(results[0].getRowCount() == 0 || results[0].fetchRow(0).getLong(0) == 0)\n" +
+						"			return 0;\n" +
+						"		return 1;\n	}\n}");
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure10_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
-				out.write("");
-				out.flush();
+				out.write("import org.voltdb.*;\n" +
+						"public class Procedure10_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT c_balance, c_first, c_middle, c_last FROM customer"+tenantId
+			+ " WHERE c_w_id = ? AND c_d_id = ? AND c_last = ? ORDER BY c_first\");\n" +
+			"	public long run(int c_w_id, int c_d_id, String c_last) throws VoltAbortException{\n" +
+			"		voltQueueSQL(sql, c_w_id, c_d_id, c_last);\n" +
+			"		VoltTable[] results = voltExecuteSQL();\n" +
+			"		if(results[0].getRowCount() == 0)\n" +
+			"			return 0;\n" +
+			"		return 1;\n	}\n}");
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure11_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
-				out.write("");
-				out.flush();
+				out.write("import org.voltdb.*;\n" +
+						"public class Procedure11_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT c_balance, c_first, c_middle, c_last FROM customer"+tenantId
+			+ " WHERE c_id = ? AND c_w_id = ? AND c_d_id = ?\");\n" +
+			"	public long run(int c_id, int c_w_id, int c_d_id) throws VoltAbortException{\n" +
+			"		voltQueueSQL(sql, c_id, c_w_id, c_d_id);\n" +
+			"		VoltTable[] results = voltExecuteSQL();\n" +
+			"		if(results[0].getRowCount() == 0)\n" +
+			"			return 0;\n" +
+			"		return 1;\n	}\n}");
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure12_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
-				out.write("");
-				out.flush();
+				out.write("import org.voltdb.*;\n" +
+						"public class Procedure12_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_delivery_d "
+					+ "FROM order_line"+tenantId+" WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ?\");\n" +
+					"	public long run(int ol_w_id, int ol_d_id,\n" +
+					"			int ol_o_id) throws VoltAbortException {\n" +
+					"		voltQueueSQL(sql, ol_w_id, ol_d_id, ol_o_id);\n" +
+					"		VoltTable[] results = voltExecuteSQL();\n" +
+					"		if (results[0].getRowCount() == 0)\n" +
+					"			return 0;\n" +
+					"		return 1;\n	}\n}");
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure13_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
-				out.write("");
-				out.flush();
+				out.write("import org.voltdb.*;\n" +
+						"public class Procedure13_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT COALESCE(MIN(no_o_id),0) FROM new_orders"+tenantId
+			+ " WHERE no_d_id = ? AND no_w_id = ?\");\n" +
+			"	public long run(int no_d_id, int no_w_id) throws VoltAbortException{\n" +
+			"		voltQueueSQL(sql, no_d_id, no_w_id);\n" +
+			"		VoltTable[] results = voltExecuteSQL();\n" +
+			"		if(results[0].getRowCount() == 0 || (results[0].fetchRow(0).getLong(0)) == 0)\n" +
+			"			return 0;\n" +
+			"		return 1;\n	}\n}");
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure14_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure15_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure16_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure17_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure18_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure19_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure20_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure21_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure22_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure23_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure24_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure25_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure26_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure27_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure28_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure29_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure30_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure31_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure32_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure33_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 				fstream = new FileWriter(path+"Procedure34_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("");
-				out.flush();
+				out.flush();out.close();
 				
 			}
-			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
