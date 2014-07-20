@@ -22,8 +22,8 @@ public class MMain {
 	public static long queryThisInterval = 0;
 
 	public static void main(String[] args){
-		numberOfThread = 1000;
-		timeInterval = 300000; //5 min
+		numberOfThread = 500;
+		timeInterval = 60000; //5 min
 		intervalNumber = 2;
 		double base = 0.34;
 		double step = 0.02 ;
@@ -51,7 +51,7 @@ public class MMain {
 			else copyTable = true;
 		}			
 		
-		initDBPara("jdbc:mysql://10.20.2.211/tpcc10", "remote", "remote");
+		initDBPara("jdbc:mysql://127.0.0.1/tpcc10", "root", "root");
 		Tenant.init(numberOfThread, MMain.dbURL, MMain.dbUserName, MMain.dbPassword, copyTable);
 		
 		Driver.IsActive = true;

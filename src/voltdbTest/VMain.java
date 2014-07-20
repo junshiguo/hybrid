@@ -19,11 +19,12 @@ public class VMain {
 	public static long queryThisInterval = 0;
 
 	public static void main(String[] args){
-		numberOfThread = 1000;
-		timeInterval = 30000; //5 min
+		serverlist = "10.20.2.211";
+		numberOfThread = 500;
+		timeInterval = 60000; 
 		intervalNumber = 2;
-		double base = 0.5;
-		double step = 0.0;
+		double base = 0.34;
+		double step = 0.02;
 		boolean copyTable = false;
 //		test.CopyTables(numberOfThread);
 		
@@ -49,19 +50,20 @@ public class VMain {
 			else copyTable = true;
 		}			
 		
-		initDBPara("10.20.2.211");
+		initDBPara(serverlist);
 		Tenant.init(numberOfThread, VMain.serverlist, copyTable);
 		
 		Driver.IsActive = true;
 		for(int i=0; i<numberOfThread; i++){
 			Tenant.tenants[i].start();
 		}
+		System.out.println("***************warm up***************");
 		try { //wait all thread connect to mysql and prepare statements and warm up
-			Thread.sleep(30000);
+			Thread.sleep(15000);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		//*********************start test***********************//
+		System.out.println("***************voltdb test start now***************");
 		startCount = true;
 		FileWriter fstream = null;
 		BufferedWriter out = null;
@@ -101,7 +103,7 @@ public class VMain {
 //				e.printStackTrace();
 //			}
 //		}
-		System.exit(0);
+//		System.exit(0);
 	}
 	
 	public static void initDBPara(String sl){
