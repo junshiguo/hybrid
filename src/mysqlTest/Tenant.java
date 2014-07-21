@@ -59,7 +59,7 @@ public class Tenant extends Thread {
 			System.out.println("DB connection problem...");
 			return;
 		}
-//		System.out.println("thread "+id+": db connected...");
+		System.out.println("thread "+id+": db connected...");
 		try {
 			sqlPrepare0();
 //			System.out.println("thread "+id+": sql prepared...");
