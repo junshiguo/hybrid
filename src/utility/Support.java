@@ -1,5 +1,6 @@
 package utility;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -128,6 +129,14 @@ public class Support {
 			return sum/list.size();
 		}
 		return sum;
+	}
+	
+	public static String getTimeStamp(){
+		java.util.Date  date=new java.util.Date();
+		String ret = new Timestamp(date.getTime()).toString();
+		int ooo = ret.lastIndexOf(".");
+		if(ooo != -1) ret.substring(0, ooo);
+		return ret;
 	}
 	
 }

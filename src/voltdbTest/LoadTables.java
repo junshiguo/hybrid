@@ -21,7 +21,7 @@ public class LoadTables {
 		voltdbConn = DBManager.connectVoltdb("127.0.0.1");
 		System.out.println("db connected...");
 //		tenantNumber = Main.numberOfThread;
-		tenantNumber = 1000;
+		tenantNumber = 100;
 		loadData();
 	}
 	
@@ -30,11 +30,11 @@ public class LoadTables {
 		int tenantId = 0;
 		try {
 			Statement stmt = conn.createStatement();
-			for(tenantId=0; tenantId<tenantNumber; tenantId++){
+			for(tenantId=1; tenantId<tenantNumber; tenantId++){
 				//********************load warehouse******************//
 				ResultSet rs = stmt.executeQuery("SELECT  * FROM warehouse"+tenantId);
 				while(rs.next()){
-					voltdbConn.callProcedure("ProcedureInsertWarehouse", tenantId, rs.getInt("w_id"), 
+					voltdbConn.callProcedure("ProcedureInsertWarehouse_"+tenantId, rs.getInt("w_id"), 
 							rs.getString("w_name"), rs.getString("w_street_1"), rs.getString("w_street_2"), rs.getString("w_city"), 
 							rs.getString("w_state"), rs.getString("w_zip"), rs.getDouble("w_tax"), rs.getDouble("w_ytd"), 
 							0, 0);
@@ -42,7 +42,7 @@ public class LoadTables {
 				//*******************load district************************//
 				rs = stmt.executeQuery("SELECT * FROM district"+tenantId);
 				while(rs.next()){
-					voltdbConn.callProcedure("ProcedureInsertDistrict", tenantId, rs.getInt("d_id"), rs.getInt("d_w_id"), 
+					voltdbConn.callProcedure("ProcedureInsertDistrict_"+tenantId, rs.getInt("d_id"), rs.getInt("d_w_id"), 
 							rs.getString("d_name"), rs.getString("d_street_1"), rs.getString("d_street_2"), rs.getString("d_city"), 
 							rs.getString("d_state"), rs.getString("d_zip"),	rs.getDouble("d_tax"), rs.getDouble("d_ytd"), 
 							rs.getInt("d_next_o_id"), 0, 0);
@@ -50,7 +50,7 @@ public class LoadTables {
 				//******************load customer**************************//
 				rs = stmt.executeQuery("SELECT * FROM customer"+tenantId );
 				while(rs.next()){
-					voltdbConn.callProcedure("ProcedureInsertCustomer", tenantId, rs.getInt("c_id"), rs.getInt("c_d_id"), 
+					voltdbConn.callProcedure("ProcedureInsertCustomer_"+tenantId, rs.getInt("c_id"), rs.getInt("c_d_id"), 
 							rs.getInt("c_w_id"), rs.getString("c_first"), rs.getString("c_middle"), rs.getString("c_last"),
 							rs.getString("c_street_1"), rs.getString("c_street_2"), rs.getString("c_city"),rs.getString("c_state"),
 							rs.getString("c_zip"), rs.getString("c_phone"), rs.getTimestamp("c_since"), 
@@ -61,7 +61,7 @@ public class LoadTables {
 				//******************load history*****************************//
 				rs = stmt.executeQuery("SELECT * FROM history"+tenantId );
 				while(rs.next()){
-					voltdbConn.callProcedure("ProcedureInsertHistory", tenantId, rs.getInt("h_c_id"), rs.getInt("h_c_d_id"), 
+					voltdbConn.callProcedure("ProcedureInsertHistory_"+tenantId, rs.getInt("h_c_id"), rs.getInt("h_c_d_id"), 
 							rs.getInt("h_c_w_id"), rs.getInt("h_d_id"), rs.getInt("h_w_id"), 
 							rs.getTimestamp("h_date"), rs.getDouble("h_amount"), rs.getString("h_data"),
 							0, 0);
@@ -69,13 +69,13 @@ public class LoadTables {
 				//*******************load new orders*************************//
 				rs = stmt.executeQuery("SELECT * FROM new_orders"+tenantId );
 				while(rs.next()){
-					voltdbConn.callProcedure("ProcedureInsertNewOrders", tenantId, rs.getInt("no_o_id"), rs.getInt("no_d_id"), 
+					voltdbConn.callProcedure("ProcedureInsertNewOrders_"+tenantId, rs.getInt("no_o_id"), rs.getInt("no_d_id"), 
 							rs.getInt("no_w_id"), 0, 0);
 				}
 				//******************load orders******************************//
 				rs = stmt.executeQuery("SELECT * FROM orders"+tenantId );
 				while(rs.next()){
-					voltdbConn.callProcedure("ProcedureInsertOrders", tenantId, rs.getInt("o_id"), rs.getInt("o_d_id"),
+					voltdbConn.callProcedure("ProcedureInsertOrders_"+tenantId, rs.getInt("o_id"), rs.getInt("o_d_id"),
 							rs.getInt("o_w_id"), rs.getInt("o_c_id"),
 							rs.getTimestamp("o_entry_d"), 
 							rs.getInt("o_carrier_id"), rs.getInt("o_ol_cnt"), rs.getInt("o_all_local"), 0, 0);
@@ -83,7 +83,7 @@ public class LoadTables {
 				//***********************load order line********************//
 				rs = stmt.executeQuery("SELECT * FROM order_line"+tenantId );
 				while(rs.next()){
-					voltdbConn.callProcedure("ProcedureInsertOrderLine", tenantId, rs.getInt("ol_o_id"), rs.getInt("ol_d_id"), 
+					voltdbConn.callProcedure("ProcedureInsertOrderLine_"+tenantId, rs.getInt("ol_o_id"), rs.getInt("ol_d_id"), 
 							rs.getInt("ol_w_id"), rs.getInt("ol_number"), rs.getInt("ol_i_id"), rs.getInt("ol_supply_w_id"),
 							rs.getTimestamp("ol_delivery_d"), 
 							rs.getInt("ol_quantity"), rs.getDouble("ol_amount"), rs.getString("ol_dist_info"), 0, 0);
@@ -91,14 +91,14 @@ public class LoadTables {
 				//********************load item***************************//
 				rs = stmt.executeQuery("SELECT * FROM item"+tenantId );
 				while(rs.next()){
-					voltdbConn.callProcedure("ProcedureInsertItem", tenantId, rs.getInt("i_id"), rs.getInt("i_im_id"), 
+					voltdbConn.callProcedure("ProcedureInsertItem_"+tenantId, rs.getInt("i_id"), rs.getInt("i_im_id"), 
 							rs.getString("i_name"), rs.getDouble("i_price"), rs.getString("i_data"), 
 							0, 0);
 				}
 				//*********************load stock*************************//
 				rs = stmt.executeQuery("SELECT * FROM stock"+tenantId );
 				while(rs.next()){
-					voltdbConn.callProcedure("ProcedureInsertStock", tenantId, rs.getInt("s_i_id"), rs.getInt("s_w_id"),
+					voltdbConn.callProcedure("ProcedureInsertStock_"+tenantId, rs.getInt("s_i_id"), rs.getInt("s_w_id"),
 							rs.getInt("s_quantity"), rs.getString("s_dist_01"), rs.getString("s_dist_02"), rs.getString("s_dist_03"), 
 							rs.getString("s_dist_04"), rs.getString("s_dist_05"), rs.getString("s_dist_06"), rs.getString("s_dist_07"), 
 							rs.getString("s_dist_08"), rs.getString("s_dist_09"), rs.getString("s_dist_10"), rs.getDouble("s_ytd"), 

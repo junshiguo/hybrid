@@ -113,8 +113,8 @@ public class Driver {
 			case 4:
 				w_id = Support.RandomNumber(min_ware,max_ware);
 				d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
-				para[0] = w_id; paraType[0] = Driver.TYPE_INT;
-				para[1] = d_id; paraType[1] = Driver.TYPE_INT;
+				para[0] = d_id; paraType[0] = Driver.TYPE_INT;
+				para[1] = w_id; paraType[1] = Driver.TYPE_INT;
 				doSQL(Id, 4, 2, para, paraType);
 				break;
 			case 5:
@@ -139,18 +139,18 @@ public class Driver {
 				c_w_id = Support.RandomNumber(min_ware,max_ware);
 				c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				c_id = Support.RandomNumber(1,Driver.CUST_PER_DIST);
-				para[0] = c_w_id; paraType[0] = Driver.TYPE_INT;
-				para[1] = c_d_id; paraType[1] = Driver.TYPE_INT;
-				para[2] = c_id; paraType[2] = Driver.TYPE_INT;
+				para[1] = c_w_id; paraType[0] = Driver.TYPE_INT;
+				para[2] = c_d_id; paraType[1] = Driver.TYPE_INT;
+				para[0] = c_id; paraType[2] = Driver.TYPE_INT;
 				doSQL(Id, 7, 3, para, paraType);
 				break;
 			case 8:
 				c_w_id = Support.RandomNumber(min_ware,max_ware);
 				c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				c_id = Support.RandomNumber(1,Driver.CUST_PER_DIST);
-				para[0] = c_w_id; paraType[0] = Driver.TYPE_INT;
-				para[1] = c_d_id; paraType[1] = Driver.TYPE_INT;
-				para[2] = c_id; paraType[2] = Driver.TYPE_INT;
+				para[1] = c_w_id; paraType[0] = Driver.TYPE_INT;
+				para[2] = c_d_id; paraType[1] = Driver.TYPE_INT;
+				para[0] = c_id; paraType[2] = Driver.TYPE_INT;
 				doSQL(Id, 8, 3, para, paraType);
 				break;
 			case 9:
@@ -179,9 +179,9 @@ public class Driver {
 				c_w_id = Support.RandomNumber(min_ware,max_ware); 
 				c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				c_id = Support.RandomNumber(1,Driver.CUST_PER_DIST);
-				para[0] = c_w_id; 	paraType[0] = Driver.TYPE_INT;
-				para[1] = c_d_id; 	paraType[1] = Driver.TYPE_INT;
-				para[2] = c_id; 	paraType[2] = Driver.TYPE_INT;
+				para[1] = c_w_id; 	paraType[0] = Driver.TYPE_INT;
+				para[2] = c_d_id; 	paraType[1] = Driver.TYPE_INT;
+				para[0] = c_id; 	paraType[2] = Driver.TYPE_INT;
 				doSQL(Id, 11, 3, para, paraType);
 				break;
 			case 12:
@@ -213,9 +213,9 @@ public class Driver {
 				ol_o_id = Support.RandomNumber(1,Driver.ORD_PER_DIST);
 				ol_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				ol_w_id = Support.RandomNumber(min_ware,max_ware);
-				para[0] = ol_o_id;	paraType[0] = Driver.TYPE_INT;
-				para[1] = ol_d_id;	paraType[1] = Driver.TYPE_INT;
-				para[2] = ol_w_id;	paraType[2] = Driver.TYPE_INT;
+				para[1] = ol_o_id;	paraType[0] = Driver.TYPE_INT;
+				para[2] = ol_d_id;	paraType[1] = Driver.TYPE_INT;
+				para[0] = ol_w_id;	paraType[2] = Driver.TYPE_INT;
 				doSQL(Id, 15, 3, para, paraType);
 				break;
 			case 16:
@@ -239,8 +239,8 @@ public class Driver {
 				s_w_id = Support.RandomNumber(min_ware,max_ware);
 				s_i_id = Support.RandomNumber(1,MAXITEMS);
 				s_quantity = Support.RandomNumber(10,100);
-				para[0] = s_w_id; 		paraType[0] = Driver.TYPE_INT;
-				para[1] = s_i_id;	 	paraType[1] = Driver.TYPE_INT;
+				para[1] = s_w_id; 		paraType[0] = Driver.TYPE_INT;
+				para[0] = s_i_id;	 	paraType[1] = Driver.TYPE_INT;
 				para[2] = s_quantity; 	paraType[2] = Driver.TYPE_INT;
 				doSQL(Id, 18, 3, para, paraType);
 				break;
@@ -287,8 +287,8 @@ public class Driver {
 				no_o_id = Support.RandomNumber(1,Driver.ORD_PER_DIST);
 				no_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				no_w_id = Support.RandomNumber(min_ware,max_ware);
-				para[0] = no_o_id;	paraType[0] = Driver.TYPE_INT;
-				para[1] = no_d_id;	paraType[1] = Driver.TYPE_INT;
+				para[1] = no_o_id;	paraType[0] = Driver.TYPE_INT;
+				para[0] = no_d_id;	paraType[1] = Driver.TYPE_INT;
 				para[2] = no_w_id;	paraType[2] = Driver.TYPE_INT;
 				doSQL(Id, 22, 3, para, paraType);
 				break;
@@ -302,9 +302,9 @@ public class Driver {
 				ol_quantity = 5;
 				ol_amount = 0.0;
 				ol_dist_info = Support.MakeAlphaString(24,24);
-				para[0] = ol_o_id;		paraType[0] = Driver.TYPE_INT;
+				para[2] = ol_o_id;		paraType[0] = Driver.TYPE_INT;
 				para[1] = ol_d_id;		paraType[1] = Driver.TYPE_INT;
-				para[2] = ol_w_id;		paraType[2] = Driver.TYPE_INT;
+				para[0] = ol_w_id;		paraType[2] = Driver.TYPE_INT;
 				para[3] = ol_number;	paraType[3] = Driver.TYPE_INT;
 				para[4] = ol_i_id;		paraType[4] = Driver.TYPE_INT;
 				para[5] = ol_supply_w_id;	paraType[5] = Driver.TYPE_INT;
@@ -325,9 +325,9 @@ public class Driver {
 				if(hhh != -1) h_date = h_date.substring(0, hhh);
 				h_amount = 10.0;
 				h_data = Support.MakeAlphaString(12,24);
-				para[0] = h_c_d_id;		paraType[0] = Driver.TYPE_INT;
-				para[1] = h_c_w_id;		paraType[1] = Driver.TYPE_INT;
-				para[2] = h_c_id;		paraType[2] = Driver.TYPE_INT;
+				para[1] = h_c_d_id;		paraType[0] = Driver.TYPE_INT;
+				para[2] = h_c_w_id;		paraType[1] = Driver.TYPE_INT;
+				para[0] = h_c_id;		paraType[2] = Driver.TYPE_INT;
 				para[3] = h_d_id;		paraType[3] = Driver.TYPE_INT;
 				para[4] = h_w_id;		paraType[4] = Driver.TYPE_INT;
 				para[5] = h_date;		paraType[5] = Driver.TYPE_STRING;
@@ -346,25 +346,25 @@ public class Driver {
 				s_quantity = Support.RandomNumber(10,100);
 				s_i_id = Support.RandomNumber(1,MAXITEMS);
 				s_w_id = Support.RandomNumber(min_ware,max_ware);
-				para[0] = s_quantity;	paraType[0] = Driver.TYPE_INT;
-				para[1] = s_i_id;		paraType[1] = Driver.TYPE_INT;
+				para[1] = s_quantity;	paraType[0] = Driver.TYPE_INT;
+				para[0] = s_i_id;		paraType[1] = Driver.TYPE_INT;
 				para[2] = s_w_id;		paraType[2] = Driver.TYPE_INT;
 				doSQL(Id, 26, 3, para, paraType);
 				break;
 			case 27:
 				h_amount = 10.0;
 				w_id = Support.RandomNumber(min_ware,max_ware);
-				para[0] = h_amount;	paraType[0] = Driver.TYPE_DOUBLE;
-				para[1] = w_id;		paraType[1] = Driver.TYPE_INT;
+				para[1] = h_amount;	paraType[0] = Driver.TYPE_DOUBLE;
+				para[0] = w_id;		paraType[1] = Driver.TYPE_INT;
 				doSQL(Id, 27, 2, para, paraType);
 				break;
 			case 28:
 				h_amount = 10.0;
 				d_w_id = Support.RandomNumber(min_ware,max_ware);
 				d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
-				para[0] = h_amount;	paraType[0] = Driver.TYPE_DOUBLE;
-				para[1] = d_w_id;	paraType[1] = Driver.TYPE_INT;
-				para[2] = d_id;		paraType[2] = Driver.TYPE_INT;
+				para[1] = h_amount;	paraType[0] = Driver.TYPE_DOUBLE;
+				para[2] = d_w_id;	paraType[1] = Driver.TYPE_INT;
+				para[0] = d_id;		paraType[2] = Driver.TYPE_INT;
 				doSQL(Id, 28, 3, para, paraType);
 				break;
 			case 29:
@@ -373,11 +373,11 @@ public class Driver {
 				c_w_id = Support.RandomNumber(min_ware,max_ware);
 				c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				c_id = Support.RandomNumber(1,Driver.CUST_PER_DIST);
-				para[0] = c_balance;	paraType[0] = Driver.TYPE_DOUBLE;
-				para[1] = c_data;	paraType[1] = Driver.TYPE_STRING;
-				para[2] = c_w_id;	paraType[2] = Driver.TYPE_INT;
-				para[3] = c_d_id;	paraType[3] = Driver.TYPE_INT;
-				para[4] = c_id;		paraType[4]	= Driver.TYPE_INT;
+				para[1] = c_balance;	paraType[0] = Driver.TYPE_DOUBLE;
+				para[2] = c_data;	paraType[1] = Driver.TYPE_STRING;
+				para[3] = c_w_id;	paraType[2] = Driver.TYPE_INT;
+				para[4] = c_d_id;	paraType[3] = Driver.TYPE_INT;
+				para[0] = c_id;		paraType[4]	= Driver.TYPE_INT;
 				doSQL(Id, 29, 5, para, paraType);
 				break;
 			case 30:
@@ -385,10 +385,10 @@ public class Driver {
 				c_w_id = Support.RandomNumber(min_ware,max_ware);
 				c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				c_id = Support.RandomNumber(1, Driver.CUST_PER_DIST);
-				para[0] = c_balance;	paraType[0] = Driver.TYPE_DOUBLE;
-				para[1] = c_w_id;	paraType[1] = Driver.TYPE_INT;
-				para[2] = c_d_id;	paraType[2] = Driver.TYPE_INT;
-				para[3] = c_id;		paraType[3] = Driver.TYPE_INT;
+				para[1] = c_balance;	paraType[0] = Driver.TYPE_DOUBLE;
+				para[2] = c_w_id;	paraType[1] = Driver.TYPE_INT;
+				para[3] = c_d_id;	paraType[2] = Driver.TYPE_INT;
+				para[0] = c_id;		paraType[3] = Driver.TYPE_INT;
 				doSQL(Id, 30, 4, para, paraType);
 				break;
 			case 31:
@@ -396,8 +396,8 @@ public class Driver {
 				o_id = Support.RandomNumber(1,Driver.ORD_PER_DIST);
 				o_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				o_w_id = Support.RandomNumber(min_ware,max_ware);
-				para[0] = o_carrier_id;	paraType[0] = Driver.TYPE_INT;
-				para[1] = o_id;			paraType[1] = Driver.TYPE_INT;
+				para[1] = o_carrier_id;	paraType[0] = Driver.TYPE_INT;
+				para[0] = o_id;			paraType[1] = Driver.TYPE_INT;
 				para[2] = o_d_id;		paraType[2] = Driver.TYPE_INT;
 				para[3] = o_w_id;		paraType[3] = Driver.TYPE_INT;
 				doSQL(Id, 31, 4, para, paraType);
@@ -410,10 +410,10 @@ public class Driver {
 				ol_o_id = Support.RandomNumber(1,Driver.ORD_PER_DIST);
 				ol_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				ol_w_id = Support.RandomNumber(min_ware,max_ware);
-				para[0] = ol_delivery_d;	paraType[0] = Driver.TYPE_STRING;
-				para[1] = ol_o_id;			paraType[1] = Driver.TYPE_INT;
-				para[2] = ol_d_id;		paraType[2] = Driver.TYPE_INT;
-				para[3] = ol_w_id;		paraType[3] = Driver.TYPE_INT;
+				para[1] = ol_delivery_d;	paraType[0] = Driver.TYPE_STRING;
+				para[2] = ol_o_id;			paraType[1] = Driver.TYPE_INT;
+				para[3] = ol_d_id;		paraType[2] = Driver.TYPE_INT;
+				para[0] = ol_w_id;		paraType[3] = Driver.TYPE_INT;
 				doSQL(Id, 32, 4, para, paraType);
 				break;
 			case 33:
@@ -421,8 +421,8 @@ public class Driver {
 				c_id = Support.RandomNumber(1,Driver.CUST_PER_DIST);
 				c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				c_w_id = Support.RandomNumber(min_ware,max_ware);
-				para[0] = c_balance;	paraType[0] = Driver.TYPE_DOUBLE;
-				para[1] = c_id;			paraType[1] = Driver.TYPE_INT;
+				para[1] = c_balance;	paraType[0] = Driver.TYPE_DOUBLE;
+				para[0] = c_id;			paraType[1] = Driver.TYPE_INT;
 				para[2] = c_d_id;		paraType[2] = Driver.TYPE_INT;
 				para[3] = c_w_id;		paraType[3] = Driver.TYPE_INT;
 				doSQL(Id, 33, 4, para, paraType);
@@ -431,8 +431,8 @@ public class Driver {
 				no_o_id = Support.RandomNumber(1,Driver.ORD_PER_DIST);
 				no_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
 				no_w_id = Support.RandomNumber(min_ware,max_ware);
-				para[0] = no_o_id;	paraType[0] = Driver.TYPE_INT;
-				para[1] = no_d_id;	paraType[1] = Driver.TYPE_INT;
+				para[1] = no_o_id;	paraType[0] = Driver.TYPE_INT;
+				para[0] = no_d_id;	paraType[1] = Driver.TYPE_INT;
 				para[2] = no_w_id;	paraType[2] = Driver.TYPE_INT;
 				doSQL(Id, 34, 3, para, paraType);
 				break;

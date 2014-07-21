@@ -1,3 +1,4 @@
+
 import org.voltdb.*;
 
 public class ProcedureInsertNewOrders extends VoltProcedure {

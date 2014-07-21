@@ -1,3 +1,4 @@
+
 import org.voltdb.*;
 
 public class ProcedureInsertHistory extends VoltProcedure {

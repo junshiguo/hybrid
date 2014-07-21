@@ -12,7 +12,7 @@ public class CleanData {
 	public static Client client;
 	
 	public static void main(String[] args) throws NoConnectionsException, IOException, ProcCallException{
-		client = DBManager.connectVoltdb("10.20.2.211");
+		client = DBManager.connectVoltdb("127.0.0.1");
 		for(int i = 0; i < 9; i++){
 			client.callProcedure("PRTruncateAll", i);
 		}

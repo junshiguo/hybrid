@@ -1,4 +1,5 @@
 
+
 import org.voltdb.*;
 
 public class PRTruncateAll extends VoltProcedure {

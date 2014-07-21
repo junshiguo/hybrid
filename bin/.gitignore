@@ -1,3 +1,5 @@
+/oldProc/
+/utility/
 /PRDeleteAllCustomer.class
 /PRDeleteAllDistrict.class
 /PRDeleteAllHistory.class
@@ -64,18 +66,11 @@
 /ProcedureInsertWarehouse.class
 /ProcedureSelectCustomer.class
 /ProcedureSelectDistrict.class
+/ProcedureSelectItem.class
+/ProcedureSelectNewOrders.class
 /ProcedureSelectOrderLine.class
 /ProcedureSelectOrders.class
 /ProcedureSelectStock.class
 /ProcedureSelectWarehouse.class
-/hybridTest/
-/mysqlTest/
-/utility/
 /voltdbTest/
-/retrivers/
-/ProcedureSelectHistory.class
-/ProcedureSelectNewOrders.class
-/ProcedureSelectItem.class
-/hybridServer/
-/hybridConfig/
-/hybridController/
+/mysqlTest/

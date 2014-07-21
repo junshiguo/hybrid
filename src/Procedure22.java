@@ -1,5 +1,6 @@
 
 
+
 import org.voltdb.*;
 
 public class Procedure22 extends VoltProcedure {
