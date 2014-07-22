@@ -19,47 +19,50 @@ public class VMain {
 	public static long queryThisInterval = 0;
 
 	public static void main(String[] args){
-		serverlist = "10.20.2.211";
-		numberOfThread = 500;
+		serverlist = "127.0.0.1";
+		numberOfThread = 100;
 		timeInterval = 60000; 
-		intervalNumber = 2;
-		double base = 0.34;
+		intervalNumber = 5;
+		double base = 0.90;
 		double step = 0.02;
 		boolean copyTable = false;
 //		test.CopyTables(numberOfThread);
 		
 		//*******************init para from args*****************//
 		if(args.length > 0){
-			numberOfThread = Integer.parseInt(args[0]);
+			serverlist = args[0].trim();
 		}
 		if(args.length > 1){
-			timeInterval = Long.parseLong(args[1])*1000;
+			numberOfThread = Integer.parseInt(args[1]);
 		}
 		if(args.length > 2){
-			intervalNumber = Integer.parseInt(args[2]);
+			timeInterval = Long.parseLong(args[2])*1000;
 		}
 		if(args.length > 3){
-			base = Double.parseDouble(args[3]);
+			intervalNumber = Integer.parseInt(args[3]);
 		}
 		if(args.length > 4){
-			step = Double.parseDouble(args[4]);
+			base = Double.parseDouble(args[4]);
 		}
-		if(args.length > 5 && args[5] != null){
-			int b = Integer.parseInt(args[5]);
+		if(args.length > 5){
+			step = Double.parseDouble(args[5]);
+		}
+		if(args.length > 6 && args[6] != null){
+			int b = Integer.parseInt(args[6]);
 			if(b == 0) copyTable = false;
 			else copyTable = true;
 		}			
 		
 		initDBPara(serverlist);
-		Tenant.init(numberOfThread, VMain.serverlist, copyTable);
+		VTenant.init(numberOfThread, VMain.serverlist, copyTable);
 		
-		Driver.IsActive = true;
+		VDriver.IsActive = true;
 		for(int i=0; i<numberOfThread; i++){
-			Tenant.tenants[i].start();
+			VTenant.tenants[i].start();
 		}
 		System.out.println("***************warm up***************");
 		try { //wait all thread connect to mysql and prepare statements and warm up
-			Thread.sleep(15000);
+			Thread.sleep(10000);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
@@ -73,24 +76,27 @@ public class VMain {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		double wptmp = base;
 		for(int i=0; i<intervalNumber; i++){
 			try {
 				for(int j=0; j<numberOfThread; j++){
-					Tenant.tenants[j].setSequence(i*step+base);
+//					VTenant.tenants[j].setSequence(i*step+base);
+					VTenant.tenants[j].setSequence(wptmp);
 				}
 				queryThisInterval = 0;
 				currentInterval = i;
 				Thread.sleep(timeInterval);
 				System.out.println("Interval "+i+" finished! (Total: "+intervalNumber+" intervals...)");
 				long throughput = queryThisInterval * 60000/ timeInterval;
-				out.write(""+(i*step+base)+" "+throughput);
+				out.write(""+(wptmp)+" "+throughput);
 				out.newLine();out.flush();
+				wptmp += step;
 			} catch (InterruptedException | IOException e) {
 				e.printStackTrace();
 			}
 		}
 		startCount = false;
-		Driver.IsActive = false;
+		VDriver.IsActive = false;
 		try {
 			out.close();
 		} catch (IOException e) {
@@ -103,7 +109,7 @@ public class VMain {
 //				e.printStackTrace();
 //			}
 //		}
-//		System.exit(0);
+		System.exit(0);
 	}
 	
 	public static void initDBPara(String sl){

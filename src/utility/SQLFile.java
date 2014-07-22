@@ -24,7 +24,7 @@ public class SQLFile {
 						+ ", CONSTRAINT c"+tenantId+"_hash PRIMARY KEY (c_id, c_w_id, c_d_id)) ;");
 				out.newLine();
 				out.write("create table history"+tenantId+" (h_c_id int not null, h_c_d_id tinyint, h_c_w_id smallint,h_d_id tinyint,h_w_id smallint,h_date TIMESTAMP,h_amount decimal(6,2),h_data varchar(24),is_insert int,is_update int "
-						+ ");");
+						+ ", CONSTRAINT h"+tenantId+"_hash PRIMARY KEY (h_c_id, h_c_d_id, h_c_w_id));");
 				out.newLine();
 				out.write("create table new_orders"+tenantId+" (no_o_id int not null,no_d_id tinyint not null,no_w_id smallint not null,is_insert int,is_update int"
 						+ ", CONSTRAINT no"+tenantId+"_hash PRIMARY KEY (no_w_id, no_d_id, no_o_id));");
@@ -66,30 +66,30 @@ public class SQLFile {
 				out.write("PARTITION TABLE stock"+tenantId+" ON COLUMN s_i_id;\n");
 			}
 			
-			for(int tenantId = 0; tenantId < tenantNumber; tenantId++){
+//			for(int tenantId = 0; tenantId < tenantNumber; tenantId++){
 //				for(int id = 0; id < 35; id++){
 //					out.write("CREATE PROCEDURE FROM CLASS Procedure"+id+"_"+tenantId+";");
 //					out.newLine();
 //				}
-				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertCustomer_"+tenantId+";");
-				out.newLine();
-				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertDistrict_"+tenantId+";");
-				out.newLine();
-				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertHistory_"+tenantId+";");
-				out.newLine();
-				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertItem_"+tenantId+";");
-				out.newLine();
-				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertNewOrders_"+tenantId+";");
-				out.newLine();
-				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertOrderLine_"+tenantId+";");
-				out.newLine();
-				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertOrders_"+tenantId+";");
-				out.newLine();
-				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertStock_"+tenantId+";");
-				out.newLine();
-				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertWarehouse_"+tenantId+";");
-				out.newLine();
-				out.newLine();
+//				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertCustomer_"+tenantId+";");
+//				out.newLine();
+//				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertDistrict_"+tenantId+";");
+//				out.newLine();
+//				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertHistory_"+tenantId+";");
+//				out.newLine();
+//				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertItem_"+tenantId+";");
+//				out.newLine();
+//				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertNewOrders_"+tenantId+";");
+//				out.newLine();
+//				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertOrderLine_"+tenantId+";");
+//				out.newLine();
+//				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertOrders_"+tenantId+";");
+//				out.newLine();
+//				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertStock_"+tenantId+";");
+//				out.newLine();
+//				out.write("CREATE PROCEDURE FROM CLASS ProcedureInsertWarehouse_"+tenantId+";");
+//				out.newLine();
+//				out.newLine();
 //				out.write("PARTITION PROCEDURE Procedure0_"+tenantId+" ON TABLE district"+tenantId+" COLUMN d_id;\n");
 //				out.write("PARTITION PROCEDURE Procedure1_"+tenantId+" ON TABLE item"+tenantId+" COLUMN i_id;\n");
 //				out.write("PARTITION PROCEDURE Procedure2_"+tenantId+" ON TABLE stock"+tenantId+" COLUMN s_i_id;\n");
@@ -125,17 +125,17 @@ public class SQLFile {
 //				out.write("PARTITION PROCEDURE Procedure32_"+tenantId+" ON TABLE order_line"+tenantId+" COLUMN ol_w_id;\n");
 //				out.write("PARTITION PROCEDURE Procedure33_"+tenantId+" ON TABLE customer"+tenantId+" COLUMN c_id;\n");
 //				out.write("PARTITION PROCEDURE Procedure34_"+tenantId+" ON TABLE new_orders"+tenantId+" COLUMN no_d_id;\n");
-				out.write("PARTITION PROCEDURE ProcedureInsertCustomer_"+tenantId+" ON TABLE customer"+tenantId+" COLUMN c_id;\n");
-				out.write("PARTITION PROCEDURE ProcedureInsertDistrict_"+tenantId+" ON TABLE district"+tenantId+" COLUMN d_id;\n");
-				out.write("PARTITION PROCEDURE ProcedureInsertHistory_"+tenantId+" ON TABLE history"+tenantId+" COLUMN h_c_id;\n");
-				out.write("PARTITION PROCEDURE ProcedureInsertItem_"+tenantId+" ON TABLE item"+tenantId+" COLUMN i_id;\n");
-				out.write("PARTITION PROCEDURE ProcedureInsertNewOrders_"+tenantId+" ON TABLE new_orders"+tenantId+" COLUMN no_o_id;\n");
-				out.write("PARTITION PROCEDURE ProcedureInsertOrderLine_"+tenantId+" ON TABLE order_line"+tenantId+" COLUMN ol_o_id;\n");
-				out.write("PARTITION PROCEDURE ProcedureInsertOrders_"+tenantId+" ON TABLE orders"+tenantId+" COLUMN o_id;\n");
-				out.write("PARTITION PROCEDURE ProcedureInsertStock_"+tenantId+" ON TABLE stock"+tenantId+" COLUMN s_i_id;\n");
-				out.write("PARTITION PROCEDURE ProcedureInsertWarehouse_"+tenantId+" ON TABLE warehouse"+tenantId+" COLUMN w_id;\n");
-				out.newLine();
-			}
+//				out.write("PARTITION PROCEDURE ProcedureInsertCustomer_"+tenantId+" ON TABLE customer"+tenantId+" COLUMN c_id;\n");
+//				out.write("PARTITION PROCEDURE ProcedureInsertDistrict_"+tenantId+" ON TABLE district"+tenantId+" COLUMN d_id;\n");
+//				out.write("PARTITION PROCEDURE ProcedureInsertHistory_"+tenantId+" ON TABLE history"+tenantId+" COLUMN h_c_id;\n");
+//				out.write("PARTITION PROCEDURE ProcedureInsertItem_"+tenantId+" ON TABLE item"+tenantId+" COLUMN i_id;\n");
+//				out.write("PARTITION PROCEDURE ProcedureInsertNewOrders_"+tenantId+" ON TABLE new_orders"+tenantId+" COLUMN no_o_id;\n");
+//				out.write("PARTITION PROCEDURE ProcedureInsertOrderLine_"+tenantId+" ON TABLE order_line"+tenantId+" COLUMN ol_o_id;\n");
+//				out.write("PARTITION PROCEDURE ProcedureInsertOrders_"+tenantId+" ON TABLE orders"+tenantId+" COLUMN o_id;\n");
+//				out.write("PARTITION PROCEDURE ProcedureInsertStock_"+tenantId+" ON TABLE stock"+tenantId+" COLUMN s_i_id;\n");
+//				out.write("PARTITION PROCEDURE ProcedureInsertWarehouse_"+tenantId+" ON TABLE warehouse"+tenantId+" COLUMN w_id;\n");
+//				out.newLine();
+//			}
 			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();

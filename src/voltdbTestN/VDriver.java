@@ -1,4 +1,4 @@
-package voltdbTest;
+package voltdbTestN;
 
 import java.io.IOException;
 import java.util.Random;
@@ -99,11 +99,14 @@ public class VDriver {
 	Object[] paratmp = new Object[30];
 	Object[] PK = new Object[5];
 	int paraNumber, paratmpNumber, PKNumber;
+	int connectionId, tenantId;
 	
-	public VDriver(int Id) {
+	public VDriver(int Id, int cid) {
+		this.connectionId = cid;
+		this.tenantId = Id;
 		// int[] paraType = new int[30];
 		while (VDriver.IsActive) { // initiate parameter
-			int seq = VTenant.tenants[Id].sequence.nextSequence();
+			int seq = VTenant.tenants[tenantId].sequence.nextSequence();
 //			if (seq == 32) { //history insert
 //				para[0] = h_c_id = Support.RandomNumber(1,VDriver.CUST_PER_DIST);
 //				para[1] = h_c_d_id = Support.RandomNumber(1,VDriver.DIST_PER_WARE);
@@ -562,33 +565,19 @@ public class VDriver {
 			if(success){
 				VMain.queryThisInterval ++;
 			}else {
-//				System.out.print(".");
+				VMain.RETRY++;
 				System.out.println("sql failure! tenant id: "+threadId+", sql id: "+sqlId);
-				System.exit(0);
-			}
-//			if(success && VDriver.IsActive && VMain.startCount){
-//				VMain.queryThisInterval ++;
-//				return;
-//			}else if(!success && VDriver.IsActive & VMain.startCount){
-////				System.out.print(".");
-//				System.out.println("sql failure! tenant id: "+threadId+", sql id: "+sqlId);
 //				System.exit(0);
-//			}else if(!VDriver.IsActive){
-//				return;
-//			}
+			}
+		}
+		if(success == false){
+			VMain.RETRY --;
 		}
 	}
 
 	public boolean doSQLOnce(int threadId, int sqlId, int paraNumber, Object[] para) {
 		ClientResponse response = null;
 		try{
-//			if(sqlId == 32){
-//				try{
-//					response = VTenant.tenants[threadId].voltdbConn.callProcedure("HISTORY"+threadId+".insert", para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10]);
-//				}catch(Exception e){
-//				}
-//				return true;
-//			}
 			int tableId = sqlId % 9;
 			int queryId = sqlId / 9;
 			if(queryId == 3){
@@ -605,13 +594,8 @@ public class VDriver {
 				return false;
 			}
 			return true;
-//			long rets = response.getResults()[0].asScalarLong();
-//			if(rets == 0  )
-//				return false;
-//			else return true;
 		}catch(IOException | ProcCallException e){
-			System.out.println("Exception: thread "+threadId+" sql no. "+sqlId);
-			e.printStackTrace();
+//			e.printStackTrace();
 			return false;
 		}
 	}
@@ -620,64 +604,64 @@ public class VDriver {
 		ClientResponse response = null;
 		switch(paraNumber){
 		case 1:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0]);
 			break;
 		case 2:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1]);
 			break;
 		case 3:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2]);
 			break;
 		case 4:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3]);
 			break;
 		case 5:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4]);
 			break;
 		case 6:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5]);
 			break;
 		case 7:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6]);
 			break;
 		case 8:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7]);
 			break;
 		case 9:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8]);
 			break;
 		case 10:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9]);
 			break;
 		case 11:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10]);
 			break;
 		case 12:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11]);
 			break;
 		case 13:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12]);
 			break;
 		case 14:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13]);
 			break;
 		case 15:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14]);
 			break;
 		case 16:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15]);
 			break;
 		case 19:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18]);
 			break;
 		case 21:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20]);
 			break;
 		case 23:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22]);
 			break;
 		case 26:
-			response = VTenant.tenants[threadId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25]);
+			response = VTenant.tenants[threadId].voltdbConns[connectionId].voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25]);
 			break;
 			default:
 		}

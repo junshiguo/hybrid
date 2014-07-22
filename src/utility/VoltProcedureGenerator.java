@@ -38,6 +38,7 @@ public class VoltProcedureGenerator {
 		int tenantNumber = 500;
 		try {
 			for(int tenantId = 0; tenantId < tenantNumber; tenantId++){
+				/*
 				fstream = new FileWriter(path+"Procedure0_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write(getImport() + enter
@@ -483,7 +484,7 @@ public class VoltProcedureGenerator {
 			+ commonCode1
 			+ "\n	}\n}");
 				out.flush();out.close();
-				
+				*/
 				fstream = new FileWriter(path+"ProcedureInsertCustomer_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("import org.voltdb.*;\n"
