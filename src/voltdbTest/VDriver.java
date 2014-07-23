@@ -104,69 +104,9 @@ public class VDriver {
 		// int[] paraType = new int[30];
 		while (VDriver.IsActive) { // initiate parameter
 			int seq = VTenant.tenants[Id].sequence.nextSequence();
-//			if (seq == 32) { //history insert
-//				para[0] = h_c_id = Support.RandomNumber(1,VDriver.CUST_PER_DIST);
-//				para[1] = h_c_d_id = Support.RandomNumber(1,VDriver.DIST_PER_WARE);
-//				para[2] = h_c_w_id = Support.RandomNumber(min_ware,max_ware);
-//				para[3] = h_d_id = h_c_d_id;
-//				para[4] = h_w_id = h_c_w_id;
-//				para[5] = h_date = Support.getTimeStamp();
-//				para[6] = h_amount = 10.0;
-//				para[7] = h_data = Support.MakeAlphaString(12,24);
-//				para[8] = 1; para[9] = 0;
-//				paraNumber = 10;
-//				doSQL(Id, seq, paraNumber, para);
-//				continue;
-//			}
-
 			int tableId = seq % 9;
 			int queryId = seq / 9;
 			switch (tableId) {
-			case 8: //history
-				h_c_id = Support.RandomNumber(1,VDriver.CUST_PER_DIST);
-				h_c_d_id = Support.RandomNumber(1,VDriver.DIST_PER_WARE);
-				h_c_w_id = Support.RandomNumber(min_ware,max_ware);
-				h_d_id = h_c_d_id;
-				h_w_id = h_c_w_id;
-				h_date = Support.getTimeStamp();
-				h_amount = 10.0;
-				h_data = Support.MakeAlphaString(12,24);
-				if(queryId == 0 || queryId == 2){
-					para[0] = h_c_id;
-					para[1] = h_c_d_id;
-					para[2] = h_c_w_id;
-					paraNumber = 3;
-				}else if(queryId == 1 || queryId == 3){
-					para[0] = h_c_id;
-					para[1] = h_c_d_id;
-					para[2] = h_c_w_id;
-					para[3] = h_d_id;
-					para[4] = h_w_id;
-					para[5] = h_date;
-					para[6] = h_amount;
-					para[7] = h_data;
-					if(queryId == 1){
-						para[8] = 0; para[9] = 1;
-						para[10] = h_c_id;
-						para[11] = h_c_d_id;
-						para[12] = h_c_w_id;
-						paraNumber = 13;
-					}else{
-						para[8] = 1; para[9] = 0;
-						paraNumber = 10;
-						paratmp = para.clone();
-						paratmp[8] = 0; paratmp[9] = 1;
-						paratmp[10] = h_c_id;
-						paratmp[11] = h_c_d_id;
-						paratmp[12] = h_c_w_id;
-						paratmpNumber = 13;
-					}
-					PK[0] = h_c_id;
-					PK[1] = h_c_d_id;
-					PK[2] = h_c_w_id;
-					PKNumber = 3;
-				}
-				break;
 			case 0: // customer
 				c_id = Support.RandomNumber(1, VDriver.CUST_PER_DIST);
 				c_d_id = Support.RandomNumber(1, VDriver.DIST_PER_WARE);
@@ -546,6 +486,51 @@ public class VDriver {
 					}
 					PK[0] = w_id;
 					PKNumber = 1;
+				}
+				break;
+			case 8: //history
+				h_c_id = Support.RandomNumber(1,VDriver.CUST_PER_DIST);
+				h_c_d_id = Support.RandomNumber(1,VDriver.DIST_PER_WARE);
+				h_c_w_id = Support.RandomNumber(min_ware,max_ware);
+				h_d_id = h_c_d_id;
+				h_w_id = h_c_w_id;
+				h_date = Support.getTimeStamp();
+				h_amount = 10.0;
+				h_data = Support.MakeAlphaString(12,24);
+				if(queryId == 0 || queryId == 2){
+					para[0] = h_c_id;
+					para[1] = h_c_d_id;
+					para[2] = h_c_w_id;
+					paraNumber = 3;
+				}else if(queryId == 1 || queryId == 3){
+					para[0] = h_c_id;
+					para[1] = h_c_d_id;
+					para[2] = h_c_w_id;
+					para[3] = h_d_id;
+					para[4] = h_w_id;
+					para[5] = h_date;
+					para[6] = h_amount;
+					para[7] = h_data;
+					if(queryId == 1){
+						para[8] = 0; para[9] = 1;
+						para[10] = h_c_id;
+						para[11] = h_c_d_id;
+						para[12] = h_c_w_id;
+						paraNumber = 13;
+					}else{
+						para[8] = 1; para[9] = 0;
+						paraNumber = 10;
+						paratmp = para.clone();
+						paratmp[8] = 0; paratmp[9] = 1;
+						paratmp[10] = h_c_id;
+						paratmp[11] = h_c_d_id;
+						paratmp[12] = h_c_w_id;
+						paratmpNumber = 13;
+					}
+					PK[0] = h_c_id;
+					PK[1] = h_c_d_id;
+					PK[2] = h_c_w_id;
+					PKNumber = 3;
 				}
 				break;
 			default:

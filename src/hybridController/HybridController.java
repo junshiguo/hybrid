@@ -1,5 +1,7 @@
 package hybridController;
 
+import hybridConfig.HConfig;
+
 import java.util.ArrayList;
 
 public class HybridController {
@@ -9,8 +11,11 @@ public class HybridController {
 	public static boolean[] inPosition;
 	public static boolean[] endTest;
 	public static boolean ENDTEST = false;
+	public static boolean[] usingVoltdb;
+	public static boolean[] partiallyUsingVoltdb;
 	
 	public static void main(String[] args){
+		HConfig.init(1000);
 		
 	}
 	
@@ -22,6 +27,12 @@ public class HybridController {
 		for(int i = 0; i < 18; i++){
 			inPosition[i] = false;
 			endTest[i] = false;
+		}
+		usingVoltdb = new boolean[HConfig.totalTenant];
+		partiallyUsingVoltdb = new boolean[HConfig.totalTenant];
+		for(int i = 0; i < HConfig.totalTenant; i++){
+			usingVoltdb[i] = false;
+			partiallyUsingVoltdb[i] = false;
 		}
 	}
 	

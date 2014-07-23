@@ -42,6 +42,11 @@ public class HConfig {
 		ValueDS[0],ValueDS[0],ValueDS[1],ValueDS[1],ValueDS[2],ValueDS[2]};
 	public static boolean WHMatrix[] = {true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false};
 	
+	public static int totalTenant = 2000;
+	public static void init(int n){
+		totalTenant = n;
+		
+	}
 	/**
 	 * 	TYPE info according PercentTenantSplits
 	 * @param tenantId

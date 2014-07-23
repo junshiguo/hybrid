@@ -33,7 +33,7 @@ public class Tenant extends Thread {
 		requestNumber = connNumber;
 		connections = new HConnection[connNumber];
 		for(int i = 0; i < connNumber; i++){
-			connections[i] = new HConnection(i, id, url, username, password, voltdbServer);
+			connections[i] = new HConnection(i, tenantId, url, username, password, voltdbServer);
 		}
 		if(writeHeavy){
 			sequence = new HSequence(HConfig.ValueWP[0], requestNumber);

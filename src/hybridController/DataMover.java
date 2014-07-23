@@ -1,4 +1,4 @@
-package hybridTest;
+package hybridController;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -40,8 +40,8 @@ public class DataMover {
 		}
 		Statement stmt = conn.createStatement();
 		ClientResponse response = null;
-		Main.usingVoltdb[tenantId] = true;
-		Main.partiallyUsingVoltdb[tenantId] = true;
+//		Main.usingVoltdb[tenantId] = true;
+//		Main.partiallyUsingVoltdb[tenantId] = true;
 		//********************load warehouse******************//
 		ResultSet rs = stmt.executeQuery("SELECT  * FROM warehouse"+tenantId);
 		while(rs.next()){
@@ -147,13 +147,13 @@ public class DataMover {
 					rs.getString("s_dist_08"), rs.getString("s_dist_09"), rs.getString("s_dist_10"), rs.getDouble("s_ytd"), 
 					rs.getInt("s_order_cnt"), rs.getInt("s_remote_cnt"), rs.getString("s_data"), 0, 0);
 		}
-		Main.usingVoltdb[tenantId] = true;
-		Main.partiallyUsingVoltdb[tenantId] = false;
+//		Main.usingVoltdb[tenantId] = true;
+//		Main.partiallyUsingVoltdb[tenantId] = false;
 		System.out.println("Tenant "+tenantId+" data transferred from mysql to voltdb !");
 	}
 	
 	public void Voltdb2Mysql(int tenantId){
-		Main.partiallyUsingVoltdb[tenantId] = true;
+//		Main.partiallyUsingVoltdb[tenantId] = true;
 		CustomerRetriver cr = new CustomerRetriver(this.dbURL, this.dbUsername, this.dbPassword, this.voltdbServer, tenantId, 1);
 		cr.start();
 		DistrictRetriver dr = new DistrictRetriver(this.dbURL, this.dbUsername, this.dbPassword, this.voltdbServer, tenantId, 1);
@@ -182,8 +182,8 @@ public class DataMover {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		Main.usingVoltdb[tenantId] = false;
-		Main.partiallyUsingVoltdb[tenantId] = false;
+//		Main.usingVoltdb[tenantId] = false;
+//		Main.partiallyUsingVoltdb[tenantId] = false;
 		System.out.println("Tenant "+tenantId+" data retrived from voltdb back to mysql !");
 	}
 	

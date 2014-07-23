@@ -55,10 +55,10 @@ public class HConnection extends Thread {
 		if(conn == null){
 			System.out.println("Tenant "+tenantId+" connecting mysql failed...");
 		}
-		voltdbConn = DBManager.connectVoltdb(voltdbServer);
-		if(voltdbConn == null){
-			System.out.println("Tenant "+tenantId+" connectiong voltdb failed...");
-		}
+//		voltdbConn = DBManager.connectVoltdb(voltdbServer);
+//		if(voltdbConn == null){
+//			System.out.println("Tenant "+tenantId+" connectiong voltdb failed...");
+//		}
 		try {
 			sqlPrepare();
 		} catch (SQLException e) {
@@ -137,6 +137,9 @@ public class HConnection extends Thread {
 	}
 	
 	public boolean doSQLInVoltdb(int sqlId, int paraNumber, Object[] para, boolean checkUpdate, boolean careResult) {
+		if(this.voltdbConn == null){
+			this.voltdbConn = DBManager.connectVoltdb(this.voltdbServer);
+		}
 		//*******************************set parameters for volt procedures****************************************//
 		try {
 			ClientResponse response = null;
@@ -397,57 +400,47 @@ public class HConnection extends Thread {
 	
 	public void sqlPrepare() throws SQLException{
 		int id = tenantId;
-		statements[0] = conn.prepareStatement("SELECT d_next_o_id, d_tax FROM district"+id+" WHERE d_id = ? AND d_w_id = ?");
-		statements[1] = conn.prepareStatement("SELECT i_price, i_name, i_data FROM item"+id+" WHERE i_id = ?");
-		statements[2] = conn.prepareStatement("SELECT s_quantity, s_data, s_dist_01, s_dist_02, s_dist_03, s_dist_04, " +
-				"s_dist_05, s_dist_06, s_dist_07, s_dist_08, s_dist_09, s_dist_10 FROM stock"+id+" WHERE s_i_id = ? AND s_w_id = ?");
-		statements[3] = conn.prepareStatement("SELECT w_street_1, w_street_2, w_city, w_state, w_zip, w_name FROM warehouse"+id+" WHERE w_id = ?");
-		statements[4] = conn.prepareStatement("SELECT d_street_1, d_street_2, d_city, d_state, d_zip, d_name FROM district"+id+" WHERE d_w_id = ? AND d_id = ?");
-		statements[5] = conn.prepareStatement("SELECT count(c_id) FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_last = ?");
-		statements[6] = conn.prepareStatement("SELECT c_id FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_last = ? ORDER BY c_first");
-		statements[7] = conn.prepareStatement("SELECT c_first, c_middle, c_last, c_street_1, c_street_2, c_city, c_state, c_zip, c_phone, c_credit, c_credit_lim, c_discount, c_balance, c_since FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?");
-		statements[8] = conn.prepareStatement("SELECT c_data FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?");
-		statements[9] = conn.prepareStatement("SELECT count(c_id) FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_last = ?");
-		statements[10] = conn.prepareStatement("SELECT c_balance, c_first, c_middle, c_last FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_last = ? ORDER BY c_first");
-		statements[11] = conn.prepareStatement("SELECT c_balance, c_first, c_middle, c_last FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?");
-		statements[12] = conn.prepareStatement("SELECT ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_delivery_d FROM order_line"+id+" WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ?");
-		statements[13] = conn.prepareStatement("SELECT COALESCE(MIN(no_o_id),0) FROM new_orders"+id+" WHERE no_d_id = ? AND no_w_id = ?");
-		statements[14] = conn.prepareStatement("SELECT o_c_id FROM orders"+id+" WHERE o_id = ? AND o_d_id = ? AND o_w_id = ?");
-		statements[15] = conn.prepareStatement("SELECT SUM(ol_amount) FROM order_line"+id+" WHERE ol_o_id = ? AND ol_d_id = ? AND ol_w_id = ?");
-		statements[16] = conn.prepareStatement("SELECT d_next_o_id FROM district"+id+" WHERE d_id = ? AND d_w_id = ?");
-		statements[17] = conn.prepareStatement("SELECT DISTINCT ol_i_id FROM order_line"+id+" WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id < ? AND ol_o_id >= (? - 20)");
-		statements[18] = conn.prepareStatement("SELECT count(*) FROM stock"+id+" WHERE s_w_id = ? AND s_i_id = ? AND s_quantity < ?");
+		statements[0] = conn.prepareStatement("SELETE * FROM customer"+id+" WHERE c_id = ? AND c_w_id = ? AND c_d_id = ?");
+		statements[1] = conn.prepareStatement("SELETE * FROM district"+id+" WHERE d_w_id = ? AND d_id = ?");
+		statements[2] = conn.prepareStatement("SELETE * FROM item"+id+" WHERE i_id = ?");
+		statements[3] = conn.prepareStatement("SELETE * FROM new_orders"+id+" WHERE no_w_id = ? AND no_d_id = ? AND no_o_id = ?");
+		statements[4] = conn.prepareStatement("SELETE * FROM order_line"+id+" WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ? AND ol_number = ?");
+		statements[5] = conn.prepareStatement("SELETE * FROM orders"+id+" WHERE o_w_id = ? AND o_d_id = ? AND o_id = ?");
+		statements[6] = conn.prepareStatement("SELETE * FROM stock"+id+" WHERE s_w_id = ? AND s_i_id = ?");
+		statements[7] = conn.prepareStatement("SELETE * FROM warehouse"+id+" WHERE w_id = ?");
+		statements[8] = conn.prepareStatement("SELETE * FROM history"+id+" WHERE h_c_id = ? AND h_c_d_id = ? AND h_c_w_id = ?");
 		
-		statements[19] = conn.prepareStatement("SELECT c_discount, c_last, c_credit, w_tax FROM customer"+id+", warehouse"+id+" WHERE w_id = ? AND c_w_id = w_id AND c_d_id = ? AND c_id = ?");
-		statements[20] = conn.prepareStatement("SELECT o_id, o_entry_d, COALESCE(o_carrier_id,0) FROM orders"+id+" WHERE o_w_id = ? AND o_d_id = ? AND o_c_id = ? AND o_id = (SELECT MAX(o_id) FROM orders"+id+" WHERE o_w_id = ? AND o_d_id = ? AND o_c_id = ?)");
-		//read 21(0~20). write 14(21~34)
-		statements[21] = conn.prepareStatement("INSERT INTO orders"+id+" (o_id, o_d_id, o_w_id, o_c_id, o_entry_d, o_ol_cnt, o_all_local) VALUES(?, ?, ?, ?, ?, ?, ?)");//8 o_carrier_id
-		statements[22] = conn.prepareStatement("INSERT INTO new_orders"+id+" (no_o_id, no_d_id, no_w_id) VALUES (?,?,?)");
-		statements[23] = conn.prepareStatement("INSERT INTO order_line"+id+" (ol_o_id, ol_d_id, ol_w_id, ol_number, ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_dist_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");//10 ol_delivery_d
-		statements[24] = conn.prepareStatement("INSERT INTO history"+id+"(h_c_d_id, h_c_w_id, h_c_id, h_d_id, h_w_id, h_date, h_amount, h_data) VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
+		statements[9] = conn.prepareStatement("UPDATE customer"+id+" SET c_id = ?, c_d_id = ?,c_w_id = ?, c_first = ?, c_middle = ?, c_last = ?, c_street_1 = ?, c_street_2 = ?,c_city = ?,"
+				+ "c_state = ?,c_zip = ?, c_phone = ?,c_since = ?, c_credit = ?, c_credit_lim = ?, c_discount = ?, c_balance = ?, c_ytd_payment = ?,c_payment_cnt = ?, c_delivery_cnt = ?, c_data = ? "
+				+ "WHERE c_id = ? AND c_w_id = ? AND c_d_id = ?");
+		statements[10] = conn.prepareStatement("UPDATE district"+id+" SET d_id = ?, d_w_id = ?, d_name = ?, d_street_1 = ?, d_street_2 = ?, d_city = ?, d_state = ?, d_zip = ?, d_tax = ?, d_ytd = ?, d_next_o_id = ? WHERE d_w_id = ? AND d_id = ?");
+		statements[11] = conn.prepareStatement("UPDATE item"+id+" SET i_id = ?, i_im_id = ?, i_name = ?, i_price = ?, i_data = ? WHERE i_id = ?");
+		statements[12] = conn.prepareStatement("UPDATE new_orders"+id+" SET no_o_id = ?,no_d_id = ?,no_w_id = ? WHERE no_w_id = ? AND no_d_id = ? AND no_o_id = ?");
+		statements[13] = conn.prepareStatement("UPDATE order_line"+id+" SET ol_o_id = ?, ol_d_id = ?,ol_w_id = ?,ol_number = ?,ol_i_id = ?, ol_supply_w_id = ?,ol_delivery_d = ?, ol_quantity = ?, ol_amount = ?, ol_dist_info = ? WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ? AND ol_number = ?");
+		statements[14] = conn.prepareStatement("UPDATE orders"+id+" SET o_id = ?, o_d_id = ?, o_w_id = ?,o_c_id = ?,o_entry_d = ?,o_carrier_id = ?,o_ol_cnt = ?, o_all_local = ? WHERE o_w_id = ? AND o_d_id = ? AND o_id = ?");
+		statements[15] = conn.prepareStatement("UPDATE stock"+id+" SET s_i_id = ?, s_w_id = ?, s_quantity = ?, s_dist_01 = ?, s_dist_02 = ?,s_dist_03 = ?,s_dist_04 = ?, s_dist_05 = ?, s_dist_06 = ?, s_dist_07 = ?, s_dist_08 = ?, s_dist_09 = ?, s_dist_10 = ?, s_ytd = ?, s_order_cnt = ?, s_remote_cnt = ?,s_data = ? WHERE s_w_id = ? AND s_i_id = ?");
+		statements[16] = conn.prepareStatement("UPDATE warehouse"+id+" SET w_id = ?,	w_name = ?,w_street_1 = ?,w_street_2 = ?,w_city = ?,w_state = ?,w_zip = ?,w_tax = ?,	w_ytd = ? WHERE w_id = ?");
+		statements[17] = conn.prepareStatement("UPDATE history"+id+" SET h_c_id = ?, h_c_d_id = ?, h_c_w_id = ?,h_d_id = ?,h_w_id = ?,h_date v,h_amount = ?,h_data = ? WHERE h_c_id = ? AND h_c_d_id = ? AND h_c_w_id = ?");
 		
-		statements[25] = conn.prepareStatement("UPDATE district"+id+" SET d_next_o_id = d_next_o_id + 1 WHERE d_id = ? AND d_w_id = ?");
-		statements[26] = conn.prepareStatement("UPDATE stock"+id+" SET s_quantity = ? WHERE s_i_id = ? AND s_w_id = ?"); //
-		statements[27] = conn.prepareStatement("UPDATE warehouse"+id+" SET w_ytd = w_ytd + ? WHERE w_id = ?");//
-		statements[28] = conn.prepareStatement("UPDATE district"+id+" SET d_ytd = d_ytd + ? WHERE d_w_id = ? AND d_id = ?");
-		statements[29] = conn.prepareStatement("UPDATE customer"+id+" SET c_balance = ?, c_data = ? WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?");
-		statements[30] = conn.prepareStatement("UPDATE customer"+id+" SET c_balance = ? WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?");
-		statements[31] = conn.prepareStatement("UPDATE orders"+id+" SET o_carrier_id = ? WHERE o_id = ? AND o_d_id = ? AND o_w_id = ?");//
-		statements[32] = conn.prepareStatement("UPDATE order_line"+id+" SET ol_delivery_d = ? WHERE ol_o_id = ? AND ol_d_id = ? AND ol_w_id = ?");
-		statements[33] = conn.prepareStatement("UPDATE customer"+id+" SET c_balance = c_balance + ? , c_delivery_cnt = c_delivery_cnt + 1 WHERE c_id = ? AND c_d_id = ? AND c_w_id = ?");//
+		statements[18] = conn.prepareStatement("DELETE FROM customer"+id+" WHERE c_id = ? AND c_w_id = ? AND c_d_id = ?");
+		statements[19] = conn.prepareStatement("DELETE FROM district"+id+" WHERE d_w_id = ? AND d_id = ?");
+		statements[20] = conn.prepareStatement("DELETE FROM item"+id+" WHERE i_id = ?");
+		statements[21] = conn.prepareStatement("DELETE FROM new_orders"+id+" WHERE no_w_id = ? AND no_d_id = ? AND no_o_id = ?");
+		statements[22] = conn.prepareStatement("DELETE FROM order_line"+id+" WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ? AND ol_number = ?");
+		statements[23] = conn.prepareStatement("DELETE FROM orders"+id+" WHERE o_w_id = ? AND o_d_id = ? AND o_id = ?");
+		statements[24] = conn.prepareStatement("DELETE FROM stock"+id+" WHERE s_w_id = ? AND s_i_id = ?");
+		statements[25] = conn.prepareStatement("DELETE FROM warehouse"+id+" WHERE w_id = ?");
+		statements[26] = conn.prepareStatement("DELETE FROM history"+id+" WHERE h_c_id = ? AND h_c_d_id = ? AND h_c_w_id = ?");
 		
-		statements[34] = conn.prepareStatement("DELETE FROM new_orders"+id+" WHERE no_o_id = ? AND no_d_id = ? AND no_w_id = ?");
-		//THE FOLLOWING STATEMENTS ARE USED IN VOLTDB PROCEDURES
-		//USING VOLTDB
-		statements[35] = conn.prepareStatement("SELECT * FROM district"+id+" WHERE d_id = ? AND d_w_id = ?");
-		statements[36] = conn.prepareStatement("SELECT * FROM stock"+id+" WHERE s_i_id = ? AND s_w_id = ?");
-		statements[37] = conn.prepareStatement("SELECT * FROM warehouse"+id+" WHERE w_id = ? ");
-		statements[38] = conn.prepareStatement("SELECT * FROM district"+id+" WHERE d_w_id = ? AND d_id = ? ");
-		statements[39] = conn.prepareStatement("SELECT * FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?");
-		statements[40] = conn.prepareStatement("SELECT * FROM customer"+id+" WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?");
-		statements[41] = conn.prepareStatement("SELECT * FROM orders"+id+" WHERE o_id = ? AND o_d_id = ? AND o_w_id = ?");
-		statements[42] = conn.prepareStatement("SELECT * FROM order_line"+id+" WHERE ol_o_id = ? AND ol_d_id = ? AND ol_w_id = ?");
-		statements[43] = conn.prepareStatement("SELECT * FROM customer"+id+" WHERE c_id = ? AND c_d_id = ? AND c_w_id = ?");
+		statements[9] = conn.prepareStatement("INSERT INTO customer"+id+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"); //21
+		statements[10] = conn.prepareStatement("INSERT INTO district"+id+" VALUES (?,?,?,?,？,?,?,?,?,?,?)"); //11
+		statements[11] = conn.prepareStatement("INSERT INTO item"+id+" VALUES (?,?,?,?,?)"); //5
+		statements[12] = conn.prepareStatement("INSERT INTO new_orders"+id+" VALUES (?,?,?)"); //3
+		statements[13] = conn.prepareStatement("INSERT INTO order_line"+id+" VALUES (?,?,?,?,?,?,?,?,?,?"); //10
+		statements[14] = conn.prepareStatement("INSERT INTO orders"+id+" VALUES (?,?,?,?,?,?,?,?)"); //8
+		statements[15] = conn.prepareStatement("INSERT INTO stock"+id+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"); //17
+		statements[16] = conn.prepareStatement("INSERT INTO warehouse"+id+" VALUES (?,?,?,?,?,?,?,?,?)"); //9
+		statements[17] = conn.prepareStatement("INSERT INTO history"+id+" VALUES (?,?,?,?,?,?,?,?)"); //8
 	}
 
 }

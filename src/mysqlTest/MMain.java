@@ -60,7 +60,7 @@ public class MMain {
 		}
 		System.out.println("************init finished*****************");
 		try { //wait all thread connect to mysql and prepare statements and warm up
-			Thread.sleep(30000);
+			Thread.sleep(15000);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}

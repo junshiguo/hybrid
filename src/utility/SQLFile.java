@@ -8,38 +8,38 @@ public class SQLFile {
 	public static void main(String[] args){
 		FileWriter fstream = null;
 		BufferedWriter out = null;
-		String path = "../voltTable/";
+		String path = "../voltTable2/";
 		int tenantNumber = 100;
 		try {
-			fstream = new FileWriter(path+"table1.sql", false);
+			fstream = new FileWriter(path+"table2.sql", false);
 			out = new BufferedWriter(fstream);
 			for(int tenantId = 0; tenantId < tenantNumber; tenantId++){
-				out.write("create table warehouse"+tenantId+" (w_id int not null,	w_name varchar(10),w_street_1 varchar(20),w_street_2 varchar(20),w_city varchar(20),w_state varchar(2),w_zip varchar(9),w_tax decimal(4,2),	w_ytd decimal(12,2),is_insert int,is_update int"
-						+ ", CONSTRAINT w"+tenantId+"_hash PRIMARY KEY (w_id));");
+				out.write("create table warehouse"+tenantId+" (w_id int not null,	w_name varchar(10),w_street_1 varchar(20),w_street_2 varchar(20),w_city varchar(20),w_state varchar(2),w_zip varchar(9),w_tax decimal(4,2),	w_ytd decimal(12,2), tenant_id int not null, is_insert int,is_update int"
+						+ ", CONSTRAINT w"+tenantId+"_hash PRIMARY KEY (w_id, tenant_id));");
 				out.newLine();
-				out.write("create table district"+tenantId+" (d_id int not null, d_w_id smallint not null, d_name varchar(10), d_street_1 varchar(20), d_street_2 varchar(20), d_city varchar(20), d_state varchar(2), d_zip varchar(9), d_tax decimal(4,2), d_ytd decimal(12,2), d_next_o_id int,is_insert int,is_update int"
-						+ ", CONSTRAINT d"+tenantId+"_hash PRIMARY KEY (d_w_id, d_id));");
+				out.write("create table district"+tenantId+" (d_id int not null, d_w_id smallint not null, d_name varchar(10), d_street_1 varchar(20), d_street_2 varchar(20), d_city varchar(20), d_state varchar(2), d_zip varchar(9), d_tax decimal(4,2), d_ytd decimal(12,2), d_next_o_id int, tenant_id int not null,is_insert int,is_update int"
+						+ ", CONSTRAINT d"+tenantId+"_hash PRIMARY KEY (d_w_id, d_id, tenant_id));");
 				out.newLine();
-				out.write("create table customer"+tenantId+" (c_id int not null, c_d_id tinyint not null,c_w_id smallint not null, c_first varchar(16), c_middle varchar(2), c_last varchar(16), c_street_1 varchar(20), c_street_2 varchar(20),c_city varchar(20),c_state varchar(2),c_zip varchar(9), c_phone varchar(16),c_since TIMESTAMP, c_credit varchar(2), c_credit_lim bigint, c_discount decimal(4,2), c_balance decimal(12,2), c_ytd_payment decimal(12,2),c_payment_cnt smallint, c_delivery_cnt smallint, c_data varchar(500),is_insert int,is_update int"
-						+ ", CONSTRAINT c"+tenantId+"_hash PRIMARY KEY (c_id, c_w_id, c_d_id)) ;");
+				out.write("create table customer"+tenantId+" (c_id int not null, c_d_id tinyint not null,c_w_id smallint not null, c_first varchar(16), c_middle varchar(2), c_last varchar(16), c_street_1 varchar(20), c_street_2 varchar(20),c_city varchar(20),c_state varchar(2),c_zip varchar(9), c_phone varchar(16),c_since TIMESTAMP, c_credit varchar(2), c_credit_lim bigint, c_discount decimal(4,2), c_balance decimal(12,2), c_ytd_payment decimal(12,2),c_payment_cnt smallint, c_delivery_cnt smallint, c_data varchar(500), tenant_id int not null,is_insert int,is_update int"
+						+ ", CONSTRAINT c"+tenantId+"_hash PRIMARY KEY (c_id, c_w_id, c_d_id, tenant_id)) ;");
 				out.newLine();
-				out.write("create table history"+tenantId+" (h_c_id int not null, h_c_d_id tinyint, h_c_w_id smallint,h_d_id tinyint,h_w_id smallint,h_date TIMESTAMP,h_amount decimal(6,2),h_data varchar(24),is_insert int,is_update int "
-						+ ", CONSTRAINT h"+tenantId+"_hash PRIMARY KEY (h_c_id, h_c_d_id, h_c_w_id));");
+				out.write("create table history"+tenantId+" (h_c_id int not null, h_c_d_id tinyint, h_c_w_id smallint,h_d_id tinyint,h_w_id smallint,h_date TIMESTAMP,h_amount decimal(6,2),h_data varchar(24), tenant_id int not null,is_insert int,is_update int "
+						+ ", CONSTRAINT h"+tenantId+"_hash PRIMARY KEY (h_c_id, h_c_d_id, h_c_w_id, tenant_id));");
 				out.newLine();
-				out.write("create table new_orders"+tenantId+" (no_o_id int not null,no_d_id tinyint not null,no_w_id smallint not null,is_insert int,is_update int"
-						+ ", CONSTRAINT no"+tenantId+"_hash PRIMARY KEY (no_w_id, no_d_id, no_o_id));");
+				out.write("create table new_orders"+tenantId+" (no_o_id int not null,no_d_id tinyint not null,no_w_id smallint not null, tenant_id int not null,is_insert int,is_update int"
+						+ ", CONSTRAINT no"+tenantId+"_hash PRIMARY KEY (no_w_id, no_d_id, no_o_id, tenant_id));");
 				out.newLine();
-				out.write("create table orders"+tenantId+" (o_id int not null, o_d_id tinyint not null, o_w_id smallint not null,o_c_id int,o_entry_d TIMESTAMP,o_carrier_id tinyint,o_ol_cnt tinyint, o_all_local tinyint,is_insert int,is_update int"
-						+ ", CONSTRAINT o"+tenantId+"_hash PRIMARY KEY (o_w_id, o_d_id, o_id)) ;");
+				out.write("create table orders"+tenantId+" (o_id int not null, o_d_id tinyint not null, o_w_id smallint not null,o_c_id int,o_entry_d TIMESTAMP,o_carrier_id tinyint,o_ol_cnt tinyint, o_all_local tinyint, tenant_id int not null,is_insert int,is_update int"
+						+ ", CONSTRAINT o"+tenantId+"_hash PRIMARY KEY (o_w_id, o_d_id, o_id, tenant_id)) ;");
 				out.newLine();
-				out.write("create table order_line"+tenantId+" ( ol_o_id int not null, ol_d_id tinyint not null,ol_w_id smallint not null,ol_number tinyint not null,ol_i_id int, ol_supply_w_id smallint,ol_delivery_d TIMESTAMP, ol_quantity tinyint, ol_amount decimal(6,2), ol_dist_info varchar(24),is_insert int,is_update int"
-						+ ", CONSTRAINT ol"+tenantId+"_hash PRIMARY KEY (ol_w_id, ol_d_id, ol_o_id, ol_number));");
+				out.write("create table order_line"+tenantId+" ( ol_o_id int not null, ol_d_id tinyint not null,ol_w_id smallint not null,ol_number tinyint not null,ol_i_id int, ol_supply_w_id smallint,ol_delivery_d TIMESTAMP, ol_quantity tinyint, ol_amount decimal(6,2), ol_dist_info varchar(24), tenant_id int not null,is_insert int,is_update int"
+						+ ", CONSTRAINT ol"+tenantId+"_hash PRIMARY KEY (ol_w_id, ol_d_id, ol_o_id, ol_number, tenant_id));");
 				out.newLine();
-				out.write("create table item"+tenantId+" (i_id int not null, i_im_id int, i_name varchar(24), i_price decimal(5,2), i_data varchar(50),is_insert int,is_update int "
-						+ ", CONSTRAINT i"+tenantId+"_hash PRIMARY KEY (i_id));");
+				out.write("create table item"+tenantId+" (i_id int not null, i_im_id int, i_name varchar(24), i_price decimal(5,2), i_data varchar(50), tenant_id int not null,is_insert int,is_update int "
+						+ ", CONSTRAINT i"+tenantId+"_hash PRIMARY KEY (i_id, tenant_id));");
 				out.newLine();
-				out.write("create table stock"+tenantId+" (s_i_id int not null, s_w_id smallint not null, s_quantity smallint, s_dist_01 varchar(24), s_dist_02 varchar(24),s_dist_03 varchar(24),s_dist_04 varchar(24), s_dist_05 varchar(24), s_dist_06 varchar(24), s_dist_07 varchar(24), s_dist_08 varchar(24), s_dist_09 varchar(24), s_dist_10 varchar(24), s_ytd decimal(8,0), s_order_cnt smallint, s_remote_cnt smallint,s_data varchar(50),is_insert int,is_update int"
-						+ ", CONSTRAINT s"+tenantId+"_hash PRIMARY KEY (s_w_id, s_i_id));");
+				out.write("create table stock"+tenantId+" (s_i_id int not null, s_w_id smallint not null, s_quantity smallint, s_dist_01 varchar(24), s_dist_02 varchar(24),s_dist_03 varchar(24),s_dist_04 varchar(24), s_dist_05 varchar(24), s_dist_06 varchar(24), s_dist_07 varchar(24), s_dist_08 varchar(24), s_dist_09 varchar(24), s_dist_10 varchar(24), s_ytd decimal(8,0), s_order_cnt smallint, s_remote_cnt smallint,s_data varchar(50), tenant_id int not null,is_insert int,is_update int"
+						+ ", CONSTRAINT s"+tenantId+"_hash PRIMARY KEY (s_w_id, s_i_id, tenant_id));");
 				out.newLine();
 			}
 			

@@ -33,6 +33,7 @@ public class Main {
 	public static Socket socket;
 	public static BufferedReader reader;
 	public static Writer writer;
+	public static int MAXRETRY = 2;
 	
 //	public static boolean sendRequest = false;
 //	public static boolean startCount = false;
