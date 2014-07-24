@@ -26,7 +26,7 @@ public class VMain {
 		double base = 0.34;
 		double step = 0.02;
 		boolean copyTable = false;
-//		test.CopyTables(numberOfThread);
+//		MCopyData.CopyTables(numberOfThread);
 		
 		//*******************init para from args*****************//
 		if(args.length > 0){
@@ -66,7 +66,7 @@ public class VMain {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		System.out.println("***************voltdb test start now***************");
+		System.out.println("***************voltdb MCopyData start now***************");
 		startCount = true;
 		FileWriter fstream = null;
 		BufferedWriter out = null;

@@ -6,7 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class test {
+public class MCopyData {
 	public static Connection conn;
 	public static PreparedStatement st;
 	

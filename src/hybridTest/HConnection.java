@@ -88,35 +88,17 @@ public class HConnection extends Thread {
 		int tableId = sqlId % 9;
 		int queryId = sqlId / 9;
 		
-		if(Main.onlyMysql == true){ //only mysql, for mysql test
-			if(queryId == 0 || queryId == 2){
-				for(int pk = 0; pk < PKNumber; pk ++){
-					paratmp[pk] = para[paraNumber - PKNumber + pk];
-					paratmpType[pk] = paraType[paraNumber - PKNumber + pk];
-				}
-				paratmpNumber = PKNumber;
-			}else if(queryId == 1){
-				paratmp = para.clone();
-				paratmpType = paraType.clone();
-				for(int pk = 0; pk < PKNumber; pk ++){
-					paratmp[paraNumber - PKNumber - 2 + pk] = para[paraNumber - PKNumber + pk];
-					paratmpType[paraNumber - PKNumber - 2 + pk] = paraType[paraNumber - PKNumber + pk];
-				}
-				paratmpNumber = paraNumber - 2;
-			}else{
-				paratmp = para.clone();
-				paratmpType = paraType.clone();
-				paratmpNumber = paraNumber - PKNumber - 2;
-			}
+		if(Main.onlyMysql == true || this.isUsingVoltdb() == false || this.isPartiallUsingVoltdb() == false){ //only mysql, for mysql test
+			paratmpNumber = setActualPara(queryId, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber);
 			success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType);
 		}else if(this.isPartiallUsingVoltdb() == true){ // this tenant partially uses voltdb
+			
 			success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, true);
 			if((!success && sqlId<21) || sqlId==15 || sqlId==18 || sqlId==19 || sqlId==34)
 				success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paraType);
 		}else if(this.isUsingVoltdb() == true){ // this tenant has all his data in voltdb
+			
 			success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, false);
-		}else{ // this tenant has all his data in mysql
-			success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paraType);
 		}
 		if(success && sqlId > 20){
 			try {
@@ -133,6 +115,32 @@ public class HConnection extends Thread {
 			else PerformanceMonitor.writeQuery++;
 		}
 		return success;
+	}
+	
+	public int setActualPara(int queryId, boolean isMysql, Object[] para, int[] paraType, Object[] paratmp, int[] paratmpType, int paraNumber, int PKNumber){
+		if(isMysql){
+			if(queryId == 0 || queryId == 2){
+				for(int pk = 0; pk < PKNumber; pk ++){
+					paratmp[pk] = para[paraNumber - PKNumber + pk];
+					paratmpType[pk] = paraType[paraNumber - PKNumber + pk];
+				}
+				return PKNumber;
+			}else if(queryId == 1){
+				paratmp = para.clone();
+				paratmpType = paraType.clone();
+				for(int pk = 0; pk < PKNumber; pk ++){
+					paratmp[paraNumber - PKNumber - 2 + pk] = para[paraNumber - PKNumber + pk];
+					paratmpType[paraNumber - PKNumber - 2 + pk] = paraType[paraNumber - PKNumber + pk];
+				}
+				return paraNumber - 2;
+			}else{
+				paratmp = para.clone();
+				paratmpType = paraType.clone();
+				return paraNumber - PKNumber - 2;
+			}
+		}else{
+			return 0;
+		}
 	}
 	
 	public boolean doSQLInMysql(int tableId, int queryId, int paraNumber, Object[] para,
