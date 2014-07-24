@@ -3,6 +3,7 @@ package voltdbTest;
 import org.voltdb.client.Client;
 
 import utility.DBManager;
+import utility.Sequence;
 
 
 public class VTenant extends Thread {
@@ -21,12 +22,12 @@ public class VTenant extends Thread {
 	public int id;
 	public String serverlist;;
 	public Client voltdbConn;
-	public VSequence sequence;
+	public Sequence sequence;
 	public boolean isLoaded = false;
 	public VTenant(int id, String serverlist, boolean copyTable){
 		this.id = id;
 		this.serverlist = serverlist;
-		sequence = new VSequence();
+		sequence = new Sequence();
 		sequence.initSequence(100, 0);
 	}
 	

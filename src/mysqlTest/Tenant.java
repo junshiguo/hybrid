@@ -3,6 +3,7 @@ package mysqlTest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import utility.DBManager;
 import utility.Sequence;
@@ -10,6 +11,7 @@ import utility.Sequence;
 
 public class Tenant extends Thread {
 	public static PreparedStatement[][] statements;
+//	public static Statement[] stmt;
 	public static Tenant[] tenants;
 	public static void init(int numberOfConnection, String dbURL, String dbUserName, String dbPassword, boolean copyTable){
 		Tenant.statements = new PreparedStatement[numberOfConnection][35];
@@ -34,6 +36,7 @@ public class Tenant extends Thread {
 	public String dbUserName;
 	public String dbPassword;
 	public Connection conn;
+	public Statement stmt;
 	public Sequence sequence;
 	public boolean isLoaded = false;
 	public Tenant(int id, String dbURL, String dbUserName, String dbPassword, boolean copyTable, Connection conn){
@@ -61,18 +64,23 @@ public class Tenant extends Thread {
 		}
 		System.out.println("thread "+id+": db connected...");
 		try {
-			sqlPrepare0();
-//			System.out.println("thread "+id+": sql prepared...");
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("error in preparing sql!");
-			try {
-				conn.close();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			return;
+			stmt = conn.createStatement();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
 		}
+//		try {
+//			sqlPrepare0();
+////			System.out.println("thread "+id+": sql prepared...");
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//			System.out.println("error in preparing sql!");
+//			try {
+//				conn.close();
+//			} catch (SQLException e1) {
+//				e1.printStackTrace();
+//			}
+//			return;
+//		}
 		try {
 			conn.setAutoCommit(false);
 		} catch (SQLException e) {

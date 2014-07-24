@@ -60,7 +60,7 @@ public class Tenant extends Thread {
 				for(int i = 0; i < requestNumber; i++){
 					int sqlId = sequence.next();
 					driver.initiatePara(sqlId);
-					connections[i].setPara(sqlId, driver.para, driver.paraType, driver.paraNumber);
+					connections[i].setPara(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
 					connections[i].doSQLNow ++;
 				}
 				this.doSQLNow --;

@@ -107,20 +107,6 @@ public class VDriver {
 		// int[] paraType = new int[30];
 		while (VDriver.IsActive) { // initiate parameter
 			int seq = VTenant.tenants[tenantId].sequence.nextSequence();
-//			if (seq == 32) { //history insert
-//				para[0] = h_c_id = Support.RandomNumber(1,VDriver.CUST_PER_DIST);
-//				para[1] = h_c_d_id = Support.RandomNumber(1,VDriver.DIST_PER_WARE);
-//				para[2] = h_c_w_id = Support.RandomNumber(min_ware,max_ware);
-//				para[3] = h_d_id = h_c_d_id;
-//				para[4] = h_w_id = h_c_w_id;
-//				para[5] = h_date = Support.getTimeStamp();
-//				para[6] = h_amount = 10.0;
-//				para[7] = h_data = Support.MakeAlphaString(12,24);
-//				para[8] = 1; para[9] = 0;
-//				paraNumber = 10;
-//				doSQL(Id, seq, paraNumber, para);
-//				continue;
-//			}
 
 			int tableId = seq % 9;
 			int queryId = seq / 9;
@@ -564,6 +550,7 @@ public class VDriver {
 			
 			if(success){
 				VMain.queryThisInterval ++;
+				break;
 			}else {
 				VMain.RETRY++;
 				System.out.println("sql failure! tenant id: "+threadId+", sql id: "+sqlId);

@@ -14,16 +14,16 @@ public class VMain {
 	public static int MaxTry = 1;
 	public static boolean startCount = false;
 	
-	public static String serverlist = "127.0.0.1";
+	public static String serverlist = "10.20.2.211";
 	public static int intervalNumber = 101;
 	public static long queryThisInterval = 0;
 
 	public static void main(String[] args){
-		serverlist = "127.0.0.1";
+		serverlist = "10.20.2.211";
 		numberOfThread = 100;
 		timeInterval = 60000; 
 		intervalNumber = 5;
-		double base = 0.90;
+		double base = 0.34;
 		double step = 0.02;
 		boolean copyTable = false;
 //		test.CopyTables(numberOfThread);

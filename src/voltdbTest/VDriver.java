@@ -17,10 +17,10 @@ public class VDriver {
 	public static int num_ware = 1;
 	public static int num_node = 0;
 	public static int arg_offset = 0;
-	public static int MAXITEMS = 100000;
-	public static int CUST_PER_DIST = 3000;
-	public static int DIST_PER_WARE = 10;
-	public static int ORD_PER_DIST = 3000;
+	public static int MAXITEMS = 1000;
+	public static int CUST_PER_DIST = 30;
+	public static int DIST_PER_WARE = 3;
+	public static int ORD_PER_DIST = 30;
 	public static int MAX_NUM_ITEM = 15;
 	public static int MAX_ITEM_LEN = 24;
 	public static int TYPE_INT = 0;
@@ -546,34 +546,17 @@ public class VDriver {
 			
 			if(success){
 				VMain.queryThisInterval ++;
+				break;
 			}else {
-//				System.out.print(".");
 				System.out.println("sql failure! tenant id: "+threadId+", sql id: "+sqlId);
 				System.exit(0);
 			}
-//			if(success && VDriver.IsActive && VMain.startCount){
-//				VMain.queryThisInterval ++;
-//				return;
-//			}else if(!success && VDriver.IsActive & VMain.startCount){
-////				System.out.print(".");
-//				System.out.println("sql failure! tenant id: "+threadId+", sql id: "+sqlId);
-//				System.exit(0);
-//			}else if(!VDriver.IsActive){
-//				return;
-//			}
 		}
 	}
 
 	public boolean doSQLOnce(int threadId, int sqlId, int paraNumber, Object[] para) {
 		ClientResponse response = null;
 		try{
-//			if(sqlId == 32){
-//				try{
-//					response = VTenant.tenants[threadId].voltdbConn.callProcedure("HISTORY"+threadId+".insert", para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10]);
-//				}catch(Exception e){
-//				}
-//				return true;
-//			}
 			int tableId = sqlId % 9;
 			int queryId = sqlId / 9;
 			if(queryId == 3){
@@ -590,10 +573,6 @@ public class VDriver {
 				return false;
 			}
 			return true;
-//			long rets = response.getResults()[0].asScalarLong();
-//			if(rets == 0  )
-//				return false;
-//			else return true;
 		}catch(IOException | ProcCallException e){
 			System.out.println("Exception: thread "+threadId+" sql no. "+sqlId);
 			e.printStackTrace();

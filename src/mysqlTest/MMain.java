@@ -10,9 +10,10 @@ import java.io.IOException;
  */
 public class MMain {
 	public static int numberOfThread;
+	public static int totalTenant = 3000;
 	public static long timeInterval = 60000; //60s
 	public static long currentInterval = 0;
-	public static int MaxTry = 1;
+	public static int MaxTry = 3;
 	public static boolean startCount = false;
 	
 	public static String dbURL;
@@ -20,8 +21,12 @@ public class MMain {
 	public static String dbPassword;
 	public static int intervalNumber = 101;
 	public static long queryThisInterval = 0;
+	public static long retryThisInterval = 0;
+	public static int tenantPerThread = 30;
 
 	public static void main(String[] args){
+		totalTenant = 3000;
+		tenantPerThread = totalTenant / 100;
 		numberOfThread = 100;
 		timeInterval = 60000; //5 min
 		intervalNumber = 2;
@@ -82,12 +87,13 @@ public class MMain {
 				}
 //				tmpList = new ArrayList<Long>();
 				queryThisInterval = 0;
+				retryThisInterval = 0;
 				currentInterval = i;
 				Thread.sleep(timeInterval);
 				System.out.println("Interval "+i+" finished! (Total: "+intervalNumber+" intervals...)");
 				long throughput = queryThisInterval * 60000/ timeInterval;
 //				throughput /= intervalNumber;
-				out.write(""+(i*step+base)+" "+throughput);
+				out.write(""+(i*step+base)+" "+throughput+" "+retryThisInterval*60000/timeInterval);
 				out.newLine();out.flush();
 			} catch (InterruptedException | IOException e) {
 				e.printStackTrace();

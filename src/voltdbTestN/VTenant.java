@@ -1,9 +1,6 @@
 package voltdbTestN;
 
-import org.voltdb.client.Client;
-
-import utility.DBManager;
-
+import utility.Sequence;
 
 public class VTenant extends Thread {
 	public static VTenant[] tenants;
@@ -23,12 +20,12 @@ public class VTenant extends Thread {
 //	public Client voltdbConn;
 	public VConnection[] voltdbConns;
 	public int connNumber = 2;
-	public VSequence sequence;
+	public Sequence sequence;
 	public boolean isLoaded = false;
 	public VTenant(int id, String serverlist, boolean copyTable){
 		this.id = id;
 		this.serverlist = serverlist;
-		sequence = new VSequence();
+		sequence = new Sequence();
 		sequence.initSequence(100, 0);
 		voltdbConns = new VConnection[connNumber];
 	}
@@ -51,7 +48,7 @@ public class VTenant extends Thread {
 //		}
 //		System.out.println("thread "+id+": VoltDB connected...");
 //		
-//		new VDriver(id);
+//		new Driver(id);
 //		
 //		try {
 //			voltdbConn.close();
