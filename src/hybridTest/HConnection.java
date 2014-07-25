@@ -3,9 +3,12 @@ package hybridTest;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
 
+import org.voltdb.VoltTable;
+import org.voltdb.VoltType;
 import org.voltdb.client.Client;
 import org.voltdb.client.ClientResponse;
 import org.voltdb.client.NoConnectionsException;
@@ -87,18 +90,40 @@ public class HConnection extends Thread {
 		long start = System.nanoTime();
 		int tableId = sqlId % 9;
 		int queryId = sqlId / 9;
+		int[] state = new int[2];
 		
-		if(Main.onlyMysql == true || this.isUsingVoltdb() == false || this.isPartiallUsingVoltdb() == false){ //only mysql, for mysql test
-			paratmpNumber = setActualPara(queryId, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber);
-			success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType);
+		if(Main.onlyMysql == true || (this.isUsingVoltdb() == false && this.isPartiallUsingVoltdb() == false)){ //only mysql, for mysql test
+			if(queryId == 3){
+				paratmpNumber = setActualPara(0, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+				success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paratmpType, true);
+				if(success == true){
+					paratmpNumber = setActualPara(1, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+					success = doSQLInMysql(tableId, 1, paratmpNumber, paratmp, paratmpType, false);
+					return success;
+				}
+			}
+			paratmpNumber = setActualPara(queryId, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+			success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType, false);
 		}else if(this.isPartiallUsingVoltdb() == true){ // this tenant partially uses voltdb
 			
-			success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, true);
-			if((!success && sqlId<21) || sqlId==15 || sqlId==18 || sqlId==19 || sqlId==34)
-				success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paraType);
+//			success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, true, state);
 		}else if(this.isUsingVoltdb() == true){ // this tenant has all his data in voltdb
-			
-			success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, false);
+			if(queryId == 3 || queryId == 1){ //insert or update
+				paratmpNumber = setActualPara(0, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+				success = doSQLInVoltdb(tableId, 0, paratmpNumber, paratmp, true, state);
+				if(success){ //change to update
+					paratmpNumber = setActualPara(1, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, state[0], 1);
+					success = doSQLInVoltdb(tableId, 1, paratmpNumber, paratmp, false, state);
+				}else{ 
+					if(queryId == 3){// still insert
+						paratmpNumber = setActualPara(3, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 1, 0);
+						success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
+					}
+				}
+			}else{//select or delete
+				paratmpNumber = setActualPara(queryId, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+				success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, false, state);
+			}
 		}
 		if(success && sqlId > 20){
 			try {
@@ -117,7 +142,7 @@ public class HConnection extends Thread {
 		return success;
 	}
 	
-	public int setActualPara(int queryId, boolean isMysql, Object[] para, int[] paraType, Object[] paratmp, int[] paratmpType, int paraNumber, int PKNumber){
+	public int setActualPara(int queryId, boolean isMysql, Object[] para, int[] paraType, Object[] paratmp, int[] paratmpType, int paraNumber, int PKNumber, int is_insert, int is_update){
 		if(isMysql){
 			if(queryId == 0 || queryId == 2){
 				for(int pk = 0; pk < PKNumber; pk ++){
@@ -128,23 +153,40 @@ public class HConnection extends Thread {
 			}else if(queryId == 1){
 				paratmp = para.clone();
 				paratmpType = paraType.clone();
-				for(int pk = 0; pk < PKNumber; pk ++){
-					paratmp[paraNumber - PKNumber - 2 + pk] = para[paraNumber - PKNumber + pk];
-					paratmpType[paraNumber - PKNumber - 2 + pk] = paraType[paraNumber - PKNumber + pk];
-				}
-				return paraNumber - 2;
+				return paraNumber;
 			}else{
 				paratmp = para.clone();
 				paratmpType = paraType.clone();
-				return paraNumber - PKNumber - 2;
+				return paraNumber - PKNumber;
 			}
-		}else{
-			return 0;
+		}else{ //voltdb
+			if(queryId == 0 || queryId == 2){
+				for(int pk = 0; pk < PKNumber; pk ++){
+					paratmp[pk] = para[paraNumber - PKNumber + pk];
+				}
+				paratmp[PKNumber] = this.tenantId;
+				return PKNumber + 1;
+			}else if(queryId == 1){
+				paratmp = para.clone();
+				paratmp[paraNumber+3] = this.tenantId;
+				for(int pk = 0; pk < PKNumber; pk ++){
+					paratmp[paraNumber+pk - PKNumber + 3] = para[paraNumber - PKNumber + pk];
+				}
+				paratmp[paraNumber-PKNumber] = this.tenantId;
+				paratmp[paraNumber-PKNumber+1] = is_insert;
+				paratmp[paraNumber-PKNumber+2] = is_update;
+				return paraNumber + 4;
+			}else{
+				paratmp = para.clone();
+				paratmp[paraNumber - PKNumber] = this.tenantId;
+				paratmp[paraNumber - PKNumber + 1] = is_insert;
+				paratmp[paraNumber - PKNumber + 2] = is_update;
+				return paraNumber - PKNumber + 3;
+			}
 		}
 	}
 	
-	public boolean doSQLInMysql(int tableId, int queryId, int paraNumber, Object[] para,
-			int[] paraType) {
+	public boolean doSQLInMysql(int tableId, int queryId, int paraNumber, Object[] para, int[] paraType, boolean careResult) {
 		int i = 0;
 		int sqlId = tableId + queryId * 9;
 		try {
@@ -166,6 +208,11 @@ public class HConnection extends Thread {
 				}
 			}
 			statements[sqlId].execute();
+			if(careResult == true && queryId == 0){
+				ResultSet rs = statements[sqlId].getResultSet();
+				if(rs.next()) return true;
+				else return false;
+			}
 			return true;
 			//System.out.println(threadId +" sta "+sqlId+" : "+ Tenant.statements[threadId][sqlId].toString());
 		} catch (Exception e) {
@@ -175,7 +222,7 @@ public class HConnection extends Thread {
 		}
 	}
 	
-	public boolean doSQLInVoltdb(int tableId, int queryId, int paraNumber, Object[] para, boolean careResult) {
+	public boolean doSQLInVoltdb(int tableId, int queryId, int paraNumber, Object[] para, boolean careResult, int[] state) {
 		if(this.voltdbConn == null){
 			this.voltdbConn = DBManager.connectVoltdb(this.voltdbServer);
 		}
@@ -186,13 +233,17 @@ public class HConnection extends Thread {
 				System.out.println("response failed");
 				return false;
 			}
-			if(careResult == false){
-				return true;
+			if(careResult && queryId == 0){
+				VoltTable result = response.getResults()[0];
+				if(result.getRowCount() == 0){
+					return false;
+				}else{
+					state[0] = (int) result.get("is_insert", VoltType.INTEGER);
+					state[1] = (int) result.get("is_update", VoltType.INTEGER);
+					return true;
+				}
 			}
-			long rets = response.getResults()[0].asScalarLong();
-			if(rets == 0)
-				return false;
-			else return true;
+			return true;
 		} catch (IOException | ProcCallException e) {
 			e.printStackTrace();
 			return false;

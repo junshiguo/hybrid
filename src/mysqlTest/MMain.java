@@ -25,9 +25,8 @@ public class MMain {
 	public static int tenantPerThread = 30;
 
 	public static void main(String[] args){
-		String server = "127.0.0.1";
-		totalTenant = 1000;
-		tenantPerThread = totalTenant / 100;
+		String server = "10.20.2.211";
+		totalTenant = 200;
 		numberOfThread = 100;
 		timeInterval = 60000; //5 min
 		intervalNumber = 2;
@@ -37,7 +36,7 @@ public class MMain {
 //		MCopyData.CopyTables(numberOfThread);
 		//*******************init para from args*****************//
 		if(args.length > 0){
-			numberOfThread = Integer.parseInt(args[0]);
+			totalTenant = Integer.parseInt(args[0]);
 		}
 		if(args.length > 1){
 			timeInterval = Long.parseLong(args[1])*1000;
@@ -56,7 +55,7 @@ public class MMain {
 			if(b == 0) copyTable = false;
 			else copyTable = true;
 		}			
-		
+		tenantPerThread = totalTenant / 100;
 		initDBPara("jdbc:mysql://"+server+"/tpcc10", "remote", "remote");
 		Tenant.init(numberOfThread, MMain.dbURL, MMain.dbUserName, MMain.dbPassword, copyTable);
 		

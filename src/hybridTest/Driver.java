@@ -122,12 +122,10 @@ public class Driver {
 				para[18] = c_payment_cnt = 1;						paraType[18] = Driver.TYPE_INT;
 				para[19] = c_delivery_cnt = 0;					paraType[19] = Driver.TYPE_INT;
 				para[20] = c_data = Support.MakeAlphaString(300, 500);		paraType[20] = Driver.TYPE_STRING;
-				para[21] = 0;							paraType[21] = Driver.TYPE_INT;
-				para[22] = 0;							paraType[22] = Driver.TYPE_INT;
-				para[23] = c_id;					paraType[23] = Driver.TYPE_INT;
-				para[24] = c_w_id;			paraType[24] = Driver.TYPE_INT;
-				para[25] = c_d_id;			paraType[25] = Driver.TYPE_INT;
-				paraNumber = 26;
+				para[21] = c_id;					paraType[21] = Driver.TYPE_INT;
+				para[22] = c_w_id;			paraType[22] = Driver.TYPE_INT;
+				para[23] = c_d_id;			paraType[23] = Driver.TYPE_INT;
+				paraNumber = 24;
 				PKNumber = 3;
 				break;
 			case 1:// district
@@ -142,10 +140,8 @@ public class Driver {
 				para[8] = d_tax = (float) (ran.nextInt(20) / 100.0);
 				para[9] = d_ytd = 30000.0;
 				para[10] = d_next_o_id = 3001;
-				para[11] = 0;
-				para[12] = 1;
-				para[13] = d_w_id;
-				para[14] = d_id;
+				para[11] = d_w_id;
+				para[12] = d_id;
 				paraType[0] = Driver.TYPE_INT;
 				paraType[1] = Driver.TYPE_INT;
 				paraType[2] = Driver.TYPE_STRING;
@@ -159,9 +155,7 @@ public class Driver {
 				paraType[10] = Driver.TYPE_INT;
 				paraType[11] = Driver.TYPE_INT;
 				paraType[12] = Driver.TYPE_INT;
-				paraType[13] = Driver.TYPE_INT;
-				paraType[14] = Driver.TYPE_INT;
-				paraNumber = 15;
+				paraNumber = 13;
 				PKNumber = 2;
 				break;
 			case 2:// item
@@ -170,38 +164,30 @@ public class Driver {
 				para[2] = i_name = Support.MakeAlphaString(14, 24);
 				para[3] = i_price = (ran.nextInt(9900) + 100) / 100.0;
 				para[4] = i_data = Support.MakeAlphaString(26, 50);
-				para[5] = 0;
-				para[6] = 1;
-				para[7] = i_id;
+				para[5] = i_id;
 				paraType[0] = Driver.TYPE_INT;
 				paraType[1] = Driver.TYPE_INT;
 				paraType[2] = Driver.TYPE_STRING;
 				paraType[3] = Driver.TYPE_DOUBLE;
 				paraType[4] = Driver.TYPE_STRING;
 				paraType[5] = Driver.TYPE_INT;
-				paraType[6] = Driver.TYPE_INT;
-				paraType[7] = Driver.TYPE_INT;
-				paraNumber = 8;
+				paraNumber = 6;
 				PKNumber = 1;
 				break;
 			case 3:// new_orders
 				para[0] = no_o_id = Support.RandomNumber(1, Driver.ORD_PER_DIST);
 				para[1] = no_d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE);
 				para[2] = no_w_id = Support.RandomNumber(min_ware, max_ware);
-				para[3] = 0;
-				para[4] = 1;
-				para[5] = no_w_id;
-				para[6] = no_d_id;
-				para[7] = no_o_id;
+				para[3] = no_w_id;
+				para[4] = no_d_id;
+				para[5] = no_o_id;
 				paraType[0] = Driver.TYPE_INT;
 				paraType[1] = Driver.TYPE_INT;
 				paraType[2] = Driver.TYPE_INT;
 				paraType[3] = Driver.TYPE_INT;
 				paraType[4] = Driver.TYPE_INT;
 				paraType[5] = Driver.TYPE_INT;
-				paraType[6] = Driver.TYPE_INT;
-				paraType[7] = Driver.TYPE_INT;
-				paraNumber = 8;
+				paraNumber = 6;
 				PKNumber = 3;
 				break;
 			case 4:// order_line
@@ -215,12 +201,10 @@ public class Driver {
 				para[7] = ol_quantity = 5;
 				para[8] = ol_amount = 0.0;
 				para[9] = ol_dist_info = Support.MakeAlphaString(24, 24);
-				para[10] = 0;
-				para[11] = 1;
-				para[12] = ol_w_id;
-				para[13] = ol_d_id;
-				para[14] = ol_o_id;
-				para[15] = ol_number;
+				para[10] = ol_w_id;
+				para[11] = ol_d_id;
+				para[12] = ol_o_id;
+				para[13] = ol_number;
 				paraType[0] = Driver.TYPE_INT;
 				paraType[1] = Driver.TYPE_INT;
 				paraType[2] = Driver.TYPE_INT;
@@ -235,9 +219,7 @@ public class Driver {
 				paraType[11] = Driver.TYPE_INT;
 				paraType[12] = Driver.TYPE_INT;
 				paraType[13] = Driver.TYPE_INT;
-				paraType[14] = Driver.TYPE_INT;
-				paraType[15] = Driver.TYPE_INT;
-				paraNumber = 16;
+				paraNumber = 14;
 				PKNumber = 4;
 				break;
 			case 5:// orders
@@ -249,11 +231,9 @@ public class Driver {
 				para[5] = o_carrier_id = Support.RandomNumber(1, 10);
 				para[6] = o_ol_cnt = Support.RandomNumber(5, 15);
 				para[7] = o_all_local = ran.nextInt(100) == 1 ? 0 : 1;
-				para[8] = 0;
-				para[9] = 1;
-				para[10] = o_w_id;
-				para[11] = o_d_id;
-				para[12] = o_id;
+				para[8] = o_w_id;
+				para[9] = o_d_id;
+				para[10] = o_id;
 				paraType[0] = Driver.TYPE_INT;
 				paraType[1] = Driver.TYPE_INT;
 				paraType[2] = Driver.TYPE_INT;
@@ -265,9 +245,7 @@ public class Driver {
 				paraType[8] = Driver.TYPE_INT;
 				paraType[9] = Driver.TYPE_INT;
 				paraType[10] = Driver.TYPE_INT;
-				paraType[11] = Driver.TYPE_INT;
-				paraType[12] = Driver.TYPE_INT;
-				paraNumber = 13;
+				paraNumber = 11;
 				PKNumber = 3;
 				break;
 			case 6:// stock
@@ -288,10 +266,8 @@ public class Driver {
 				para[14] = s_order_cnt = 0;
 				para[15] = s_remote_cnt = 0;
 				para[16] = s_data = Support.MakeAlphaString(26, 50);
-				para[17] = 0;
-				para[18] = 1;
-				para[19] = s_w_id;
-				para[20] = s_i_id;
+				para[17] = s_w_id;
+				para[18] = s_i_id;
 				paraType[0] = Driver.TYPE_INT;
 				paraType[1] = Driver.TYPE_INT;
 				paraType[2] = Driver.TYPE_INT;
@@ -311,9 +287,7 @@ public class Driver {
 				paraType[16] = Driver.TYPE_STRING;
 				paraType[17] = Driver.TYPE_INT;
 				paraType[18] = Driver.TYPE_INT;
-				paraType[19] = Driver.TYPE_INT;
-				paraType[20] = Driver.TYPE_INT;
-				paraNumber = 21;
+				paraNumber = 19;
 				PKNumber = 2;
 				break;
 			case 7:// warehouse
@@ -326,9 +300,7 @@ public class Driver {
 				para[6] = w_zip = Support.MakeNumberString(9, 9);
 				para[7] = w_tax = (float) (Support.RandomNumber(10, 20) / 100.0);
 				para[8] = w_ytd = 3000000.00;
-				para[9] = 0;
-				para[10] = 1;
-				para[11] = w_id;
+				para[9] = w_id;
 				paraType[0] = Driver.TYPE_INT;
 				paraType[1] = Driver.TYPE_STRING;
 				paraType[2] = Driver.TYPE_STRING;
@@ -339,9 +311,7 @@ public class Driver {
 				paraType[7] = Driver.TYPE_FLOAT;
 				paraType[8] = Driver.TYPE_DOUBLE;
 				paraType[9] = Driver.TYPE_INT;
-				paraType[10] = Driver.TYPE_INT;
-				paraType[11] = Driver.TYPE_INT;
-				paraNumber = 12;
+				paraNumber = 10;
 				PKNumber = 1;
 				break;
 			case 8: //history
@@ -353,11 +323,9 @@ public class Driver {
 				para[5] = h_date = Support.getTimeStamp();
 				para[6] = h_amount = 10.0;
 				para[7] = h_data = Support.MakeAlphaString(12,24);
-				para[8] = 0;
-				para[9] = 1;
-				para[10] = h_c_id;
-				para[11] = h_c_d_id;
-				para[12] = h_c_w_id;
+				para[8] = h_c_id;
+				para[9] = h_c_d_id;
+				para[10] = h_c_w_id;
 				paraType[0] = Driver.TYPE_INT;
 				paraType[1] = Driver.TYPE_INT;
 				paraType[2] = Driver.TYPE_INT;
@@ -366,12 +334,10 @@ public class Driver {
 				paraType[5] = Driver.TYPE_STRING;
 				paraType[6] = Driver.TYPE_DOUBLE;
 				paraType[7] = Driver.TYPE_STRING;
+				paraType[7] = Driver.TYPE_INT;
 				paraType[8] = Driver.TYPE_INT;
-				paraType[9] = Driver.TYPE_INT;
 				paraType[10] = Driver.TYPE_INT;
-				paraType[11] = Driver.TYPE_INT;
-				paraType[12] = Driver.TYPE_INT;
-				paraNumber = 13;
+				paraNumber = 11;
 				PKNumber = 3;
 				break;
 			default:
