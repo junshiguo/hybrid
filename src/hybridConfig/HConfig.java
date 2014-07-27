@@ -29,11 +29,8 @@ public class HConfig {
 		,0.016	//QT: 100, DS: 142.4, write heavy
 		,0.024	//QT: 100, DS: 142.4, write heavy
 	};
-	public static double[] PercentTenantSplitsSum = {
-		0.06, 0.15, 0.25, 0.4, 0.44, 0.5,
-		0.536, 0.59, 0.65, 0.74, 0.764, 0.8,
-		0.824, 0.86, 0.9, 0.96, 0.976, 1.0
-		};
+	public static double[] PercentTenantSplitsSum;
+	public static int[] TenantIdRange;
 	public static int QTMatrix[] = {ValueQT[0],ValueQT[0],ValueQT[0],ValueQT[0],ValueQT[0],ValueQT[0],
 		ValueQT[1],ValueQT[1],ValueQT[1],ValueQT[1],ValueQT[1],ValueQT[1],
 		ValueQT[2],ValueQT[2],ValueQT[2],ValueQT[2],ValueQT[2],ValueQT[2],};
@@ -43,29 +40,61 @@ public class HConfig {
 	public static boolean WHMatrix[] = {true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false};
 	
 	public static int totalTenant = 2000;
+	public static int timePerInterval = 10; //min
+	public static int totalInterval = 48; // 8 h
+	public static int[][] loadPerInterval = new int[totalTenant][totalInterval];
+	
 	public static void init(int n){
 		totalTenant = n;
-		
+		TenantIdRange = new int[18];
+		PercentTenantSplitsSum = new double[18];
+		for(int i = 0; i < 18; i++){
+			if(i == 0) PercentTenantSplitsSum[i] = PercentTenantSplits[0];
+			else	PercentTenantSplitsSum[i] = PercentTenantSplitsSum[i-1]+PercentTenantSplits[i];
+			TenantIdRange[i] = (int) (totalTenant*PercentTenantSplitsSum[i]);
+		}
 	}
 	/**
 	 * 	TYPE info according PercentTenantSplits
 	 * @param tenantId
 	 * @return
 	 */
-	public static int getType(int tenantId, boolean isType){
-		return -1;
+	public static int getType(int tenantId){
+		for(int i = 0; i < 18; i++){
+			if(TenantIdRange[i] > tenantId){
+				return i;
+			}
+		}
+		return 17;
+	}
+	//tenantId or TYPE
+	public static int getQT(int tenantId, boolean isType){
+		int type = tenantId;
+		if(isType == false){
+			type = getType(tenantId);
+		}
+		return HConfig.QTMatrix[type];
 	}
 	
 	public static double getDS(int tenantId, boolean isType){
-		return 0;
+		int type = tenantId;
+		if(isType == false){
+			type = getType(tenantId);
+		}
+		return DSMatrix[type];
 	}
 	
 	public static boolean isWriteHeavy(int tenantId, boolean isType){
-		return true;
+		int type = tenantId;
+		if(isType == false){
+			type = getType(tenantId);
+		}
+		return WHMatrix[type];
 	}
 	
 	public static int getStartId(int type){
-		return -1;
+		if(type == 0) return 0;
+		return TenantIdRange[type-1];
 	}
 	
 }

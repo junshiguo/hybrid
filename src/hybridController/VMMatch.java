@@ -1,4 +1,4 @@
-package hybridConfig;
+package hybridController;
 
 public class VMMatch {
 	public static int maxTenantPerVolumn;

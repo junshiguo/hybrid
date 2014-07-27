@@ -9,6 +9,7 @@ public class Tenant extends Thread {
 	public int actualQT;  //actual throughput per minute
 	public boolean writeHeavy;
 	public int doSQLNow = 0;
+	public int idInVoltdb = -1;
 	
 	public String dbURL;
 	public String dbUsername;
