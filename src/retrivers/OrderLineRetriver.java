@@ -19,21 +19,21 @@ import utility.DBManager;
 public class OrderLineRetriver extends Thread {
 	public String url, username, password;
 	public String voltdbServer;
-	public int startId;
-	public int tenantNumber;
+	public int tenantId;
+	public int volumnId;
 	
 	public Connection conn = null;
 	public Statement stmt = null;
 	Client voltdbConn = null;
 	PreparedStatement[] statements;
 	
-	public OrderLineRetriver(String url, String username, String password, String voltdbServer, int startId, int tenantNumber){
+	public OrderLineRetriver(String url, String username, String password, String voltdbServer, int tenantId, int volumnId){
 		this.url = url;
 		this.username = username;
 		this.password = password;
 		this.voltdbServer = voltdbServer;
-		this.startId = startId;
-		this.tenantNumber = tenantNumber;
+		this.tenantId = tenantId;
+		this.volumnId = volumnId;
 	}
 	
 	@Override
@@ -41,10 +41,9 @@ public class OrderLineRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
-			statements = new PreparedStatement[tenantNumber];
-			for(int id=0;id<tenantNumber;id++){
-				statements[id] = conn.prepareStatement("UPDATE order_line"+(id+startId)+" SET ol_delivery_d = ? WHERE ol_o_id = ? AND ol_d_id = ? AND ol_w_id = ?");
-			}
+			statements = new PreparedStatement[2];
+			statements[0] = conn.prepareStatement("UPDATE order_line"+tenantId+" SET ol_o_id = ?, ol_d_id = ?,ol_w_id = ?,ol_number = ?,ol_i_id = ?, ol_supply_w_id = ?,ol_delivery_d = ?, ol_quantity = ?, ol_amount = ?, ol_dist_info = ? WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ? AND ol_number = ?");
+			statements[1] = conn.prepareStatement("INSERT INTO order_line"+tenantId+" VALUES (?,?,?,?,?,?,?,?,?,?)");
 		} catch (Exception e1) {
 			System.out.println("error in creating or preparing mysql statement for retriving data...");
 		}
@@ -55,106 +54,62 @@ public class OrderLineRetriver extends Thread {
 		//******************************************************************************//
 		ClientResponse response = null;
 		VoltTable result = null;
-		boolean dataExist = false;
-		boolean dataExist1 = false;
-		for(int i=0; i<tenantNumber; i++){
-			int tenantId = i + startId;
-			try {
-				String sql = "INSERT INTO order_line"+tenantId+" (ol_o_id, ol_d_id, ol_w_id, ol_number, ol_i_id, ol_supply_w_id, ol_delivery_d,"
-						+ "ol_quantity, ol_amount, ol_dist_info) VALUES ";
-				String sql1 = "INSERT INTO order_line"+tenantId+" (ol_o_id, ol_d_id, ol_w_id, ol_number, ol_i_id, ol_supply_w_id,"
-						+ "ol_quantity, ol_amount, ol_dist_info) VALUES ";
-				response = voltdbConn.callProcedure("PRSelectAllOrderLine", tenantId, 1, 0);
+			try{
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM order_line"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 0 AND is_update = 1");
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
-					for(int j=0; j<result.getRowCount(); j++){
-						VoltTableRow row = result.fetchRow(j);
-						if(row.getTimestampAsSqlTimestamp("ol_delivery_d") != null){
-							dataExist = true;
-							String time = row.getTimestampAsSqlTimestamp("ol_delivery_d").toString();
-							int index = time.lastIndexOf(".");
-							if(index != -1)
-								time = time.substring(0, index);
-							sql = sql +"("+row.get("ol_o_id", VoltType.INTEGER)+","+row.get("ol_d_id", VoltType.INTEGER)+","+row.get("ol_w_id",VoltType.INTEGER)+
-									","+row.get("ol_number", VoltType.INTEGER)+","+row.get("ol_i_id", VoltType.INTEGER)+","+row.get("ol_supply_w_id", VoltType.INTEGER)+
-									",'"+time+"',"+row.get("ol_quantity", VoltType.INTEGER)+","+row.getDecimalAsBigDecimal("ol_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN).doubleValue()+
-									",'"+row.getString("ol_dist_info")+"')";
-								
-							sql += " , ";
-						}else{
-							dataExist1 = true;
-							sql1 = sql1 +"("+row.get("ol_o_id", VoltType.INTEGER)+","+row.get("ol_d_id", VoltType.INTEGER)+","+row.get("ol_w_id",VoltType.INTEGER)+
-									","+row.get("ol_number", VoltType.INTEGER)+","+row.get("ol_i_id", VoltType.INTEGER)+","+row.get("ol_supply_w_id", VoltType.INTEGER)+
-									","+row.get("ol_quantity", VoltType.INTEGER)+","+row.getDecimalAsBigDecimal("ol_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN).doubleValue()+
-									",'"+row.getString("ol_dist_info")+"')";
-							sql1 += " , ";
-						}
+					for(int i = 0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[0].setInt(1, (int) row.get("ol_o_id", VoltType.INTEGER));
+						statements[0].setInt(2, (int) row.get("ol_d_id", VoltType.INTEGER));
+						statements[0].setInt(3, (int) row.get("ol_w_id", VoltType.INTEGER));
+						statements[0].setInt(4, (int) row.get("ol_number", VoltType.INTEGER));
+						statements[0].setInt(5, (int) row.get("ol_i_id", VoltType.INTEGER));
+						statements[0].setInt(6, (int) row.get("ol_supply_w_id", VoltType.INTEGER));
+						statements[0].setTimestamp(7, row.getTimestampAsSqlTimestamp("ol_delivery_d"));
+						statements[0].setInt(8, (int) row.get("ol_quantity", VoltType.INTEGER));
+						statements[0].setBigDecimal(9, row.getDecimalAsBigDecimal("ol_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN));
+						statements[0].setString(10, row.getString("ol_dist_info"));
+						statements[0].setInt(11, (int) row.get("ol_w_id", VoltType.INTEGER));
+						statements[0].setInt(12, (int) row.get("ol_d_id", VoltType.INTEGER));
+						statements[0].setInt(13, (int) row.get("ol_o_id", VoltType.INTEGER));
+						statements[0].setInt(14, (int) row.get("ol_number", VoltType.INTEGER));
+						statements[0].addBatch();
 					}
-				}
-				response = voltdbConn.callProcedure("PRSelectAllOrderLine", tenantId, 1, 1);
-				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
-					result = response.getResults()[0];
-					for(int j=0; j<result.getRowCount(); j++){
-						VoltTableRow row = result.fetchRow(j);
-						if(row.getTimestampAsSqlTimestamp("ol_delivery_d") != null){
-							dataExist = true;
-							String time = row.getTimestampAsSqlTimestamp("ol_delivery_d").toString();
-							int index = time.lastIndexOf(".");
-							if(index != -1) time = time.substring(0, index);
-							sql = sql +"("+row.get("ol_o_id", VoltType.INTEGER)+","+row.get("ol_d_id", VoltType.INTEGER)+","+row.get("ol_w_id",VoltType.INTEGER)+
-									","+row.get("ol_number", VoltType.INTEGER)+","+row.get("ol_i_id", VoltType.INTEGER)+","+row.get("ol_supply_w_id", VoltType.INTEGER)+
-									",'"+time+"',"+row.get("ol_quantity", VoltType.INTEGER)+","+row.getDecimalAsBigDecimal("ol_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN).doubleValue()+
-									",'"+row.getString("ol_dist_info")+"')";
-								
-							sql += " , ";
-						}else{
-							dataExist1 = true;
-							sql1 = sql1 +"("+row.get("ol_o_id", VoltType.INTEGER)+","+row.get("ol_d_id", VoltType.INTEGER)+","+row.get("ol_w_id",VoltType.INTEGER)+
-									","+row.get("ol_number", VoltType.INTEGER)+","+row.get("ol_i_id", VoltType.INTEGER)+","+row.get("ol_supply_w_id", VoltType.INTEGER)+
-									","+row.get("ol_quantity", VoltType.INTEGER)+","+row.getDecimalAsBigDecimal("ol_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN).doubleValue()+
-									",'"+row.getString("ol_dist_info")+"')";
-							sql1 += " , ";
-						}
-					}
-				}
-				if(dataExist){
-					sql = sql.substring(0, sql.length()-2);
-					stmt.execute(sql);
-					dataExist = false;
-				}
-				if(dataExist1){
-					sql1 = sql1.substring(0, sql1.length()-2);
-					stmt.execute(sql1);
-					dataExist1 = false;
+					statements[0].executeBatch();
 				}
 				
-				//UPDATE order_line"+id+" SET ol_delivery_d = ? WHERE ol_o_id = ? AND ol_d_id = ? AND ol_w_id = ?
-				response = voltdbConn.callProcedure("PRSelectAllOrderLine", tenantId, 0, 1);
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM order_line"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 1");
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
-					for(int in=0;in<result.getRowCount();in++){
-						VoltTableRow row = result.fetchRow(in);
-						statements[i].setTimestamp(1, row.getTimestampAsSqlTimestamp("ol_delivery_d"));
-						statements[i].setInt(2, (int) row.get("ol_o_id", VoltType.INTEGER));
-						statements[i].setInt(3, (int) row.get("ol_d_id", VoltType.INTEGER));
-						statements[i].setInt(4, (int) row.get("ol_w_id", VoltType.INTEGER));
-						statements[i].addBatch();
+					for(int i = 0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[1].setInt(1, (int) row.get("ol_o_id", VoltType.INTEGER));
+						statements[1].setInt(2, (int) row.get("ol_d_id", VoltType.INTEGER));
+						statements[1].setInt(3, (int) row.get("ol_w_id", VoltType.INTEGER));
+						statements[1].setInt(4, (int) row.get("ol_number", VoltType.INTEGER));
+						statements[1].setInt(5, (int) row.get("ol_i_id", VoltType.INTEGER));
+						statements[1].setInt(6, (int) row.get("ol_supply_w_id", VoltType.INTEGER));
+						statements[1].setTimestamp(7, row.getTimestampAsSqlTimestamp("ol_delivery_d"));
+						statements[1].setInt(8, (int) row.get("ol_quantity", VoltType.INTEGER));
+						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("ol_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].setString(10, row.getString("ol_dist_info"));
+						statements[1].addBatch();
 					}
-					statements[i].executeBatch();
-				}	
-				voltdbConn.callProcedure("PRDeleteAllOrderLine", tenantId);
-			} catch (IOException | ProcCallException | SQLException e) {
+					statements[1].executeBatch();
+				}
+				voltdbConn.callProcedure("@AdHoc", "DELETE FROM order_line"+volumnId+" WHERE tenant_id = "+tenantId);
+			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		}
-		System.out.println("\nTABLE order_line: "+startId+" ~ "+(startId+tenantNumber-1)+" truncated...");
+		System.out.println("\n order_line: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();
 			voltdbConn.close();
 		} catch (SQLException | InterruptedException e) {
 			e.printStackTrace();
-		}
+		}	
 				
 	}
 

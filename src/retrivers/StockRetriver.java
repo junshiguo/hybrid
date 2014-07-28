@@ -1,6 +1,7 @@
 package retrivers;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,21 +19,21 @@ import utility.DBManager;
 public class StockRetriver extends Thread {
 	public String url, username, password;
 	public String voltdbServer;
-	public int startId;
-	public int tenantNumber;
+	public int tenantId;
+	public int volumnId;
 	
 	public Connection conn = null;
 	public Statement stmt = null;
 	Client voltdbConn = null;
 	PreparedStatement[] statements;
 	
-	public StockRetriver(String url, String username, String password, String voltdbServer, int startId, int tenantNumber){
+	public StockRetriver(String url, String username, String password, String voltdbServer, int tenantId, int volumnId){
 		this.url = url;
 		this.username = username;
 		this.password = password;
 		this.voltdbServer = voltdbServer;
-		this.startId = startId;
-		this.tenantNumber = tenantNumber;
+		this.tenantId = tenantId;
+		this.volumnId = volumnId;
 	}
 	
 	@Override
@@ -40,10 +41,9 @@ public class StockRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
-			statements = new PreparedStatement[tenantNumber];
-			for(int id=0;id<tenantNumber;id++){
-				statements[id] = conn.prepareStatement("UPDATE stock"+(id+startId)+" SET s_quantity = ? WHERE s_i_id = ? AND s_w_id = ?");
-			}
+			statements = new PreparedStatement[2];
+			statements[0] = conn.prepareStatement("UPDATE stock"+tenantId+" SET s_i_id = ?, s_w_id = ?, s_quantity = ?, s_dist_01 = ?, s_dist_02 = ?,s_dist_03 = ?,s_dist_04 = ?, s_dist_05 = ?, s_dist_06 = ?, s_dist_07 = ?, s_dist_08 = ?, s_dist_09 = ?, s_dist_10 = ?, s_ytd = ?, s_order_cnt = ?, s_remote_cnt = ?,s_data = ? WHERE s_w_id = ? AND s_i_id = ?");
+			statements[1] = conn.prepareStatement("INSERT INTO stock"+tenantId+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 		} catch (Exception e1) {
 			System.out.println("error in creating or preparing mysql statement for retriving data...");
 		}
@@ -54,35 +54,74 @@ public class StockRetriver extends Thread {
 		//******************************************************************************//
 		ClientResponse response = null;
 		VoltTable result = null;
-		for(int id = 0; id < tenantNumber; id++){
-			int tenantId = id + startId;
 			try{
-				response = voltdbConn.callProcedure("PRSelectAllStock", tenantId, 0, 1);
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM stock"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 0 AND is_update = 1");
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
-					for(int i=0; i<result.getRowCount(); i++){
+					for(int i = 0; i<result.getRowCount(); i++){
 						VoltTableRow row = result.fetchRow(i);
-						statements[id].setInt(1, (int) row.get("s_quantity", VoltType.INTEGER));
-						statements[id].setInt(2, (int) row.get("s_i_id", VoltType.INTEGER));
-						statements[id].setInt(3, (int) row.get("s_w_id", VoltType.INTEGER));
-						statements[id].addBatch();
+						statements[0].setInt(1, (int) row.get("s_i_id", VoltType.INTEGER));
+						statements[0].setInt(2, (int) row.get("s_w_id", VoltType.INTEGER));
+						statements[0].setInt(3, (int) row.get("s_quantity", VoltType.INTEGER));
+						statements[0].setString(4, row.getString("s_dist_01"));
+						statements[0].setString(5, row.getString("s_dist_02"));
+						statements[0].setString(6, row.getString("s_dist_03"));
+						statements[0].setString(7, row.getString("s_dist_04"));
+						statements[0].setString(8, row.getString("s_dist_05"));
+						statements[0].setString(9, row.getString("s_dist_06"));
+						statements[0].setString(10, row.getString("s_dist_07"));
+						statements[0].setString(11, row.getString("s_dist_08"));
+						statements[0].setString(12, row.getString("s_dist_09"));
+						statements[0].setString(13, row.getString("s_dist_10"));
+						statements[0].setBigDecimal(14, row.getDecimalAsBigDecimal("s_ytd").setScale(8, BigDecimal.ROUND_HALF_DOWN));
+						statements[0].setInt(15, (int) row.get("s_order_cnt", VoltType.INTEGER));
+						statements[0].setInt(16, (int) row.get("s_remote_cnt", VoltType.INTEGER));
+						statements[0].setString(17, row.getString("s_data"));
+						statements[0].setInt(18, (int) row.get("s_w_id", VoltType.INTEGER));
+						statements[0].setInt(19, (int) row.get("s_i_id", VoltType.INTEGER));
+						statements[0].addBatch();
 					}
-					statements[id].executeBatch();
+					statements[0].executeBatch();
 				}
-				voltdbConn.callProcedure("PRDeleteAllStock", tenantId);
+				
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM stock"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 1");
+				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
+					result = response.getResults()[0];
+					for(int i = 0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[1].setInt(1, (int) row.get("s_i_id", VoltType.INTEGER));
+						statements[1].setInt(2, (int) row.get("s_w_id", VoltType.INTEGER));
+						statements[1].setInt(3, (int) row.get("s_quantity", VoltType.INTEGER));
+						statements[1].setString(4, row.getString("s_dist_01"));
+						statements[1].setString(5, row.getString("s_dist_02"));
+						statements[1].setString(6, row.getString("s_dist_03"));
+						statements[1].setString(7, row.getString("s_dist_04"));
+						statements[1].setString(8, row.getString("s_dist_05"));
+						statements[1].setString(9, row.getString("s_dist_06"));
+						statements[1].setString(10, row.getString("s_dist_07"));
+						statements[1].setString(11, row.getString("s_dist_08"));
+						statements[1].setString(12, row.getString("s_dist_09"));
+						statements[1].setString(13, row.getString("s_dist_10"));
+						statements[1].setBigDecimal(14, row.getDecimalAsBigDecimal("s_ytd").setScale(8, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].setInt(15, (int) row.get("s_order_cnt", VoltType.INTEGER));
+						statements[1].setInt(16, (int) row.get("s_remote_cnt", VoltType.INTEGER));
+						statements[1].setString(17, row.getString("s_data"));
+						statements[1].addBatch();
+					}
+					statements[1].executeBatch();
+				}
+				voltdbConn.callProcedure("@AdHoc", "DELETE FROM stock"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		}
-//			voltdbConn.callProcedure("PRTruncateAll", RetriveMonitor.STOCK);
-		System.out.println("\nTABLE stock: "+startId+" ~ "+(startId+tenantNumber-1)+" truncated...");
+		System.out.println("\n stock: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();
 			voltdbConn.close();
 		} catch (SQLException | InterruptedException e) {
 			e.printStackTrace();
-		}
+		}	
 				
 	}
 

@@ -2,6 +2,7 @@ package retrivers;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -17,20 +18,21 @@ import utility.DBManager;
 public class NewOrdersRetriver extends Thread {
 	public String url, username, password;
 	public String voltdbServer;
-	public int startId;
-	public int tenantNumber;
+	public int tenantId;
+	public int volumnId;
 	
 	public Connection conn = null;
 	public Statement stmt = null;
 	Client voltdbConn = null;
+	PreparedStatement[] statements;
 	
-	public NewOrdersRetriver(String url, String username, String password, String voltdbServer, int startId, int tenantNumber){
+	public NewOrdersRetriver(String url, String username, String password, String voltdbServer, int tenantId, int volumnId){
 		this.url = url;
 		this.username = username;
 		this.password = password;
 		this.voltdbServer = voltdbServer;
-		this.startId = startId;
-		this.tenantNumber = tenantNumber;
+		this.tenantId = tenantId;
+		this.volumnId = volumnId;
 	}
 	
 	@Override
@@ -38,6 +40,9 @@ public class NewOrdersRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
+			statements = new PreparedStatement[2];
+			statements[0] = conn.prepareStatement("UPDATE new_orders"+tenantId+" SET no_o_id = ?,no_d_id = ?,no_w_id = ? WHERE no_w_id = ? AND no_d_id = ? AND no_o_id = ?");
+			statements[1] = conn.prepareStatement("INSERT INTO new_orders"+tenantId+" VALUES (?,?,?)");
 		} catch (Exception e1) {
 			System.out.println("error in creating or preparing mysql statement for retriving data...");
 		}
@@ -48,42 +53,48 @@ public class NewOrdersRetriver extends Thread {
 		//******************************************************************************//
 		ClientResponse response = null;
 		VoltTable result = null;
-		boolean dataExist = false;
-		for(int id = 0; id < tenantNumber; id++){
-			int tenantId = id + startId;
 			try{
-				String sql = "INSERT INTO new_orders"+tenantId+" (no_o_id, no_d_id, no_w_id) VALUES ";;
-				response = voltdbConn.callProcedure("PRSelectAllNewOrders", tenantId, 1, 0);
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM new_orders"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 0 AND is_update = 1");
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
-					dataExist = true;
 					result = response.getResults()[0];
 					for(int i = 0; i<result.getRowCount(); i++){
 						VoltTableRow row = result.fetchRow(i);
-						sql = sql + "("+row.get("no_o_id", VoltType.INTEGER)+","+row.get("no_d_id", VoltType.INTEGER)+
-								","+row.get("no_w_id", VoltType.INTEGER)+")";
-						sql += " , ";
+						statements[0].setInt(1, (int) row.get("no_o_id", VoltType.INTEGER));
+						statements[0].setInt(2, (int) row.get("no_d_id", VoltType.INTEGER));
+						statements[0].setInt(3, (int) row.get("no_w_id", VoltType.INTEGER));
+						statements[0].setInt(4, (int) row.get("no_w_id", VoltType.INTEGER));
+						statements[0].setInt(5, (int) row.get("no_d_id", VoltType.INTEGER));
+						statements[0].setInt(6, (int) row.get("no_o_id", VoltType.INTEGER));
+						statements[0].addBatch();
 					}
-					if(dataExist){
-						sql = sql.substring(0, sql.length()-2);
-						stmt.execute(sql);
-						dataExist = false;
-					}
+					statements[0].executeBatch();
 				}
-				voltdbConn.callProcedure("PRDeleteAllNewOrders", tenantId);
+				
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM new_orders"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 1");
+				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
+					result = response.getResults()[0];
+					for(int i = 0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[1].setInt(1, (int) row.get("no_o_id", VoltType.INTEGER));
+						statements[1].setInt(2, (int) row.get("no_d_id", VoltType.INTEGER));
+						statements[1].setInt(3, (int) row.get("no_w_id", VoltType.INTEGER));
+						statements[1].addBatch();
+					}
+					statements[1].executeBatch();
+				}
+				voltdbConn.callProcedure("@AdHoc", "DELETE FROM new_orders"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		}
-		System.out.println("\nTABLE new_orders: "+startId+" ~ "+(startId+tenantNumber-1)+" truncated...");
+		System.out.println("\n new_orders: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();
 			voltdbConn.close();
 		} catch (SQLException | InterruptedException e) {
 			e.printStackTrace();
-		}
+		}	
 				
-		
 	}
 
 }

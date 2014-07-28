@@ -1,33 +1,33 @@
 package hybridConfig;
 
 public class HConfig {
-	public static int[] ValueQT = { 20, 60, 100 };  // per minute
-	public static double[] ValueDS = {6.9, 38.7, 142.4 };  // MB
+	public static int[] ValueQT = { 60, 120, 200 };  // per minute
+	public static double[] ValueDS = {3, 6.9, 18.3 };  // MB
 	public static double[] ValueWP = { 0.6, 0.2 };  // +-0.05
 	public static double[] PercentQT = { 0.3, 0.5, 0.2 };
-	public static double[] PercentDS = { 0.6, 0.3, 0.1 };
+	public static double[] PercentDS = { 0.5, 0.3, 0.2 };
 	public static double[] PercentWH = { 0.4, 0.6 };  // 0.4 for write heavy and 0.6 for read heavy
 	public static double[]  PercentTenantSplits  = {
-		0.06	//QT: 20, DS: 6.9, write heavy
-		,0.09	//QT: 20, DS: 6.9, read heavy
-		,0.1		//QT: 20, DS: 38.7, write heavy
-		,0.15	//QT: 20, DS: 38.7, read heavy
-		,0.04	//QT: 20, DS: 142.4, write heavy
-		,0.06	//QT: 20, DS: 142.4, read heavy
+		0.06	//QT: 20, DS: 3, write heavy
+		,0.09	//QT: 20, DS: 3, read heavy
+		,0.036		//QT: 20, DS: 6.9, write heavy
+		,0.054	//QT: 20, DS: 6.9, read heavy
+		,0.024	//QT: 20, DS: 18.3, write heavy
+		,0.036	//QT: 20, DS: 18.3, read heavy
 		
-		,0.036	//QT: 60, DS: 6.9, write heavy
-		,0.054	//QT: 60, DS: 6.9, read heavy
-		,0.06	//QT: 60, DS: 38.7, write heavy
-		,0.09	//QT: 60, DS: 38.7, read heavy
-		,0.024	//QT: 60, DS: 142.4, write heavy
-		,0.036	//QT: 60, DS: 142.4, write heavy
+		,0.1	//QT: 60, DS: 3, write heavy
+		,0.15	//QT: 60, DS: 3, read heavy
+		,0.06	//QT: 60, DS: 6.9, write heavy
+		,0.09	//QT: 60, DS: 6.9, read heavy
+		,0.04	//QT: 60, DS: 18.3, write heavy
+		,0.06	//QT: 60, DS: 18.3, write heavy
 		
+		,0.04	//QT: 100, DS: 3, write heavy
+		,0.06	//QT: 100, DS: 3, read heavy
 		,0.024	//QT: 100, DS: 6.9, write heavy
 		,0.036	//QT: 100, DS: 6.9, read heavy
-		,0.04	//QT: 100, DS: 38.7, write heavy
-		,0.06	//QT: 100, DS: 38.7, read heavy
-		,0.016	//QT: 100, DS: 142.4, write heavy
-		,0.024	//QT: 100, DS: 142.4, write heavy
+		,0.016	//QT: 100, DS: 18.3, write heavy
+		,0.024	//QT: 100, DS: 18.3, write heavy
 	};
 	public static double[] PercentTenantSplitsSum;
 	public static int[] TenantIdRange;
@@ -39,10 +39,7 @@ public class HConfig {
 		ValueDS[0],ValueDS[0],ValueDS[1],ValueDS[1],ValueDS[2],ValueDS[2]};
 	public static boolean WHMatrix[] = {true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false};
 	
-	public static int totalTenant = 2000;
-	public static int timePerInterval = 10; //min
-	public static int totalInterval = 48; // 8 h
-	public static int[][] loadPerInterval = new int[totalTenant][totalInterval];
+	public static int totalTenant = 1000;
 	
 	public static void init(int n){
 		totalTenant = n;
@@ -67,7 +64,12 @@ public class HConfig {
 		}
 		return 17;
 	}
-	//tenantId or TYPE
+	/**
+	 * 	use getQT(tenantId, false) to get SLO with tenant id
+	 * @param tenantId
+	 * @param isType, true if tenantId represents TYPE; false if tenantId represents tenant id
+	 * @return
+	 */
 	public static int getQT(int tenantId, boolean isType){
 		int type = tenantId;
 		if(isType == false){

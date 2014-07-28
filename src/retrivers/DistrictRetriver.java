@@ -19,21 +19,21 @@ import utility.DBManager;
 public class DistrictRetriver extends Thread {
 	public String url, username, password;
 	public String voltdbServer;
-	public int startId;
-	public int tenantNumber;
+	public int tenantId;
+	public int volumnId;
 	
 	public Connection conn = null;
 	public Statement stmt = null;
 	Client voltdbConn = null;
 	PreparedStatement[] statements;
 	
-	public DistrictRetriver(String url, String username, String password, String voltdbServer, int startId, int tenantNumber){
+	public DistrictRetriver(String url, String username, String password, String voltdbServer, int tenantId, int volumnId){
 		this.url = url;
 		this.username = username;
 		this.password = password;
 		this.voltdbServer = voltdbServer;
-		this.startId = startId;
-		this.tenantNumber = tenantNumber;
+		this.tenantId = tenantId;
+		this.volumnId = volumnId;
 	}
 	
 	@Override
@@ -41,10 +41,9 @@ public class DistrictRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
-			statements = new PreparedStatement[tenantNumber];
-			for(int id=0;id<tenantNumber;id++){
-				statements[id] = conn.prepareStatement("UPDATE district"+(id+startId)+" SET d_next_o_id = ? , d_ytd = ? WHERE d_id = ? AND d_w_id = ?");
-			}
+			statements = new PreparedStatement[2];
+			statements[0] = conn.prepareStatement("UPDATE district"+tenantId+" SET d_id = ?, d_w_id = ?, d_name = ?, d_street_1 = ?, d_street_2 = ?, d_city = ?, d_state = ?, d_zip = ?, d_tax = ?, d_ytd = ?, d_next_o_id = ? WHERE d_w_id = ? AND d_id = ?");
+			statements[1] = conn.prepareStatement("INSERT INTO district"+tenantId+" VALUES (?,?,?,?,？,?,?,?,?,?,?)");
 		} catch (Exception e1) {
 			System.out.println("error in creating or preparing mysql statement for retriving data...");
 		}
@@ -55,28 +54,55 @@ public class DistrictRetriver extends Thread {
 		//******************************************************************************//
 		ClientResponse response = null;
 		VoltTable result = null;
-		for(int id = 0; id < tenantNumber; id++){
-			int tenantId = id + startId;
 			try{
-				response = voltdbConn.callProcedure("PRSelectAllDistrict", tenantId, 0, 1);
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM district"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 0 AND is_update = 1");
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
 					for(int i=0; i<result.getRowCount(); i++){
 						VoltTableRow row = result.fetchRow(i);
-						statements[id].setInt(1, (int) row.get("d_next_o_id", VoltType.INTEGER));
-						statements[id].setBigDecimal(2, row.getDecimalAsBigDecimal("d_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
-						statements[id].setInt(3, (int) row.get("d_id", VoltType.INTEGER));
-						statements[id].setInt(4, (int) row.get("d_w_id", VoltType.INTEGER));
-						statements[id].addBatch();
+						statements[0].setInt(1, (int) row.get("d_id", VoltType.INTEGER));
+						statements[0].setInt(2, (int) row.get("d_w_id", VoltType.INTEGER));
+						statements[0].setString(3, row.getString("d_name"));
+						statements[0].setString(4, row.getString("d_street_1"));
+						statements[0].setString(5, row.getString("d_street_2"));
+						statements[0].setString(6, row.getString("d_city"));
+						statements[0].setString(7, row.getString("d_state"));
+						statements[0].setString(8, row.getString("d_zip"));
+						statements[0].setBigDecimal(9, row.getDecimalAsBigDecimal("d_tax").setScale(4, BigDecimal.ROUND_HALF_DOWN));
+						statements[0].setBigDecimal(10, row.getDecimalAsBigDecimal("d_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
+						statements[0].setInt(11, (int) row.get("d_next_o_id", VoltType.INTEGER));
+						statements[0].setInt(12, (int) row.get("d_w_id", VoltType.INTEGER));
+						statements[0].setInt(13, (int) row.get("d_id", VoltType.INTEGER));
+						statements[0].addBatch();
 					}
-					statements[id].executeBatch();
+					statements[0].executeBatch();
 				}
-				voltdbConn.callProcedure("PRDeleteAllDistrict", tenantId);
+				
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM district"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 1");
+				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
+					result = response.getResults()[0];
+					for(int i=0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[1].setInt(1, (int) row.get("d_id", VoltType.INTEGER));
+						statements[1].setInt(2, (int) row.get("d_w_id", VoltType.INTEGER));
+						statements[1].setString(3, row.getString("d_name"));
+						statements[1].setString(4, row.getString("d_street_1"));
+						statements[1].setString(5, row.getString("d_street_2"));
+						statements[1].setString(6, row.getString("d_city"));
+						statements[1].setString(7, row.getString("d_state"));
+						statements[1].setString(8, row.getString("d_zip"));
+						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("d_tax").setScale(4, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].setBigDecimal(10, row.getDecimalAsBigDecimal("d_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].setInt(11, (int) row.get("d_next_o_id", VoltType.INTEGER));
+						statements[1].addBatch();
+					}
+					statements[1].executeBatch();
+				}
+				voltdbConn.callProcedure("@AdHoc", "DELETE FROM district"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		}
-		System.out.println("\nTABLE district: "+startId+" ~ "+(startId+tenantNumber-1)+" truncated...");
+		System.out.println("\n district: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();

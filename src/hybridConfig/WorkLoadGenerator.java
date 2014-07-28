@@ -9,25 +9,28 @@ import utility.Support;
 
 public class WorkLoadGenerator {
 	public static double activeRatio = 0.2;
-	public static double exchangeRatio = 0.1;
+	public static double exchangeRatio = 0.3;
 	public static double[] activePercentPerQT = {0.3, 0.3, 0.4};
 	public static int[] tenantsPerQT;
-	public static int totalTenant = 2000;
+	public static int totalTenant = 1000;
 	public static int timePerInterval = 10; //min
-	public static int totalInterval = 48; // 8 h
-	public static int HRan = 80;
-	public static int MRan = 40;
+	public static int totalInterval = 6; // 1 h
+	public static int HRan = 180;
+	public static int MRan = 80;
 	public static int LRan = 10;
+	public static int dRan = 5;
 	public static boolean[][] activePattern = new boolean[totalTenant][totalInterval];
 	public static boolean[] isBursty = new boolean[totalInterval];
 	
-	public static int activeNumber = (int) (activeRatio * totalTenant);
-//	public static int[][] load = new int[activeNumber][timePerInterval];
-	public static int[] activeTenant = new int[activeNumber];
-	public static int[] inactiveTenant = new int[totalTenant-activeNumber];
+	public static int activeNumber;
+	public static int[] activeTenant;
+	public static int[] inactiveTenant;
 	
 	public static void main(String[] args) throws IOException{
 		totalTenant = 1000;
+		activeNumber = (int) (activeRatio * totalTenant);
+		activeTenant = new int[activeNumber];
+		inactiveTenant = new int[totalTenant - activeNumber];
 		HConfig.init(totalTenant);
 		tenantsPerQT = new int[3];
 		for(int i = 0; i < 3;i ++){
@@ -82,43 +85,49 @@ public class WorkLoadGenerator {
 		fstream = new FileWriter("load2.txt", false);
 		BufferedWriter out = new BufferedWriter(fstream);
 		
-		Random ran = new Random();
-		int load = 0;
 		for(int intervalId = 0; intervalId < totalInterval; intervalId++){
-			boolean flag = true;
-			for(int time = 0; time < timePerInterval; time++){
+			int[] load = new int[totalTenant];
+			Random ran = new Random(System.nanoTime());
+			for (int tenantId = 0; tenantId < totalTenant; tenantId++) {
+				int QT = HConfig.getQT(tenantId, false);
+				boolean isActive = activePattern[tenantId][intervalId];
+				if (isActive) {
+					load[tenantId] = ran.nextInt(QT) + 1;
+					if(isBursty[intervalId]){
+						load[tenantId] = (load[tenantId]+HRan > QT)?QT:(load[tenantId]+HRan);
+					}else{
+						boolean tmp = ran.nextBoolean();
+						if (tmp) {
+							load[tenantId] = (load[tenantId] + MRan > QT) ? QT: load[tenantId] + MRan;
+						} else {
+							load[tenantId] = (load[tenantId] + LRan > QT) ? QT: load[tenantId] + LRan;
+						}
+					}
+				} else {
+					load[tenantId] = 0;
+				}
+			}
+//			for (int time = 0; time < timePerInterval; time++) {
+//				out.write("" + (intervalId * timePerInterval + time));
+//				int dd = ran.nextInt() % dRan;
+			out.write(""+(intervalId*timePerInterval));
+				int dd = 0;
 				int totalLoad = 0;
-				int tmptime = intervalId*timePerInterval+time;
-				out.write(tmptime+"");
-				for(int tenantId = 0; tenantId < totalTenant; tenantId++){
+				for (int tenantId = 0; tenantId < totalTenant; tenantId++) {
 					int QT = HConfig.getQT(tenantId, false);
 					boolean isActive = activePattern[tenantId][intervalId];
-					if(isActive){
-						if(flag){
-							load = ran.nextInt(QT)+1;
-							if(isBursty[intervalId]){
-								int tmp = load+HRan;
-								load = (tmp > QT)?QT:tmp;
-							}else{
-								boolean tmp = ran.nextBoolean();
-								if(tmp){
-									load = (load+MRan>QT)?QT:load+MRan;
-								}else{
-									load = (load+LRan>QT)?QT:load+LRan;
-								}
-							}
-							flag = false;
-						}
-						out.write(" "+load);
-						totalLoad += load;
-					}else{
-						out.write(" 0");
+					int tmpload = 0;
+					if (isActive) {
+						tmpload = load[tenantId] + dd;
+						tmpload = (tmpload > QT) ? QT : tmpload;
 					}
+					out.write(" " + tmpload);
+					totalLoad += tmpload;
 				}
-				out.write(" "+totalLoad);
+				out.write(" " + totalLoad);
 				out.newLine();out.flush();
 			}
-		}
+//		}
 		out.close();
 	}
 	
@@ -127,7 +136,7 @@ public class WorkLoadGenerator {
 		for(int i = 0; i < totalInterval; i++){
 			isBursty[i] = false;
 		}
-		
+		isBursty[3] = true;
 	}
 	
 	public static void setActivePattern(){
@@ -138,7 +147,6 @@ public class WorkLoadGenerator {
 			}
 		}
 		
-		int exchangeNumber = (int) (exchangeRatio*activeNumber);
 		activeTenant = Support.Rands(0, totalTenant, activeNumber);
 		boolean[] state = new boolean[totalTenant];
 		for(int i = 0; i < totalTenant; i++){
@@ -155,18 +163,19 @@ public class WorkLoadGenerator {
 			}
 		}
 		for(int intervalId = 0; intervalId < totalInterval; intervalId++){
-			exchange(0, HConfig.totalTenant, exchangeNumber, activeTenant);
+			exchange();
 			for(int i = 0; i < activeNumber; i++){
 				activePattern[activeTenant[i]][intervalId] = true;
 			}
 		}
 	}
 	
-	public static void exchange(int startId, int total, int exN, int[] ori){
-		int[] exa = Support.Rands(0, activeNumber, exN);
-		int[] exin = Support.Rands(0, inactiveTenant.length, exN);
+	public static void exchange(){
+		int exchangeNumber = (int) (exchangeRatio*activeNumber);
+		int[] exa = Support.Rands(0, activeNumber, exchangeNumber);
+		int[] exin = Support.Rands(0, inactiveTenant.length, exchangeNumber);
 		int tmp;
-		for(int i = 0; i < exN; i++){
+		for(int i = 0; i < exchangeNumber; i++){
 			tmp = activeTenant[exa[i]];
 			activeTenant[exa[i]] = inactiveTenant[exin[i]];
 			inactiveTenant[exin[i]] = tmp;

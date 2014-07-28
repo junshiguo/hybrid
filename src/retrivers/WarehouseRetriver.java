@@ -19,21 +19,21 @@ import utility.DBManager;
 public class WarehouseRetriver extends Thread {
 	public String url, username, password;
 	public String voltdbServer;
-	public int startId;
-	public int tenantNumber;
+	public int tenantId;
+	public int volumnId;
 	
 	public Connection conn = null;
 	public Statement stmt = null;
 	Client voltdbConn = null;
 	PreparedStatement[] statements;
 	
-	public WarehouseRetriver(String url, String username, String password, String voltdbServer, int startId, int tenantNumber){
+	public WarehouseRetriver(String url, String username, String password, String voltdbServer, int tenantId, int volumnId){
 		this.url = url;
 		this.username = username;
 		this.password = password;
 		this.voltdbServer = voltdbServer;
-		this.startId = startId;
-		this.tenantNumber = tenantNumber;
+		this.tenantId = tenantId;
+		this.volumnId = volumnId;
 	}
 	
 	@Override
@@ -41,10 +41,9 @@ public class WarehouseRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
-			statements = new PreparedStatement[tenantNumber];
-			for(int id=0;id<tenantNumber;id++){
-				statements[id] = conn.prepareStatement("UPDATE warehouse"+(id+startId)+" SET w_ytd = ? WHERE w_id = ?");
-			}
+			statements = new PreparedStatement[2];
+			statements[0] = conn.prepareStatement("UPDATE warehouse"+tenantId+" SET w_id = ?,	w_name = ?,w_street_1 = ?,w_street_2 = ?,w_city = ?,w_state = ?,w_zip = ?,w_tax = ?,	w_ytd = ? WHERE w_id = ?");
+			statements[1] = conn.prepareStatement("INSERT INTO warehouse"+tenantId+" VALUES (?,?,?,?,?,?,?,?,?)");
 		} catch (Exception e1) {
 			System.out.println("error in creating or preparing mysql statement for retriving data...");
 		}
@@ -55,27 +54,50 @@ public class WarehouseRetriver extends Thread {
 		//******************************************************************************//
 		ClientResponse response = null;
 		VoltTable result = null;
-		for(int id = 0; id < tenantNumber; id++){
-			int tenantId = id + startId;
 			try{
-				response = voltdbConn.callProcedure("PRSelectAllWarehouse", tenantId, 0, 1);
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM warehouse"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 0 AND is_update = 1");
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
-					for(int i=0; i<result.getRowCount(); i++){
+					for(int i = 0; i<result.getRowCount(); i++){
 						VoltTableRow row = result.fetchRow(i);
-						statements[id].setBigDecimal(1, row.getDecimalAsBigDecimal("w_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
-						statements[id].setInt(2, (int) row.get("w_id", VoltType.INTEGER));
-						statements[id].addBatch();
+						statements[0].setInt(1, (int) row.get("w_id", VoltType.INTEGER));
+						statements[0].setString(2, row.getString("w_name"));
+						statements[0].setString(3, row.getString("w_street_1"));
+						statements[0].setString(4, row.getString("w_street_2"));
+						statements[0].setString(5, row.getString("w_city"));
+						statements[0].setString(6, row.getString("w_state"));
+						statements[0].setString(7, row.getString("w_zip"));
+						statements[0].setBigDecimal(8, row.getDecimalAsBigDecimal("w_tax").setScale(4, BigDecimal.ROUND_HALF_DOWN));
+						statements[0].setBigDecimal(9, row.getDecimalAsBigDecimal("w_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
+						statements[0].setInt(10, (int) row.get("w_id", VoltType.INTEGER));
+						statements[0].addBatch();
 					}
-					statements[id].executeBatch();
+					statements[0].executeBatch();
 				}
-				voltdbConn.callProcedure("PRDeleteAllWarehouse", tenantId);
+				
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM warehouse"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 1");
+				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
+					result = response.getResults()[0];
+					for(int i = 0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[1].setInt(1, (int) row.get("w_id", VoltType.INTEGER));
+						statements[1].setString(2, row.getString("w_name"));
+						statements[1].setString(3, row.getString("w_street_1"));
+						statements[1].setString(4, row.getString("w_street_2"));
+						statements[1].setString(5, row.getString("w_city"));
+						statements[1].setString(6, row.getString("w_state"));
+						statements[1].setString(7, row.getString("w_zip"));
+						statements[1].setBigDecimal(8, row.getDecimalAsBigDecimal("w_tax").setScale(4, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("w_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].addBatch();
+					}
+					statements[1].executeBatch();
+				}
+				voltdbConn.callProcedure("@AdHoc", "DELETE FROM warehouse"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){
-				System.out.println(statements[id].toString());
 				e.printStackTrace();
 			}
-		}
-		System.out.println("\nTABLE warehouse: "+startId+" ~ "+(startId+tenantNumber-1)+" truncated...");
+		System.out.println("\n warehouse: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();
@@ -83,7 +105,7 @@ public class WarehouseRetriver extends Thread {
 		} catch (SQLException | InterruptedException e) {
 			e.printStackTrace();
 		}	
-		
+				
 	}
 
 }

@@ -18,7 +18,7 @@ public class Support {
 			return null;
 		}
 		int count = 0;
-		Random ran = new Random();
+		Random ran = new Random(System.nanoTime());
 		while(count < nn){
 			int tmp = ran.nextInt(total);
 			boolean flag = true;

@@ -3,6 +3,7 @@ package retrivers;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -18,20 +19,21 @@ import utility.DBManager;
 public class HistoryRetriver extends Thread {
 	public String url, username, password;
 	public String voltdbServer;
-	public int startId;
-	public int tenantNumber;
+	public int tenantId;
+	public int volumnId;
 	
 	public Connection conn = null;
 	public Statement stmt = null;
 	Client voltdbConn = null;
+	PreparedStatement[] statements;
 	
-	public HistoryRetriver(String url, String username, String password, String voltdbServer, int startId, int tenantNumber){
+	public HistoryRetriver(String url, String username, String password, String voltdbServer, int tenantId, int volumnId){
 		this.url = url;
 		this.username = username;
 		this.password = password;
 		this.voltdbServer = voltdbServer;
-		this.startId = startId;
-		this.tenantNumber = tenantNumber;
+		this.tenantId = tenantId;
+		this.volumnId = volumnId;
 	}
 	
 	@Override
@@ -39,6 +41,9 @@ public class HistoryRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
+			statements = new PreparedStatement[2];
+			statements[0] = conn.prepareStatement("UPDATE history"+tenantId+" SET h_c_id = ?, h_c_d_id = ?, h_c_w_id = ?,h_d_id = ?,h_w_id = ?,h_date = ?,h_amount = ?,h_data = ? WHERE h_c_id = ? AND h_c_d_id = ? AND h_c_w_id = ?");
+			statements[1] = conn.prepareStatement("INSERT INTO history"+tenantId+" VALUES (?,?,?,?,?,?,?,?)");
 		} catch (Exception e1) {
 			System.out.println("error in creating or preparing mysql statement for retriving data...");
 		}
@@ -49,40 +54,50 @@ public class HistoryRetriver extends Thread {
 		//******************************************************************************//
 		ClientResponse response = null;
 		VoltTable result = null;
-		boolean dataExist = false;
-		for(int id = 0; id < tenantNumber; id++){
-			int tenantId = id + startId;
 			try{
-				String sql = "INSERT INTO history"+tenantId+" (h_c_id, h_c_d_id, h_c_w_id, h_d_id, h_w_id, h_date, h_amount, h_data) VALUES ";
-				response = voltdbConn.callProcedure("PRSelectAllHistory", tenantId, 1, 0);
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM history"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 0 AND is_update = 1");
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
-					dataExist = true;
 					result = response.getResults()[0];
 					for(int i = 0; i<result.getRowCount(); i++){
 						VoltTableRow row = result.fetchRow(i);
-						String time = row.getTimestampAsSqlTimestamp("h_date").toString();
-						int index = time.lastIndexOf(".");
-						if(index != -1){
-							time = time.substring(0, index);
-						}
-						sql = sql + "("+row.get("h_c_id", VoltType.INTEGER)+","+row.get("h_c_d_id", VoltType.INTEGER)+
-								","+row.get("h_c_w_id", VoltType.INTEGER)+","+row.get("h_d_id", VoltType.INTEGER)+
-								","+row.get("h_w_id", VoltType.INTEGER)+",'"+time+
-								"',"+row.getDecimalAsBigDecimal("h_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN).doubleValue()+",'"+row.getString("h_data")+"')";
-						sql += " , ";
+						statements[0].setInt(1, (int) row.get("h_c_id", VoltType.INTEGER));
+						statements[0].setInt(2, (int) row.get("h_c_d_id", VoltType.INTEGER));
+						statements[0].setInt(3, (int) row.get("h_c_w_id", VoltType.INTEGER));
+						statements[0].setInt(4, (int) row.get("h_d_id", VoltType.INTEGER));
+						statements[0].setInt(5, (int) row.get("h_w_id", VoltType.INTEGER));
+						statements[0].setTimestamp(6, row.getTimestampAsSqlTimestamp("h_date"));
+						statements[0].setBigDecimal(7, row.getDecimalAsBigDecimal("h_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN));
+						statements[0].setString(8, row.getString("h_data"));
+						statements[0].setInt(9, (int) row.get("h_c_id", VoltType.INTEGER));
+						statements[0].setInt(10, (int) row.get("h_c_d_id", VoltType.INTEGER));
+						statements[0].setInt(11, (int) row.get("h_c_w_id", VoltType.INTEGER));
+						statements[0].addBatch();
 					}
-					sql = sql.substring(0, sql.length()-2);
-					if(dataExist){
-						stmt.execute(sql);
-						dataExist = false;
-					}
+					statements[0].executeBatch();
 				}
-				voltdbConn.callProcedure("PRDeleteAllHistory", tenantId);
+				
+				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM history"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 1");
+				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
+					result = response.getResults()[0];
+					for(int i = 0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[1].setInt(1, (int) row.get("h_c_id", VoltType.INTEGER));
+						statements[1].setInt(2, (int) row.get("h_c_d_id", VoltType.INTEGER));
+						statements[1].setInt(3, (int) row.get("h_c_w_id", VoltType.INTEGER));
+						statements[1].setInt(4, (int) row.get("h_d_id", VoltType.INTEGER));
+						statements[1].setInt(5, (int) row.get("h_w_id", VoltType.INTEGER));
+						statements[1].setTimestamp(6, row.getTimestampAsSqlTimestamp("h_date"));
+						statements[1].setBigDecimal(7, row.getDecimalAsBigDecimal("h_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].setString(8, row.getString("h_data"));
+						statements[1].addBatch();
+					}
+					statements[1].executeBatch();
+				}
+				voltdbConn.callProcedure("@AdHoc", "DELETE FROM history"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		}
-		System.out.println("\nTABLE history: "+startId+" ~ "+(startId+tenantNumber-1)+" truncated...");
+		System.out.println("\n history: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();
