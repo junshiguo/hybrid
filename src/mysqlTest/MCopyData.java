@@ -3,6 +3,7 @@ package mysqlTest;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -11,7 +12,7 @@ public class MCopyData {
 	public static PreparedStatement st;
 	
 	public static void main(String[] args){
-		int tenantNumber = 3000;
+		int tenantNumber = 100;
 		if(args.length > 0){
 			tenantNumber = Integer.parseInt(args[0]);
 		}
@@ -28,6 +29,16 @@ public class MCopyData {
 		}		
 		for(int id = 0; id <tenantNumber; id++)
 			copyTables(id);
+		
+//		try {
+//			Statement stmt = conn.createStatement();
+//			ResultSet rs = stmt.executeQuery("select count(*) from customer");
+//			rs.next();
+//			System.out.println(rs.getInt(1));
+//		} catch (SQLException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
 		try {
 			conn.close();
 		} catch (SQLException e) {
@@ -84,6 +95,7 @@ public class MCopyData {
 			System.out.println("copy tables for tenant "+id+". Time spent: "+(end-start)/1000F);
 		} catch (SQLException e) {
 			e.printStackTrace();
+			System.exit(0);
 		}
 	}
 		

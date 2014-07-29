@@ -21,11 +21,17 @@ public class StateReceiver extends Thread {
 			writer.write(Main.TYPE+"&receiver\n");
 			writer.flush();
 			String str = null;
+			String[] info;
 			while((str = reader.readLine()) != null){
-				if(str.trim().equals("0")){
+				info = str.trim().split("&");
+				if(info[0].trim().equals("0")){
 					Main.startTest = true;
 				}else{
-					
+					String[] message = info[1].split(" ");
+					int tenantId = Integer.parseInt(message[0].trim());
+					int usingV = Integer.parseInt(message[1].trim());
+					int usingPV = Integer.parseInt(message[2].trim());
+					Main.setDBState(tenantId, usingV, usingPV);
 				}
 			}
 		} catch (IOException e1) {

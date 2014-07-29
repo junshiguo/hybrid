@@ -50,8 +50,8 @@ public class SocketTask extends Thread {
 								flag = false;
 							}
 						}
-						if(flag){
-							HybridController.sendTask[TYPE].sendInfo(0, "all in position");
+						if(true){
+							HybridController.sendTask[TYPE].sendInfo("all in position");
 						}
 						break;
 					case 2:
@@ -60,7 +60,7 @@ public class SocketTask extends Thread {
 						HybridController.lateQuery[Integer.parseInt(message[0].trim())] += Integer.parseInt(message[2].trim());
 						break;
 					case 3:
-						
+						//not sending throughput info now
 						default:
 					}
 				}
@@ -70,7 +70,7 @@ public class SocketTask extends Thread {
 					if(this.sendNow > 0){
 						int tmp = this.infoType.get(0);
 						this.infoType.remove(0);
-						writer.write("0&"+tmp+ stringInfo.get(0));
+						writer.write(tmp+"&"+stringInfo.get(0));
 						stringInfo.remove(0);
 						this.sendNow--;
 					}
@@ -85,14 +85,14 @@ public class SocketTask extends Thread {
 		this.TYPE = t;
 	}
 	
-	public void sendInfo(int infoType, String info){
-		this.infoType.add(infoType);
+	public void sendInfo(String info){
+		this.infoType.add(0);
 		this.stringInfo.add(info);
 		this.sendNow++;
 	}
 	
-	public void sendInfo(int infoType, int tenantId, int isUsingV, int isPartiallyUsingV){
-		this.infoType.add(infoType);
+	public void sendInfo(int tenantId, int isUsingV, int isPartiallyUsingV){
+		this.infoType.add(1);
 		this.stringInfo.add(""+tenantId+" "+isUsingV+" "+isPartiallyUsingV);
 		this.sendNow++;
 	}

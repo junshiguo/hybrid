@@ -52,9 +52,9 @@ public class SocketSender extends Thread {
 	}
 	
 	public void sendInfo(long time, long throughput, double wp){
-		this.infoType.add(3);
-		this.info.add(time+" "+throughput+" "+wp);
-		this.sendNow++;
+//		this.infoType.add(3);
+//		this.info.add(time+" "+throughput+" "+wp);
+//		this.sendNow++;
 	}
 	
 	public void sendInfo(String str){

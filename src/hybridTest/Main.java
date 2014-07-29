@@ -13,10 +13,10 @@ public class Main {
 	public static int IDStart;
 	public static int TYPE = 0;
 	public static int QTMax;
-	public static String dbURL = "jdbc:mysql://10.20.2.111:3306/tpcc10";
+	public static String dbURL = "jdbc:mysql://127.0.0.1:3306/tpcc10";
 	public static String dbUsername = "remote";
 	public static String dbPassword = "remote";
-	public static String voltdbServer = "10.20.2.211";
+	public static String voltdbServer = "127.0.0.1";
 
 	public static boolean[] usingVoltdb; //set by setDBState
 	public static boolean[] partiallyUsingVoltdb; //set by setDBState
@@ -24,7 +24,7 @@ public class Main {
 	public static double concurrency = 0.1; //set by setConcurrency
 	
 	public static int port = 8899;
-	public static String SocketServer = "10.20.2.211";
+	public static String SocketServer = "127.0.0.1";
 	public static SocketSender socketSender = new SocketSender();
 	public static StateReceiver socketReceiver = new StateReceiver();
 	public static int MAXRETRY = 2;
@@ -48,6 +48,7 @@ public class Main {
 		onlyMysql = true;
 		testTime = 900000;
 		intervalTime = 300000;
+		HConfig.init(1000);
 		init();
 		
 		for(int i = 0; i < tenantNumber; i++){
@@ -106,7 +107,7 @@ public class Main {
 		partiallyUsingVoltdb = new boolean[tenantNumber];
 		throughputPerTenant = new int[tenantNumber];
 		for(int i = 0; i < tenantNumber; i++){
-			tenants[i] = new HTenant(i+IDStart, HConfig.DSMatrix[i], HConfig.QTMatrix[i], HConfig.WHMatrix[i], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
+			tenants[i] = new HTenant(i+IDStart, HConfig.DSMatrix[TYPE], HConfig.QTMatrix[TYPE], HConfig.WHMatrix[TYPE], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
 			usingVoltdb[i] = false;
 			partiallyUsingVoltdb[i] = false;
 			throughputPerTenant[i] = 0;
@@ -156,6 +157,14 @@ public class Main {
 		int index = tenantId - Main.IDStart;
 		Main.usingVoltdb[index] = usingV;
 		Main.partiallyUsingVoltdb[index] = usingPV;
+	}
+	
+	public static void setDBState(int tenantId, int usingV, int usingPV){
+		int index = tenantId - Main.IDStart;
+		if(usingV == 1)	Main.usingVoltdb[index] = true;
+		else Main.usingVoltdb[index] = false;
+		if(usingPV == 1)	Main.partiallyUsingVoltdb[index] = true;
+		else Main.partiallyUsingVoltdb[index] = false;
 	}
 	
 }
