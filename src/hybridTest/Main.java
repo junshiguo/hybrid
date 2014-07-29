@@ -2,12 +2,6 @@ package hybridTest;
 
 import hybridConfig.HConfig;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.Socket;
 import java.util.Random;
 
 import utility.Support;
@@ -15,7 +9,7 @@ import utility.Support;
 public class Main {
 	public static int totalTenantNumber;
 	public static int tenantNumber;
-	public static Tenant[] tenants;
+	public static HTenant[] tenants;
 	public static int IDStart;
 	public static int TYPE = 0;
 	public static int QTMax;
@@ -30,9 +24,9 @@ public class Main {
 	public static double concurrency = 0.1; //set by setConcurrency
 	
 	public static int port = 8899;
-	public static Socket socket;
-	public static BufferedReader reader;
-	public static Writer writer;
+	public static String SocketServer = "10.20.2.211";
+	public static SocketSender socketSender = new SocketSender();
+	public static StateReceiver socketReceiver = new StateReceiver();
 	public static int MAXRETRY = 2;
 	
 //	public static boolean sendRequest = false;
@@ -44,6 +38,9 @@ public class Main {
 	public static long intervalNumber = 3;
 	public static long minPerInterval = 5;
 	public static boolean isActive = true;
+	public static boolean startTest = false;
+	
+	public static int checkTp = 60; //check throughput every 60 seconds
 	
 	public static void main(String[] args){
 		totalTenantNumber = 1000;
@@ -56,20 +53,15 @@ public class Main {
 		for(int i = 0; i < tenantNumber; i++){
 			tenants[i].start();
 		}
-//		try {
-//			Thread.sleep(waitTime);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-		try {
-			socket = new Socket("10.171.5.28", port);
-			reader = new BufferedReader(new InputStreamReader(socket.getInputStream(),"UTF-8"));
-			writer = new OutputStreamWriter(socket.getOutputStream(),"UTF-8");
-			writer.write(Main.TYPE+"&0&in position\n");
-			writer.flush();
-			reader.readLine(); // hybrid controller send sth to start test
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		socketSender = new SocketSender();
+		socketReceiver = new StateReceiver();
+		socketSender.run();
+		socketReceiver.run();
+		socketSender.sendInfo("in position");
+		while(true){
+			if(startTest == true){
+				break;
+			}
 		}
 		
 		System.out.println("******************hybrid test start******************");
@@ -78,13 +70,7 @@ public class Main {
 		for(int i=0; i<intervalNumber; i++){
 			try {
 				Main.setQT();
-				//send data to controller: new qt &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-				String str = "";
-				for(int qt: Main.throughputPerTenant){
-					str = str + qt + " ";
-				}
-				writer.write(Main.TYPE+"&1&"+str+"\n");
-				writer.flush();
+				
 				for(int j = 0; j < minPerInterval; j++){
 					for(int k = 0; k < 20; k++){ //send requests every 3 seconds, 20 times per minute
 						for(int id = 0; id < tenantNumber; id++){
@@ -93,9 +79,9 @@ public class Main {
 						Thread.sleep(3000);
 					}
 					//check throughput, send data to PerformanceController: lateTenant, lateQuery&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-					
+					socketSender.sendInfo((i*minPerInterval+j),throughputPerTenant.clone(), PerformanceMonitor.actualThroughputPerTenant.clone());
 				}
-			} catch (InterruptedException | IOException e) {
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
@@ -115,12 +101,12 @@ public class Main {
 			IDStart = 0;
 		}
 		Main.QTMax = HConfig.QTMatrix[TYPE];
-		tenants = new Tenant[tenantNumber];
+		tenants = new HTenant[tenantNumber];
 		usingVoltdb = new boolean[tenantNumber];
 		partiallyUsingVoltdb = new boolean[tenantNumber];
 		throughputPerTenant = new int[tenantNumber];
 		for(int i = 0; i < tenantNumber; i++){
-			tenants[i] = new Tenant(i+IDStart, HConfig.DSMatrix[i], HConfig.QTMatrix[i], HConfig.WHMatrix[i], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
+			tenants[i] = new HTenant(i+IDStart, HConfig.DSMatrix[i], HConfig.QTMatrix[i], HConfig.WHMatrix[i], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
 			usingVoltdb[i] = false;
 			partiallyUsingVoltdb[i] = false;
 			throughputPerTenant[i] = 0;

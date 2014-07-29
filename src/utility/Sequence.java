@@ -36,6 +36,15 @@ public class Sequence {
 		next = 0;
 	}
 	
+	public void initSequence(double wp){
+		sum = 100;
+		write = (int) (100 * wp);
+		read = sum - write;
+		Sequence = new int[sum];
+		shuffle();
+		next = 0;
+	}
+	
 	public int nextSequence(){
 		int ret;
 		if(next >= read+write){

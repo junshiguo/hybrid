@@ -6,15 +6,24 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class SocketTask extends Thread {
 	public int TYPE;
+	public boolean isSender = false;
 	public Socket socket;
 	public BufferedReader reader;
 	public Writer writer;
 	
+	public int sendNow = 0;
+	public ArrayList<Integer> infoType;
+	public ArrayList<String> stringInfo;
+	
 	public SocketTask(Socket s){
 		this.socket =s;
+		infoType = new ArrayList<Integer>();
+		stringInfo = new ArrayList<String>();
+		sendNow = 0;
 	}
 
 	@Override
@@ -23,10 +32,50 @@ public class SocketTask extends Thread {
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream(),"UTF-8"));
 			writer = new OutputStreamWriter(socket.getOutputStream(),"UTF-8");
 			String str = null;
-			while((str = reader.readLine()) != null){
-				
+			String[] info = null;
+			str = reader.readLine();
+			if(str != null)	info = str.trim().split("&");
+			this.setType(Integer.parseInt(info[0]));
+			if(info[1].equals("sender")){
+				this.isSender = false;
+				while((str = reader.readLine()) != null){
+					info = str.trim().split("&");
+					switch(Integer.parseInt(info[2])){
+					case 0: 
+						HybridController.receiveTask[TYPE] = this;
+						HybridController.inPosition[TYPE] = true;
+						boolean flag = true;
+						for(int i = 0; i < HybridController.typeNumber; i++){
+							if(HybridController.inPosition[i] == false){
+								flag = false;
+							}
+						}
+						if(flag){
+							HybridController.sendTask[TYPE].sendInfo(0, "all in position");
+						}
+						break;
+					case 2:
+						String[] message = info[2].split(" ");
+						HybridController.lateTenant[Integer.parseInt(message[0].trim())] += Integer.parseInt(message[1].trim());
+						HybridController.lateQuery[Integer.parseInt(message[0].trim())] += Integer.parseInt(message[2].trim());
+						break;
+					case 3:
+						
+						default:
+					}
+				}
+			}else if(info[1].equals("receiver")){
+				this.isSender = true;
+				while(true){
+					if(this.sendNow > 0){
+						int tmp = this.infoType.get(0);
+						this.infoType.remove(0);
+						writer.write("0&"+tmp+ stringInfo.get(0));
+						stringInfo.remove(0);
+						this.sendNow--;
+					}
+				}
 			}
-			//check if it is needed to write some info back
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -34,6 +83,18 @@ public class SocketTask extends Thread {
 	
 	public void setType(int t){
 		this.TYPE = t;
+	}
+	
+	public void sendInfo(int infoType, String info){
+		this.infoType.add(infoType);
+		this.stringInfo.add(info);
+		this.sendNow++;
+	}
+	
+	public void sendInfo(int infoType, int tenantId, int isUsingV, int isPartiallyUsingV){
+		this.infoType.add(infoType);
+		this.stringInfo.add(""+tenantId+" "+isUsingV+" "+isPartiallyUsingV);
+		this.sendNow++;
 	}
 
 }

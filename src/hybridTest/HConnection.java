@@ -63,10 +63,6 @@ public class HConnection extends Thread {
 		if(conn == null){
 			System.out.println("Tenant "+tenantId+" connecting mysql failed...");
 		}
-//		voltdbConn = DBManager.connectVoltdb(voltdbServer);
-//		if(voltdbConn == null){
-//			System.out.println("Tenant "+tenantId+" connectiong voltdb failed...");
-//		}
 		try {
 			sqlPrepare();
 		} catch (SQLException e) {

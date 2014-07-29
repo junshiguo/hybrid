@@ -10,8 +10,6 @@ import utility.Support;
 public class WorkLoadGenerator {
 	public static double activeRatio = 0.2;
 	public static double exchangeRatio = 0.3;
-	public static double[] activePercentPerQT = {0.3, 0.3, 0.4};
-	public static int[] tenantsPerQT;
 	public static int totalTenant = 1000;
 	public static int timePerInterval = 10; //min
 	public static int totalInterval = 6; // 1 h
@@ -32,12 +30,7 @@ public class WorkLoadGenerator {
 		activeTenant = new int[activeNumber];
 		inactiveTenant = new int[totalTenant - activeNumber];
 		HConfig.init(totalTenant);
-		tenantsPerQT = new int[3];
-		for(int i = 0; i < 3;i ++){
-			tenantsPerQT[i] = (int) (totalTenant*HConfig.PercentQT[i]);
-		}
-//		generateLoad();
-		generateLoad2();
+		generateLoad();
 	}
 	
 	public static void generateLoad() throws IOException{
@@ -45,44 +38,6 @@ public class WorkLoadGenerator {
 		setActivePattern();
 		FileWriter fstream = null;
 		fstream = new FileWriter("load.txt", false);
-		BufferedWriter out = new BufferedWriter(fstream);
-		
-		Random ran = new Random();
-		for(int tenantId = 0; tenantId < totalTenant; tenantId++){
-			int QT = HConfig.getQT(tenantId, false);
-			out.write(tenantId+" "+QT);
-			for(int intervalId = 0; intervalId < totalInterval; intervalId++){
-				boolean isActive = activePattern[tenantId][intervalId];
-				for(int time = 0; time < timePerInterval; time++){
-					if(isActive){
-						int load = ran.nextInt(QT)+1;
-						if(isBursty[intervalId]){
-							int tmp = load+HRan;
-							load = (tmp > QT)?QT:tmp;
-						}else{
-							boolean tmp = ran.nextBoolean();
-							if(tmp){
-								load = (load+MRan>QT)?QT:load+MRan;
-							}else{
-								load = (load+LRan>QT)?QT:load+LRan;
-							}
-						}
-						out.write(" "+load);
-					}else{
-						out.write(" 0");
-					}
-				}
-			}
-			out.newLine();out.flush();
-		}
-		out.close();
-	}
-	
-	public static void generateLoad2() throws IOException{
-		setBursty();
-		setActivePattern();
-		FileWriter fstream = null;
-		fstream = new FileWriter("load2.txt", false);
 		BufferedWriter out = new BufferedWriter(fstream);
 		
 		for(int intervalId = 0; intervalId < totalInterval; intervalId++){

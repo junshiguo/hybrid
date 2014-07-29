@@ -14,7 +14,7 @@ public class SocketServer extends Thread{
 				Socket socket = server.accept();
 				SocketTask st = new SocketTask(socket);
 				st.start();
-				HybridController.task.add(st);
+//				HybridController.task.add(st);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -10,5 +10,13 @@ public class BurstDetector {
 	public static int[] findBurst(int tenantNumber, int totalTimeInterval){
 		return null;
 	}
+	
+	public static int getMTP(double writePercent){
+		return 0;
+	}
+	
+	public static int getVTP(double writePercent){
+		return 0;
+	}
 
 }

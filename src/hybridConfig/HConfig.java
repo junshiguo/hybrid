@@ -3,7 +3,7 @@ package hybridConfig;
 public class HConfig {
 	public static int[] ValueQT = { 60, 120, 200 };  // per minute
 	public static double[] ValueDS = {3, 6.9, 18.3 };  // MB
-	public static double[] ValueWP = { 0.6, 0.2 };  // +-0.05
+	public static double[] ValueWP = { 0.6, 0.2 };  //
 	public static double[] PercentQT = { 0.3, 0.5, 0.2 };
 	public static double[] PercentDS = { 0.5, 0.3, 0.2 };
 	public static double[] PercentWH = { 0.4, 0.6 };  // 0.4 for write heavy and 0.6 for read heavy

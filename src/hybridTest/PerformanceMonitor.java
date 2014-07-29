@@ -13,8 +13,6 @@ import utility.Support;
 public class PerformanceMonitor extends Thread {
 	public static ArrayList<Long> timePerQuery;
 	public static int[] actualThroughputPerTenant; // updated in Main per minute
-	public static int totalLateQuery = 0;
-	public static int totalLateTenant = 0;
 	public static long writeQuery = 0;
 	public static long readQuery = 0;
 	public static double writePercent; 
@@ -22,8 +20,6 @@ public class PerformanceMonitor extends Thread {
 	public static long time = 0;
 	
 	public PerformanceMonitor(int tenantNumber){
-		totalLateQuery = 0;
-		totalLateTenant = 0;
 		writeQuery = 0;
 		readQuery = 0;
 		checkInterval = 5000;
@@ -60,7 +56,7 @@ public class PerformanceMonitor extends Thread {
 				long writeNumber = writeQuery;
 				writePercent = (writeNumber*1.0)/(readNumber+writeNumber);
 				//send data to PerformanceController using socket: throughput, writePercent&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-				
+				Main.socketSender.sendInfo(time/1000, (readNumber+writeNumber), writePercent);
 				ArrayList<Long> tmpList = new ArrayList<Long>(timePerQuery);
 				Iterator<Long> iter = tmpList.iterator();
 				ArrayList<Long> toRemove = new ArrayList<Long>();
