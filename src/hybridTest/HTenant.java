@@ -26,8 +26,8 @@ public class HTenant extends Thread {
 		this.tenantId = id;
 		this.dataSize = ds;
 		this.QT = qt; 
-		this.base = QT / 20;
-		this.bonus = QT % 20;
+		this.base = 0;
+		this.bonus = 0;
 		this.writeHeavy = wh;
 		this.dbURL = url;
 		this.dbUsername = username;
@@ -44,7 +44,8 @@ public class HTenant extends Thread {
 	}
 
 	public void run(){
-		connection.start();
+//		connection.start();
+		connection.connectDB();
 		while(Main.isActive == false){
 			try {
 				Thread.sleep(1000);
@@ -54,24 +55,35 @@ public class HTenant extends Thread {
 		}
 		
 		while(Main.isActive){
-			if(this.doSQLNow > 0){
+			if(this.checkDoSQLNow(0) > 0){
 				for(int i = 0; i < base; i++){
 					int sqlId = sequence.nextSequence();
 					driver.initiatePara(sqlId);
-					connection.setPara(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
-					connection.doSQLNow ++;
+//					connection.setPara(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
+//					connection.doSQLNow ++;
+					connection.doSQL(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
 				}
 				if(this.bonus > 0){
 					int sqlId = sequence.nextSequence();
 					driver.initiatePara(sqlId);
-					connection.setPara(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
-					connection.doSQLNow ++;
+//					connection.setPara(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
+//					connection.doSQLNow ++;
+					connection.doSQL(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
 					this.bonus --;
 				}
-				this.doSQLNow --;
+				this.checkDoSQLNow(-1);
 			}
 		}
 		
+	}
+	
+	public synchronized int checkDoSQLNow(int action){
+		if(action == 1){
+			this.doSQLNow++;
+		}else if(action == -1){
+			this.doSQLNow --;
+		}
+		return this.doSQLNow;
 	}
 	
 	public void setQT(int newqt){

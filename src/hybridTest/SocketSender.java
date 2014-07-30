@@ -21,15 +21,19 @@ public class SocketSender extends Thread {
 			writer = new OutputStreamWriter(socket.getOutputStream(),"UTF-8");
 			writer.write(Main.TYPE+"&sender\n");
 			writer.flush();
+			System.out.println("Main "+Main.TYPE+" send socket working...");
 			while(true){
-				if(this.sendNow > 0){
+				if(this.checkSendNow(0) > 0){
 					int tmp = infoType.get(0);
 					infoType.remove(0);
 					String str = info.get(0);
 					info.remove(0);
 					writer.write(Main.TYPE + "&" + tmp + "&" + str + "\n");
 					writer.flush();
-					this.sendNow--;
+					System.out.println(Main.TYPE + "&" + tmp + "&" + str);
+					this.checkSendNow(-1);
+				}else{
+//					Thread.sleep(100);
 				}
 			}
 		} catch (IOException e1) {
@@ -37,30 +41,40 @@ public class SocketSender extends Thread {
 		}
 	}
 	
+	public synchronized int checkSendNow(int action){
+		if(action == 1){
+			this.sendNow++;
+		}else if(action == -1){
+			this.sendNow --;
+		}
+		return this.sendNow;
+	}
+	
 	public void sendInfo(long time, int[] tp, int[] atp){
 		this.infoType.add(2);
 		int lateTenant = 0, lateQuery = 0;
 		for(int i = 0; i < Main.tenantNumber; i++){
-			tp[i] = tp[i] * 60 / Main.checkTp;
+			atp[i] = atp[i] * 60 / Main.checkTp;
 			if(atp[i]<tp[i]){
 				lateTenant ++;
 				lateQuery += tp[i] - atp[i];
 			}
 		}
 		this.info.add(time+" "+lateTenant+" "+lateQuery);
-		this.sendNow++;
+		this.checkSendNow(1);
 	}
 	
 	public void sendInfo(long time, long throughput, double wp){
 //		this.infoType.add(3);
 //		this.info.add(time+" "+throughput+" "+wp);
-//		this.sendNow++;
+//		this.checkSendNow(1);
+		System.out.println(""+time+" "+wp+" "+throughput);
 	}
 	
 	public void sendInfo(String str){
 		this.infoType.add(0);
 		this.info.add(str);
-		this.sendNow++;
+		this.checkSendNow(1);
 	}
 
 }

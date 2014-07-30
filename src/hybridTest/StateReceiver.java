@@ -20,12 +20,15 @@ public class StateReceiver extends Thread {
 			writer = new OutputStreamWriter(socket.getOutputStream(),"UTF-8");
 			writer.write(Main.TYPE+"&receiver\n");
 			writer.flush();
+			System.out.println("Main "+Main.TYPE+" receive socket working...");
 			String str = null;
 			String[] info;
 			while((str = reader.readLine()) != null){
 				info = str.trim().split("&");
 				if(info[0].trim().equals("0")){
-					Main.startTest = true;
+//					Main.startTest = true;
+					Main.checkStart(true);
+					System.out.println("Main: start test");
 				}else{
 					String[] message = info[1].split(" ");
 					int tenantId = Integer.parseInt(message[0].trim());

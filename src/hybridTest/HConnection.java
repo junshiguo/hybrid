@@ -57,6 +57,22 @@ public class HConnection extends Thread {
 		statements = new PreparedStatement[44];
 		waitList = new Vector<WaitList>();
 	}
+	
+	public boolean connectDB(){
+		conn = DBManager.connectDB(mysqlURL, mysqlUsername, mysqlPassword);
+		if(conn == null){
+			System.out.println("Tenant "+tenantId+" connecting mysql failed...");
+			return false;
+		}
+		try {
+			sqlPrepare();
+			conn.setAutoCommit(false);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
 
 	public void run(){
 		conn = DBManager.connectDB(mysqlURL, mysqlUsername, mysqlPassword);
@@ -65,6 +81,7 @@ public class HConnection extends Thread {
 		}
 		try {
 			sqlPrepare();
+			conn.setAutoCommit(false);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -89,15 +106,15 @@ public class HConnection extends Thread {
 		int[] state = new int[2];
 		
 		if(Main.onlyMysql == true || (this.isUsingVoltdb() == false && this.isPartiallUsingVoltdb() == false)){ //only mysql, for mysql test
-			if(queryId == 3){//insert, for primary key constraint
-				paratmpNumber = setActualPara(0, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
-				success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paratmpType, true);
-				if(success == true){
-					paratmpNumber = setActualPara(1, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
-					success = doSQLInMysql(tableId, 1, paratmpNumber, paratmp, paratmpType, false);
-					return success;
-				}
-			}
+//			if(queryId == 3){//insert, for primary key constraint
+//				paratmpNumber = setActualPara(0, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+//				success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paratmpType, true);
+//				if(success == true){
+//					paratmpNumber = setActualPara(1, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+//					success = doSQLInMysql(tableId, 1, paratmpNumber, paratmp, paratmpType, false);
+//					return success;
+//				}
+//			}
 			paratmpNumber = setActualPara(queryId, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
 			success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType, false);
 		}else if(this.isPartiallUsingVoltdb() == true){ // this tenant partially uses voltdb
@@ -153,7 +170,7 @@ public class HConnection extends Thread {
 				}
 			}
 		}
-		if(success && sqlId > 20){
+		if(success && sqlId > 8){
 			try {
 				this.conn.commit();
 			} catch (SQLException e) {
@@ -161,10 +178,10 @@ public class HConnection extends Thread {
 			}
 		}
 		long end = System.nanoTime();
-		if(success == true){
-			PerformanceMonitor.timePerQuery.add(end - start);
-			PerformanceMonitor.actualThroughputPerTenant[this.tenantId]++;
-			if(sqlId <= 20)	PerformanceMonitor.readQuery++;
+		if(success == true && Main.isActive == true){
+			PerformanceMonitor.timePerQuery.add(new Long(end - start));
+			Main.actualThroughputPerTenant[this.tenantId - Main.IDStart]++;
+			if(sqlId <= 8)	PerformanceMonitor.readQuery++;
 			else PerformanceMonitor.writeQuery++;
 		}
 		return success;
@@ -235,6 +252,7 @@ public class HConnection extends Thread {
 					default:
 				}
 			}
+			System.out.println(statements[sqlId].toString());
 			statements[sqlId].execute();
 			if(careResult == true && queryId == 0){
 				ResultSet rs = statements[sqlId].getResultSet();
@@ -242,7 +260,6 @@ public class HConnection extends Thread {
 				else return false;
 			}
 			return true;
-			//System.out.println(threadId +" sta "+sqlId+" : "+ Tenant.statements[threadId][sqlId].toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("thread id: "+this.tenantId +"; sql id: "+sqlId+"; i= "+i+" : exception??");

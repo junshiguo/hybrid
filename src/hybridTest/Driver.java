@@ -97,7 +97,6 @@ public class Driver {
 	int paraNumber, PKNumber;
 	
 	public void initiatePara(int seq) {
-		while (Driver.IsActive) { // initiate parameter
 			int tableId = seq % 9;
 			switch (tableId) {
 			case 0: // customer
@@ -342,7 +341,6 @@ public class Driver {
 				break;
 			default:
 			}
-		}
 	}
 
 }

@@ -21,12 +21,14 @@ public class Main {
 	public static boolean[] usingVoltdb; //set by setDBState
 	public static boolean[] partiallyUsingVoltdb; //set by setDBState
 	public static int[] throughputPerTenant; //planned throughput, set by setQT()
+	public static int[] actualThroughputPerTenant; // updated in Main per minute
 	public static double concurrency = 0.1; //set by setConcurrency
 	
 	public static int port = 8899;
 	public static String SocketServer = "127.0.0.1";
 	public static SocketSender socketSender = new SocketSender();
 	public static StateReceiver socketReceiver = new StateReceiver();
+	public static PerformanceMonitor performanceMonitor;
 	public static int MAXRETRY = 2;
 	
 //	public static boolean sendRequest = false;
@@ -40,27 +42,29 @@ public class Main {
 	public static boolean isActive = true;
 	public static boolean startTest = false;
 	
-	public static int checkTp = 60; //check throughput every 60 seconds
+	public static int checkTp = 15; //check throughput every 60 seconds
 	
 	public static void main(String[] args){
 		totalTenantNumber = 1000;
 		TYPE = 1;
 		onlyMysql = true;
-		testTime = 900000;
-		intervalTime = 300000;
+		testTime = 45000;
+		intervalTime = 15000;
 		HConfig.init(1000);
 		init();
 		
 		for(int i = 0; i < tenantNumber; i++){
 			tenants[i].start();
 		}
+		performanceMonitor = new PerformanceMonitor(tenantNumber);
+		performanceMonitor.start();
 		socketSender = new SocketSender();
 		socketReceiver = new StateReceiver();
-		socketSender.run();
-		socketReceiver.run();
+		socketSender.start();
+		socketReceiver.start();
 		socketSender.sendInfo("in position");
 		while(true){
-			if(startTest == true){
+			if(checkStart(false)){
 				break;
 			}
 		}
@@ -72,15 +76,16 @@ public class Main {
 			try {
 				Main.setQT();
 				
-				for(int j = 0; j < minPerInterval; j++){
-					for(int k = 0; k < 20; k++){ //send requests every 3 seconds, 20 times per minute
+				for(int j = 0; j < 1; j++){
+					Main.resetActualTP();
+					for(int k = 0; k < 5; k++){ //send requests every 3 seconds, 20 times per minute
 						for(int id = 0; id < tenantNumber; id++){
-							tenants[id].doSQLNow++;
+							tenants[id].checkDoSQLNow(1);
 						}
 						Thread.sleep(3000);
 					}
 					//check throughput, send data to PerformanceController: lateTenant, lateQuery&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-					socketSender.sendInfo((i*minPerInterval+j),throughputPerTenant.clone(), PerformanceMonitor.actualThroughputPerTenant.clone());
+					socketSender.sendInfo((i*minPerInterval+j),throughputPerTenant.clone(), Main.actualThroughputPerTenant.clone());
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -88,14 +93,22 @@ public class Main {
 		}
 		Main.isActive = false;
 		System.out.println("******************hybrid test complete******************");
-		System.exit(1);
+//		System.exit(1);
 		
+	}
+	
+	public static synchronized boolean checkStart(boolean source){
+		if(source){
+			Main.startTest = true;
+		}
+		return Main.startTest;
 	}
 	
 	public static void init(){
 		intervalNumber = testTime / intervalTime;
 		minPerInterval = intervalTime / 60000;
 		tenantNumber = (int) (totalTenantNumber*HConfig.PercentTenantSplits[TYPE]);
+		tenantNumber =1;
 		if(TYPE != 0){
 			IDStart = (int) (totalTenantNumber*HConfig.PercentTenantSplitsSum[TYPE-1]);
 		}else{
@@ -106,11 +119,13 @@ public class Main {
 		usingVoltdb = new boolean[tenantNumber];
 		partiallyUsingVoltdb = new boolean[tenantNumber];
 		throughputPerTenant = new int[tenantNumber];
+		actualThroughputPerTenant = new int[tenantNumber];
 		for(int i = 0; i < tenantNumber; i++){
 			tenants[i] = new HTenant(i+IDStart, HConfig.DSMatrix[TYPE], HConfig.QTMatrix[TYPE], HConfig.WHMatrix[TYPE], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
 			usingVoltdb[i] = false;
 			partiallyUsingVoltdb[i] = false;
 			throughputPerTenant[i] = 0;
+			actualThroughputPerTenant[i] = 0;
 		}
 	}
 
@@ -119,37 +134,44 @@ public class Main {
 	}
 	
 	public static void setQT(){
-		int activeTenantNumber = (int) (tenantNumber * concurrency);
-		int[] activeTenant = Support.Rands(IDStart, tenantNumber, activeTenantNumber);
-		boolean[] flags = new boolean[tenantNumber];
-		for(int i = 0; i < activeTenantNumber; i++){
-			flags[activeTenant[i]] = true; 
-		}
+//		int activeTenantNumber = (int) (tenantNumber * concurrency);
+//		int[] activeTenant = Support.Rands(0, tenantNumber, activeTenantNumber);
+//		boolean[] flags = new boolean[tenantNumber];
+//		for(int i = 0; i < activeTenantNumber; i++){
+//			flags[activeTenant[i]] = true; 
+//		}
 		for(int i = 0; i < tenantNumber; i++){
-			if(flags[i]){
-				Main.throughputPerTenant[i] = Main.QTMax;
-			}else{
-				Random ran = new Random();
-				switch(Main.QTMax){
-				case 20:
-					Main.throughputPerTenant[i] = 0;
-					break;
-				case 60:
-					int tt = ran.nextInt(3);
-					if(tt == 0)	Main.throughputPerTenant[i] = 0;
-					else if(tt == 1) Main.throughputPerTenant[i] = 20;
-					else Main.throughputPerTenant[i] = 40;
-					break;
-				case 100:
-					int ttt = ran.nextInt(4);
-					if(ttt == 0)	Main.throughputPerTenant[i] = 20;
-					else if(ttt == 1) Main.throughputPerTenant[i] = 40;
-					else if(ttt == 2) Main.throughputPerTenant[i] = 60;
-					else Main.throughputPerTenant[i] = 0;
-					break;
-				}
-			}
+//			if(flags[i]){
+//				Main.throughputPerTenant[i] = Main.QTMax;
+//			}else{
+//				Random ran = new Random();
+//				switch(Main.QTMax){
+//				case 20:
+//					Main.throughputPerTenant[i] = 0;
+//					break;
+//				case 60:
+//					int tt = ran.nextInt(3);
+//					if(tt == 0)	Main.throughputPerTenant[i] = 0;
+//					else if(tt == 1) Main.throughputPerTenant[i] = 20;
+//					else Main.throughputPerTenant[i] = 40;
+//					break;
+//				case 100:
+//					int ttt = ran.nextInt(4);
+//					if(ttt == 0)	Main.throughputPerTenant[i] = 20;
+//					else if(ttt == 1) Main.throughputPerTenant[i] = 40;
+//					else if(ttt == 2) Main.throughputPerTenant[i] = 60;
+//					else Main.throughputPerTenant[i] = 0;
+//					break;
+//				}
+//			}
+			Main.throughputPerTenant[i] = HConfig.getQT(i+IDStart, false);
 			Main.tenants[i].setQT(Main.throughputPerTenant[i]);
+		}
+	}
+	
+	public static void resetActualTP(){
+		for(int i = 0; i < Main.tenantNumber; i++){
+			Main.actualThroughputPerTenant[i] = 0;
 		}
 	}
 	

@@ -174,6 +174,8 @@ public class DataMover {
 		sr.start();
 		WarehouseRetriver wr = new WarehouseRetriver(this.dbURL, this.dbUsername, this.dbPassword, this.voltdbServer, tenantId, volumnId);
 		wr.start();
+		ItemRetriver ir = new ItemRetriver(this.dbURL, this.dbUsername, this.dbPassword, this.voltdbServer, tenantId, volumnId);
+		ir.start();
 		try {
 			cr.join();
 			dr.join();
@@ -183,6 +185,7 @@ public class DataMover {
 			or.join();
 			sr.join();
 			wr.join();
+			ir.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
