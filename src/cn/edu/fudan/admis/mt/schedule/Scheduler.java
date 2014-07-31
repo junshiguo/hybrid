@@ -4,46 +4,63 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Scheduler
 {
+	private int burstTime;
+
 	private double MySQLWritePercentAvg;
-	private int MySQLServiceLevelObjectiveSum;
-	private List<Integer> MySQLTenantList;
+	private int MySQLWorkloadSum;
+
 	private double VoltDBWritePercentAvg;
-	private int VoltDBServiceLevelObjectiveSum;
+	private int VoltDBWorkloadSum;
 	private double VoltDBDataSizeSum;
-	private List<Integer> VoltDBTenantList;
-	private int tenantViolationNum;
 	private double transferCost;
 
-	public Scheduler()
+	private Queue<Integer> MySQLTenantQueue;
+	private List<Integer> VoltDBTenantList;
+	private List<Integer> violationTenantList;
+
+	static final Logger logger = LogManager.getLogger(Scheduler.class);
+
+	public Scheduler(int burstTime)
 	{
-		MySQLWritePercentAvg = 0.;
-		MySQLServiceLevelObjectiveSum = 0;
-		MySQLTenantList = new ArrayList<>();
+		this.burstTime = burstTime;
+
+		MySQLWritePercentAvg = Known.timeMySQLWritePercentAvgMap.get(burstTime);
+		MySQLWorkloadSum = Known.timeMySQLWorkloadSumMap.get(burstTime);
+
 		VoltDBWritePercentAvg = 0.;
-		VoltDBServiceLevelObjectiveSum = 0;
+		VoltDBWorkloadSum = 0;
 		VoltDBDataSizeSum = 0.;
-		VoltDBTenantList = new ArrayList<>();
-		tenantViolationNum = 0;
 		transferCost = 0.;
 	}
 
 	public void schedule()
 	{
 		Map<Integer, Double> activeTenantWorkloadPerDataSizeMap = generateMap();
-		List<Integer> activeTenantSortList = sortByValueDesc(activeTenantWorkloadPerDataSizeMap);
-		generateList(activeTenantSortList);
+		logger.debug(activeTenantWorkloadPerDataSizeMap.size()
+				+ " active tenant - workload per data size - map: "
+				+ activeTenantWorkloadPerDataSizeMap);
+
+		MySQLTenantQueue = sortByValueDesc(activeTenantWorkloadPerDataSizeMap);
+
+		transfer();
+
 		transferCost = VoltDBDataSizeSum * Known.transferCostPerDataSize;
 	}
 
-	public List<Integer> getMySQLTenantList()
+	public Queue<Integer> getMySQLTenantQueue()
 	{
-		return MySQLTenantList;
+		return MySQLTenantQueue;
 	}
 
 	public List<Integer> getVoltDBTenantList()
@@ -51,32 +68,34 @@ public class Scheduler
 		return VoltDBTenantList;
 	}
 
-	public int getTenantViolationNum()
-	{
-		return tenantViolationNum;
-	}
-
 	public double getTransferCost()
 	{
 		return transferCost;
 	}
 
+	public List<Integer> getViolationTenantList()
+	{
+		return violationTenantList;
+	}
+
 	private Map<Integer, Double> generateMap()
 	{
 		Map<Integer, Double> map = new HashMap<>();
-		for (int i = 0; i < Known.allTenantList.size(); i++)
+		int activeTenantNum = Known.timeActiveTenantIdListMap.get(burstTime)
+				.size();
+		for (int i = 0; i < activeTenantNum; i++)
 		{
-			Tenant tenant = Known.allTenantList.get(i);
-			int workload = tenant.timeWorkloadMap.get(Known.burstStartTime);
-			if (workload > 0)
-			{
-				map.put(i, (double) workload / (double) tenant.dataSize);
-			}
+			int activeTenantId = Known.timeActiveTenantIdListMap.get(burstTime)
+					.get(i);
+			Tenant activeTenant = Known.allTenantList.get(activeTenantId);
+			int workload = activeTenant.timeWorkloadMap.get(burstTime);
+			map.put(activeTenantId, (double) workload
+					/ (double) activeTenant.dataSize);
 		}
 		return map;
 	}
 
-	private List<Integer> sortByValueDesc(Map<Integer, Double> map)
+	private Queue<Integer> sortByValueDesc(Map<Integer, Double> map)
 	{
 		List<Entry<Integer, Double>> list = new ArrayList<>(map.entrySet());
 		Collections.sort(list, new Comparator<Entry<Integer, Double>>()
@@ -87,75 +106,65 @@ public class Scheduler
 				return (int) (e2.getValue() - e1.getValue());
 			}
 		});
-		List<Integer> result = new ArrayList<>();
+		logger.debug(list.size()
+				+ " active tenant id - list - sort by workload per data size desc: "
+				+ list);
+
+		Queue<Integer> result = new LinkedList<>();
 		for (Entry<Integer, Double> entry : list)
 		{
-			result.add(entry.getKey());
+			result.offer(entry.getKey());
 		}
 		return result;
 	}
 
-	private void generateList(List<Integer> list)
+	private void transfer()
 	{
-		int MySQLIndex = list.size() - 1;
-		for (; MySQLIndex >= 0; MySQLIndex--)
+		VoltDBTenantList = new ArrayList<>();
+		violationTenantList = new ArrayList<>();
+		while (true)
 		{
-			int tenantId = list.get(MySQLIndex);
-			if (MySQLCanHandle(tenantId))
-			{
-				MySQLTenantList.add(tenantId);
-				continue;
-			}
-			else
-				break;
-		}
-		int VoltDBIndex = 0;
-		for (; VoltDBIndex <= MySQLIndex; VoltDBIndex++)
-		{
-			int tenantId = list.get(VoltDBIndex);
-			if (VoltDBCanHandle(tenantId))
-			{
+			int tenantId = MySQLTenantQueue.poll();
+			if (VoltDBCanHandleWhenAdd(tenantId))
 				VoltDBTenantList.add(tenantId);
-				continue;
-			}
 			else
+				violationTenantList.add(tenantId);
+			if (MySQLCanHandleAfterRemove(tenantId))
 				break;
 		}
-		tenantViolationNum = MySQLIndex + 1 - VoltDBIndex;
 	}
 
-	private boolean MySQLCanHandle(int index)
+	private boolean MySQLCanHandleAfterRemove(int tenantId)
 	{
-		double writePercentAvg = (MySQLWritePercentAvg * MySQLTenantList.size() + Known.allTenantList
-				.get(index).writePercent) / (MySQLTenantList.size() + 1);
-		int serviceLevelObjectiveSum = MySQLServiceLevelObjectiveSum
-				+ Known.allTenantList.get(index).serviceLevelObjective;
-		if (serviceLevelObjectiveSum <= Known.MySQLWorkload(writePercentAvg))
-		{
-			MySQLWritePercentAvg = writePercentAvg;
-			MySQLServiceLevelObjectiveSum = serviceLevelObjectiveSum;
+		MySQLWritePercentAvg = (MySQLWritePercentAvg
+				* (MySQLTenantQueue.size() + 1) - Known.allTenantList
+					.get(tenantId).writePercent) / MySQLTenantQueue.size();
+		MySQLWorkloadSum = MySQLWorkloadSum
+				- Known.allTenantList.get(tenantId).timeWorkloadMap
+						.get(burstTime);
+		if (MySQLWorkloadSum <= (Known.MySQLBurstScale * Known
+				.MySQLWorkload(MySQLWritePercentAvg)))
 			return true;
-		}
 		else
 			return false;
 	}
 
-	private boolean VoltDBCanHandle(int index)
+	private boolean VoltDBCanHandleWhenAdd(int tenantId)
 	{
 		double writePercentAvg = (VoltDBWritePercentAvg
-				* VoltDBTenantList.size() + Known.allTenantList.get(index).writePercent)
+				* VoltDBTenantList.size() + Known.allTenantList.get(tenantId).writePercent)
 				/ (VoltDBTenantList.size() + 1);
-		int serviceLevelObjectiveSum = VoltDBServiceLevelObjectiveSum
-				+ Known.allTenantList.get(index).serviceLevelObjective;
+		int workloadSum = VoltDBWorkloadSum
+				+ Known.allTenantList.get(tenantId).timeWorkloadMap
+						.get(burstTime);
 		double dataSizeSum = VoltDBDataSizeSum
-				+ Known.allTenantList.get(index).dataSize;
+				+ Known.allTenantList.get(tenantId).dataSize;
 		if (dataSizeSum <= Known.VoltDBMemory
-				&& (serviceLevelObjectiveSum + dataSizeSum
-						* Known.transferCostPerDataSize) <= Known
-							.VoltDBWorkload(writePercentAvg))
+				&& (workloadSum + dataSizeSum * Known.transferCostPerDataSize) <= Known
+						.VoltDBWorkload(writePercentAvg))
 		{
 			VoltDBWritePercentAvg = writePercentAvg;
-			VoltDBServiceLevelObjectiveSum = serviceLevelObjectiveSum;
+			VoltDBWorkloadSum = workloadSum;
 			VoltDBDataSizeSum = dataSizeSum;
 			return true;
 		}
