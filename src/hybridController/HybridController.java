@@ -37,10 +37,11 @@ public class HybridController {
 			inPosition[type] = true;
 		}
 		
-//		if(informStart == true)	return;
+		if(informStart == true)	return;
 		sendTask[type].sendInfo("all in position");
-//		if(inPosition[type] == true && senderInPosition[type] == true){
-//			sendTask[type].sendInfo("all in position");
+//		if(inPosition[1] == true && senderInPosition[1] == true && inPosition[6] == true && senderInPosition[6] == true){
+//			sendTask[1].sendInfo("all in position");
+//			sendTask[6].sendInfo("all in position");
 //			informStart = true;
 //		}
 //		boolean flag = true;

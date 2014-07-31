@@ -11,6 +11,7 @@ public class StateReceiver extends Thread {
 	public Socket socket;
 	public Writer writer;
 	public BufferedReader reader;
+	public boolean alive = true;
 	
 	@Override
 	public void run() {
@@ -23,12 +24,15 @@ public class StateReceiver extends Thread {
 			System.out.println("Main "+Main.TYPE+" receive socket working...");
 			String str = null;
 			String[] info;
-			while((str = reader.readLine()) != null){
+			while(this.alive && (str = reader.readLine()) != null){
 				info = str.trim().split("&");
 				if(info[0].trim().equals("0")){
-//					Main.startTest = true;
-					Main.checkStart(true);
-					System.out.println("Main: start test");
+					if(info[1].trim().equals("all in position")){
+						Main.checkStart(true);
+						System.out.println("Main: start test");
+					}else{
+						alive = false;
+					}
 				}else{
 					String[] message = info[1].split(" ");
 					int tenantId = Integer.parseInt(message[0].trim());
@@ -38,7 +42,6 @@ public class StateReceiver extends Thread {
 				}
 			}
 		} catch (IOException e1) {
-			e1.printStackTrace();
 		}
 	}
 

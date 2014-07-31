@@ -36,14 +36,15 @@ public class HTimer extends Thread {
 			}
 		}
 		Main.isActive = false;
-		synchronized(Main.mainThread){
-			Main.mainThread.notify();
-		}
 		Main.socketWorking = false;
+		
 		try {
-			HTimer.sleep(1000);
+			HTimer.sleep(10000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+		synchronized(Main.mainThread){
+			Main.mainThread.notify();
 		}
 		synchronized(Main.socketSender){
 			Main.socketSender.notify();

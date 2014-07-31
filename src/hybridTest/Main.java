@@ -1,5 +1,8 @@
 package hybridTest;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 import hybridConfig.HConfig;
 
 public class Main extends Thread {
@@ -18,6 +21,7 @@ public class Main extends Thread {
 	public static boolean[] partiallyUsingVoltdb; //set by setDBState
 	public static int[] throughputPerTenant; //planned throughput, set by setQT()
 	public static int[] actualThroughputPerTenant; // updated in Main per minute
+	public static ArrayList<Long> timePerQuery;
 	public static double concurrency = 0.1; //set by setConcurrency
 	
 	public static int port = 8899;
@@ -47,8 +51,11 @@ public class Main extends Thread {
 	public static int checkTp = 60; //check throughput every 60 seconds
 	
 	public static void main(String[] args) throws InterruptedException{
-		totalTenantNumber = 1000;
 		TYPE = 1;
+		if(args.length > 0){
+			TYPE = Integer.parseInt(args[0]);
+		}
+		totalTenantNumber = 1000;
 		onlyMysql = true;
 		testTime = 60000;
 		intervalTime = 60000;
@@ -88,6 +95,10 @@ public class Main extends Thread {
 			mainThread.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+		try {
+			Main.socketReceiver.socket.close();
+		} catch (IOException e) {
 		}
 		System.out.println("******************hybrid test complete******************");
 		
@@ -159,7 +170,7 @@ public class Main extends Thread {
 		intervalNumber = testTime / intervalTime;
 		minPerInterval = intervalTime / 60000;
 		tenantNumber = (int) (totalTenantNumber*HConfig.PercentTenantSplits[TYPE]);
-		tenantNumber = 1;
+//		tenantNumber = 1;
 		if(TYPE != 0){
 			IDStart = (int) (totalTenantNumber*HConfig.PercentTenantSplitsSum[TYPE-1]);
 		}else{

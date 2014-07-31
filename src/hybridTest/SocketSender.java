@@ -26,9 +26,6 @@ public class SocketSender extends Thread {
 				synchronized(this){
 					this.wait();
 				}
-				if(Main.socketWorking == false){
-					break;
-				}
 				if(this.checkSendNow(0) > 0){
 					int tmp = infoType.get(0);
 					infoType.remove(0);
@@ -38,8 +35,12 @@ public class SocketSender extends Thread {
 					writer.flush();
 					System.out.println(Main.TYPE + "&" + tmp + "&" + str);
 					this.checkSendNow(-1);
+					if(Main.socketWorking == false){
+						break;
+					}
 				}
 			}
+			socket.close();
 		} catch (IOException | InterruptedException e1) {
 			e1.printStackTrace();
 		}

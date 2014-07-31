@@ -116,10 +116,10 @@ public class HConnection extends Thread {
 		
 		if(Main.onlyMysql == true || (this.isUsingVoltdb() == false && this.isPartiallUsingVoltdb() == false)){ //only mysql, for mysql test
 //			if(queryId == 3){//insert, for primary key constraint
-//				paratmpNumber = setActualPara(0, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+//				paratmpNumber = setActualPara(0, true, para, paraType, paraNumber, PKNumber, 0, 0);
 //				success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paratmpType, true);
 //				if(success == true){
-//					paratmpNumber = setActualPara(1, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+//					paratmpNumber = setActualPara(1, true, para, paraType, paraNumber, PKNumber, 0, 0);
 //					success = doSQLInMysql(tableId, 1, paratmpNumber, paratmp, paratmpType, false);
 //					return success;
 //				}
@@ -188,7 +188,7 @@ public class HConnection extends Thread {
 		}
 		long end = System.nanoTime();
 		if(success == true && Main.isActive == true){
-			PerformanceMonitor.timePerQuery.add(new Long(end - start));
+			Main.timePerQuery.add(new Long(end - start));
 			Main.actualThroughputPerTenant[this.tenantId - Main.IDStart]++;
 			if(sqlId <= 8)	PerformanceMonitor.readQuery++;
 			else PerformanceMonitor.writeQuery++;

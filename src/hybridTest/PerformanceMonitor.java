@@ -3,6 +3,7 @@ package hybridTest;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,7 +12,7 @@ import java.util.Iterator;
 import utility.Support;
 
 public class PerformanceMonitor extends Thread {
-	public static ArrayList<Long> timePerQuery;
+//	public static ArrayList<Long> timePerQuery;
 	public static long writeQuery = 0;
 	public static long readQuery = 0;
 	public static double writePercent; 
@@ -36,7 +37,7 @@ public class PerformanceMonitor extends Thread {
 		time = 0;
 		while(Main.isActive == false){
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -48,17 +49,21 @@ public class PerformanceMonitor extends Thread {
 		}
 		while(Main.isActive){
 			try {
-				timePerQuery = new ArrayList<Long>();
+				Main.timePerQuery = new ArrayList<Long>();
 				writeQuery = 0;
 				readQuery = 0;
 				Thread.sleep(checkInterval);
 				long readNumber = readQuery;
 				long writeNumber = writeQuery;
-				writePercent = (writeNumber*1.0)/(readNumber+writeNumber);
+				if(readNumber+writeNumber == 0){
+					writePercent = 0;
+				}else{
+					writePercent = (writeNumber*1.0)/(readNumber+writeNumber);
+				}
 				//send data to PerformanceController using socket: throughput, writePercent&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 //				Main.socketSender.sendInfo(time/1000, (readNumber+writeNumber), writePercent);
-				System.out.println(""+time/1000+"  read: "+readNumber+", write: "+writeNumber+", write percent: "+writePercent);
-				ArrayList<Long> tmpList = new ArrayList<Long>(timePerQuery);
+				System.out.println(""+time/1000+"  read: "+readNumber+", write: "+writeNumber+", write percent: "+new BigDecimal(writePercent).setScale(4, BigDecimal.ROUND_HALF_DOWN));
+				ArrayList<Long> tmpList = new ArrayList<Long>(Main.timePerQuery);
 				Iterator<Long> iter = tmpList.iterator();
 				ArrayList<Long> toRemove = new ArrayList<Long>();
 				while(iter.hasNext()){

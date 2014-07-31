@@ -40,19 +40,23 @@ public class SocketTask extends Thread {
 			if(info[1].equals("sender")){
 				this.isSender = false;
 				HybridController.launchTask(this, TYPE, isSender);
-				System.out.println("server: TYPE "+TYPE+" receive task working...");
+//				System.out.println("server: TYPE "+TYPE+" receive task working...");
 				while((str = reader.readLine()) != null){
 					info = str.trim().split("&");
 					switch(Integer.parseInt(info[1])){
 					case 0: 
-						
-						System.out.println("server received Main TYPE "+TYPE);
+						if(info[2].trim().equals("in position")){
+							System.out.println("server received: Main "+TYPE);
+						}else if(info[2].trim().equals("end test")){
+							HybridController.sendTask[TYPE].sendInfo("end test");
+							System.out.println("server received: Main "+TYPE+" end test!");
+						}
 						break;
 					case 2:
 						String[] message = info[2].split(" ");
 						HybridController.lateTenant[Integer.parseInt(message[0].trim())] += Integer.parseInt(message[1].trim());
 						HybridController.lateQuery[Integer.parseInt(message[0].trim())] += Integer.parseInt(message[2].trim());
-						System.out.println("server received: "+info[2]);
+						System.out.println("server received: Main:"+TYPE+" "+info[2]);
 						break;
 					case 3:
 						//not sending throughput info now
@@ -60,24 +64,28 @@ public class SocketTask extends Thread {
 						default:
 					}
 				}
+				socket.close();
+				HybridController.inPosition[TYPE] = false;
 			}else{
 				this.isSender = true;
 				HybridController.launchTask(this, TYPE, isSender);
-				System.out.println("server: TYPE "+TYPE+" send task working...");
+//				System.out.println("server: TYPE "+TYPE+" send task working...");
 				while(true){
 					if(this.checkSendNow(0) > 0){
 						int tmp = this.infoType.get(0);
 						this.infoType.remove(0);
 						writer.write(tmp+"&"+stringInfo.get(0)+"\n");
 						writer.flush();
-						System.out.println("server send: "+tmp+" "+stringInfo.get(0));
+						System.out.println("server sent: Main "+TYPE+", "+tmp+" "+stringInfo.get(0));
 						stringInfo.remove(0);
 						this.checkSendNow(-1);
 					}
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			HybridController.senderInPosition[TYPE] = false;
+			HybridController.inPosition[TYPE] = false;
+//			e.printStackTrace();
 		}
 	}
 	
