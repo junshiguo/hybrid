@@ -86,6 +86,13 @@ public class HConnection extends Thread {
 			e.printStackTrace();
 		}
 		while(true){
+			synchronized(this){
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 			if(doSQLNow > 0 && waitList.isEmpty() == false){
 				WaitList tmp = waitList.firstElement();
 				waitList.remove(0);
@@ -95,11 +102,13 @@ public class HConnection extends Thread {
 		}
 	}
 	
+	Object[] paratmp = new Object[30];
+	int[] paratmpType = new int[30];
+	int paratmpNumber = 0;
+	
 	public boolean doSQL(int sqlId, Object[] para, int[] paraType, int paraNumber, int PKNumber){
 		boolean success = false;
-		Object[] paratmp = new Object[30];
-		int[] paratmpType = new int[30];
-		int paratmpNumber = 0;
+		
 		long start = System.nanoTime();
 		int tableId = sqlId % 9;
 		int queryId = sqlId / 9;
@@ -115,19 +124,19 @@ public class HConnection extends Thread {
 //					return success;
 //				}
 //			}
-			paratmpNumber = setActualPara(queryId, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+			paratmpNumber = setActualPara(queryId, true, para, paraType, paraNumber, PKNumber, 0, 0);
 			success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType, false);
 		}else if(this.isPartiallUsingVoltdb() == true){ // this tenant partially uses voltdb
 			if(queryId == 0 || queryId == 1 || queryId == 3){
-				paratmpNumber = setActualPara(0, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+				paratmpNumber = setActualPara(0, false, para, paraType, paraNumber, PKNumber, 0, 0);
 				success = doSQLInVoltdb(tableId, 0, paratmpNumber, paratmp, true, state);
 				if(success){
 					if(queryId == 1 || queryId == 3){
-						paratmpNumber = setActualPara(1, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, state[0], 1);
+						paratmpNumber = setActualPara(1, false, para, paraType, paraNumber, PKNumber, state[0], 1);
 						success = doSQLInVoltdb(tableId, 1, paratmpNumber, paratmp, false, state);
 					}
 				}else{
-					paratmpNumber = setActualPara(0, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+					paratmpNumber = setActualPara(0, true, para, paraType, paraNumber, PKNumber, 0, 0);
 					if(queryId == 0){
 						success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paraType, false);
 					}else{
@@ -142,30 +151,30 @@ public class HConnection extends Thread {
 					}
 				}
 			}else{// delete
-				paratmpNumber = setActualPara(queryId, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+				paratmpNumber = setActualPara(queryId, false, para, paraType, paraNumber, PKNumber, 0, 0);
 				success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, false, state);
-				paratmpNumber = setActualPara(queryId, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+				paratmpNumber = setActualPara(queryId, true, para, paraType, paraNumber, PKNumber, 0, 0);
 				success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType, false);
 			}
 //			success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, true, state);
 		}else if(this.isUsingVoltdb() == true && this.isPartiallUsingVoltdb() == false){ // this tenant has all his data in voltdb
 			if(queryId == 3 || queryId == 1){ //insert or update
-				paratmpNumber = setActualPara(0, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+				paratmpNumber = setActualPara(0, false, para, paraType, paraNumber, PKNumber, 0, 0);
 				success = doSQLInVoltdb(tableId, 0, paratmpNumber, paratmp, true, state);
 				if(success){ //change to update
-					paratmpNumber = setActualPara(1, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, state[0], 1);
+					paratmpNumber = setActualPara(1, false, para, paraType, paraNumber, PKNumber, state[0], 1);
 					success = doSQLInVoltdb(tableId, 1, paratmpNumber, paratmp, false, state);
 				}else{ 
 					if(queryId == 3){// still insert
-						paratmpNumber = setActualPara(3, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 1, 0);
+						paratmpNumber = setActualPara(3, false, para, paraType, paraNumber, PKNumber, 1, 0);
 						success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
 					}
 				}
 			}else{//select or delete
-				paratmpNumber = setActualPara(queryId, false, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+				paratmpNumber = setActualPara(queryId, false, para, paraType, paraNumber, PKNumber, 0, 0);
 				success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, false, state);
 				if(queryId == 2){ //delete in mysql
-					paratmpNumber = setActualPara(queryId, true, para, paraType, paratmp, paratmpType, paraNumber, PKNumber, 0, 0);
+					paratmpNumber = setActualPara(queryId, true, para, paraType, paraNumber, PKNumber, 0, 0);
 					success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType, false);
 				}
 			}
@@ -187,7 +196,7 @@ public class HConnection extends Thread {
 		return success;
 	}
 	
-	public int setActualPara(int queryId, boolean isMysql, Object[] para, int[] paraType, Object[] paratmp, int[] paratmpType, int paraNumber, int PKNumber, int is_insert, int is_update){
+	public int setActualPara(int queryId, boolean isMysql, Object[] para, int[] paraType, int paraNumber, int PKNumber, int is_insert, int is_update){
 		if(isMysql){
 			if(queryId == 0 || queryId == 2){
 				for(int pk = 0; pk < PKNumber; pk ++){
@@ -196,12 +205,16 @@ public class HConnection extends Thread {
 				}
 				return PKNumber;
 			}else if(queryId == 1){
-				paratmp = para.clone();
-				paratmpType = paraType.clone();
+				for(int pi = 0; pi < paraNumber; pi++){
+					paratmp[pi] = para[pi];
+					paratmpType[pi] = paraType[pi];
+				}
 				return paraNumber;
 			}else{
-				paratmp = para.clone();
-				paratmpType = paraType.clone();
+				for(int pi = 0; pi < paraNumber - PKNumber; pi++){
+					paratmp[pi] = para[pi];
+					paratmpType[pi] = paraType[pi];
+				}
 				return paraNumber - PKNumber;
 			}
 		}else{ //voltdb
@@ -212,17 +225,21 @@ public class HConnection extends Thread {
 				paratmp[PKNumber] = this.tenantId;
 				return PKNumber + 1;
 			}else if(queryId == 1){
-				paratmp = para.clone();
-				paratmp[paraNumber+3] = this.tenantId;
-				for(int pk = 0; pk < PKNumber; pk ++){
-					paratmp[paraNumber+pk - PKNumber + 3] = para[paraNumber - PKNumber + pk];
+				for(int pi = 0; pi < paraNumber - PKNumber; pi++){
+					paratmp[pi] = para[pi];
 				}
 				paratmp[paraNumber-PKNumber] = this.tenantId;
 				paratmp[paraNumber-PKNumber+1] = is_insert;
 				paratmp[paraNumber-PKNumber+2] = is_update;
+				for(int pk = 0; pk < PKNumber; pk ++){
+					paratmp[paraNumber+pk - PKNumber + 3] = para[paraNumber - PKNumber + pk];
+				}
+				paratmp[paraNumber+3] = this.tenantId;
 				return paraNumber + 4;
 			}else{
-				paratmp = para.clone();
+				for(int pi = 0; pi < paraNumber - PKNumber; pi++){
+					paratmp[pi] = para[pi];
+				}
 				paratmp[paraNumber - PKNumber] = this.tenantId;
 				paratmp[paraNumber - PKNumber + 1] = is_insert;
 				paratmp[paraNumber - PKNumber + 2] = is_update;
@@ -252,7 +269,7 @@ public class HConnection extends Thread {
 					default:
 				}
 			}
-			System.out.println(statements[sqlId].toString());
+//			System.out.println(statements[sqlId].toString());
 			statements[sqlId].execute();
 			if(careResult == true && queryId == 0){
 				ResultSet rs = statements[sqlId].getResultSet();
@@ -262,7 +279,8 @@ public class HConnection extends Thread {
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("thread id: "+this.tenantId +"; sql id: "+sqlId+"; i= "+i+" : exception??");
+			System.out.println("thread id: "+this.tenantId +"; sql id: "+sqlId+"; table id: "+tableId+"; query id: "+queryId+"; i= "+i+" : exception??");
+			System.out.println(para[i]);
 			return false;
 		}
 	}
@@ -409,15 +427,15 @@ public class HConnection extends Thread {
 		statements[25] = conn.prepareStatement("DELETE FROM warehouse"+id+" WHERE w_id = ?");
 		statements[26] = conn.prepareStatement("DELETE FROM history"+id+" WHERE h_c_id = ? AND h_c_d_id = ? AND h_c_w_id = ?");
 		
-		statements[9] = conn.prepareStatement("INSERT INTO customer"+id+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"); //21
-		statements[10] = conn.prepareStatement("INSERT INTO district"+id+" VALUES (?,?,?,?,？,?,?,?,?,?,?)"); //11
-		statements[11] = conn.prepareStatement("INSERT INTO item"+id+" VALUES (?,?,?,?,?)"); //5
-		statements[12] = conn.prepareStatement("INSERT INTO new_orders"+id+" VALUES (?,?,?)"); //3
-		statements[13] = conn.prepareStatement("INSERT INTO order_line"+id+" VALUES (?,?,?,?,?,?,?,?,?,?)"); //10
-		statements[14] = conn.prepareStatement("INSERT INTO orders"+id+" VALUES (?,?,?,?,?,?,?,?)"); //8
-		statements[15] = conn.prepareStatement("INSERT INTO stock"+id+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"); //17
-		statements[16] = conn.prepareStatement("INSERT INTO warehouse"+id+" VALUES (?,?,?,?,?,?,?,?,?)"); //9
-		statements[17] = conn.prepareStatement("INSERT INTO history"+id+" VALUES (?,?,?,?,?,?,?,?)"); //8
+		statements[27] = conn.prepareStatement("INSERT INTO customer"+id+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"); //21
+		statements[28] = conn.prepareStatement("INSERT INTO district"+id+" VALUES (?,?,?,?,?,?,?,?,?,?,?)"); //11
+		statements[29] = conn.prepareStatement("INSERT INTO item"+id+" VALUES (?,?,?,?,?)"); //5
+		statements[30] = conn.prepareStatement("INSERT INTO new_orders"+id+" VALUES (?,?,?)"); //3
+		statements[31] = conn.prepareStatement("INSERT INTO order_line"+id+" VALUES (?,?,?,?,?,?,?,?,?,?)"); //10
+		statements[32] = conn.prepareStatement("INSERT INTO orders"+id+" VALUES (?,?,?,?,?,?,?,?)"); //8
+		statements[33] = conn.prepareStatement("INSERT INTO stock"+id+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"); //17
+		statements[34] = conn.prepareStatement("INSERT INTO warehouse"+id+" VALUES (?,?,?,?,?,?,?,?,?)"); //9
+		statements[35] = conn.prepareStatement("INSERT INTO history"+id+" VALUES (?,?,?,?,?,?,?,?)"); //8
 	}
 
 }

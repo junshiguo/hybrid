@@ -149,7 +149,7 @@ public class Driver {
 				paraType[5] = Driver.TYPE_STRING;
 				paraType[6] = Driver.TYPE_STRING;
 				paraType[7] = Driver.TYPE_STRING;
-				paraType[8] = Driver.TYPE_DOUBLE;
+				paraType[8] = Driver.TYPE_FLOAT;
 				paraType[9] = Driver.TYPE_DOUBLE;
 				paraType[10] = Driver.TYPE_INT;
 				paraType[11] = Driver.TYPE_INT;
@@ -333,8 +333,8 @@ public class Driver {
 				paraType[5] = Driver.TYPE_STRING;
 				paraType[6] = Driver.TYPE_DOUBLE;
 				paraType[7] = Driver.TYPE_STRING;
-				paraType[7] = Driver.TYPE_INT;
 				paraType[8] = Driver.TYPE_INT;
+				paraType[9] = Driver.TYPE_INT;
 				paraType[10] = Driver.TYPE_INT;
 				paraNumber = 11;
 				PKNumber = 3;

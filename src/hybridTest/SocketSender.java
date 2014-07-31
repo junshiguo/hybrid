@@ -23,6 +23,12 @@ public class SocketSender extends Thread {
 			writer.flush();
 			System.out.println("Main "+Main.TYPE+" send socket working...");
 			while(true){
+				synchronized(this){
+					this.wait();
+				}
+				if(Main.socketWorking == false){
+					break;
+				}
 				if(this.checkSendNow(0) > 0){
 					int tmp = infoType.get(0);
 					infoType.remove(0);
@@ -32,16 +38,14 @@ public class SocketSender extends Thread {
 					writer.flush();
 					System.out.println(Main.TYPE + "&" + tmp + "&" + str);
 					this.checkSendNow(-1);
-				}else{
-//					Thread.sleep(100);
 				}
 			}
-		} catch (IOException e1) {
+		} catch (IOException | InterruptedException e1) {
 			e1.printStackTrace();
 		}
 	}
 	
-	public synchronized int checkSendNow(int action){
+	public int checkSendNow(int action){
 		if(action == 1){
 			this.sendNow++;
 		}else if(action == -1){

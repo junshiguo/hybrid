@@ -2,11 +2,7 @@ package hybridTest;
 
 import hybridConfig.HConfig;
 
-import java.util.Random;
-
-import utility.Support;
-
-public class Main {
+public class Main extends Thread {
 	public static int totalTenantNumber;
 	public static int tenantNumber;
 	public static HTenant[] tenants;
@@ -41,28 +37,37 @@ public class Main {
 	public static long minPerInterval = 5;
 	public static boolean isActive = true;
 	public static boolean startTest = false;
+	public static boolean socketWorking = true;
 	
-	public static int checkTp = 15; //check throughput every 60 seconds
+	public static Main mainThread;
+	public static int setQTNow = 0;
+	public static int doSQLNow = 0;
+	public static int resetActualQT = 0;
 	
-	public static void main(String[] args){
+	public static int checkTp = 60; //check throughput every 60 seconds
+	
+	public static void main(String[] args) throws InterruptedException{
 		totalTenantNumber = 1000;
 		TYPE = 1;
 		onlyMysql = true;
-		testTime = 45000;
-		intervalTime = 15000;
-		HConfig.init(1000);
+		testTime = 60000;
+		intervalTime = 60000;
+		HConfig.init(totalTenantNumber);
 		init();
 		
 		for(int i = 0; i < tenantNumber; i++){
 			tenants[i].start();
 		}
-		performanceMonitor = new PerformanceMonitor(tenantNumber);
-		performanceMonitor.start();
+		
 		socketSender = new SocketSender();
 		socketReceiver = new StateReceiver();
 		socketSender.start();
 		socketReceiver.start();
+		Thread.sleep(3000);
 		socketSender.sendInfo("in position");
+		synchronized(socketSender){
+			socketSender.notify();
+		}
 		while(true){
 			if(checkStart(false)){
 				break;
@@ -72,28 +77,56 @@ public class Main {
 		System.out.println("******************hybrid test start******************");
 		Main.setConcurrency(0.1);
 		Main.isActive = true; 
-		for(int i=0; i<intervalNumber; i++){
+		mainThread = new Main();
+		mainThread.start();
+		performanceMonitor = new PerformanceMonitor(tenantNumber);
+		performanceMonitor.start();
+		HTimer timer = new HTimer();
+		timer.start();
+		try {
+			timer.join();
+			mainThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("******************hybrid test complete******************");
+		
+	}
+	
+	public void run(){
+		while(true){
 			try {
-				Main.setQT();
-				
-				for(int j = 0; j < 1; j++){
+				synchronized(this){
+					this.wait();
+				}
+				if(Main.setQTNow > 0){
+					Main.setQT();
+					Main.setQTNow --;
+				}
+				if(Main.resetActualQT > 0){
 					Main.resetActualTP();
-					for(int k = 0; k < 5; k++){ //send requests every 3 seconds, 20 times per minute
-						for(int id = 0; id < tenantNumber; id++){
-							tenants[id].checkDoSQLNow(1);
+					Main.resetActualQT--;
+				}
+				if(Main.doSQLNow > 0){
+					for(int id = 0; id < tenantNumber; id++){
+						synchronized(tenants[id]){
+							tenants[id].notify();
 						}
-						Thread.sleep(3000);
 					}
-					//check throughput, send data to PerformanceController: lateTenant, lateQuery&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-					socketSender.sendInfo((i*minPerInterval+j),throughputPerTenant.clone(), Main.actualThroughputPerTenant.clone());
+					Main.doSQLNow --;
+				}
+				if(Main.isActive == false){
+					for(int id = 0; id < tenantNumber; id++){
+						synchronized(tenants[id]){
+							tenants[id].notify();
+						}
+					}
+					break;
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		Main.isActive = false;
-		System.out.println("******************hybrid test complete******************");
-//		System.exit(1);
 		
 	}
 	
@@ -104,11 +137,29 @@ public class Main {
 		return Main.startTest;
 	}
 	
+	public static synchronized int checkSetQT(int action){
+		if(action == 1){
+			Main.setQTNow ++;;
+		}else if(action == -1){
+			Main.setQTNow --;
+		}
+		return Main.setQTNow;
+	}
+	
+	public static synchronized int checkDoSQL(int action){
+		if(action ==1){
+			Main.doSQLNow ++;
+		}else if(action == -1){
+			Main.doSQLNow --;
+		}
+		return Main.doSQLNow;
+	}
+	
 	public static void init(){
 		intervalNumber = testTime / intervalTime;
 		minPerInterval = intervalTime / 60000;
 		tenantNumber = (int) (totalTenantNumber*HConfig.PercentTenantSplits[TYPE]);
-		tenantNumber =1;
+		tenantNumber = 1;
 		if(TYPE != 0){
 			IDStart = (int) (totalTenantNumber*HConfig.PercentTenantSplitsSum[TYPE-1]);
 		}else{

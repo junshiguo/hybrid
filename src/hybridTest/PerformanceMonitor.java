@@ -21,7 +21,7 @@ public class PerformanceMonitor extends Thread {
 	public PerformanceMonitor(int tenantNumber){
 		writeQuery = 0;
 		readQuery = 0;
-		checkInterval = 5000;
+		checkInterval = 3000;
 		time = 0;
 	}
 	
@@ -40,6 +40,11 @@ public class PerformanceMonitor extends Thread {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		}
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e2) {
+			e2.printStackTrace();
 		}
 		while(Main.isActive){
 			try {

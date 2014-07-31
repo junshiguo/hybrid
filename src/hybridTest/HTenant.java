@@ -46,16 +46,18 @@ public class HTenant extends Thread {
 	public void run(){
 //		connection.start();
 		connection.connectDB();
-		while(Main.isActive == false){
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
 		
-		while(Main.isActive){
-			if(this.checkDoSQLNow(0) > 0){
+		while(true){
+			synchronized(this){
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			if(Main.isActive == false){
+				break;
+			}
 				for(int i = 0; i < base; i++){
 					int sqlId = sequence.nextSequence();
 					driver.initiatePara(sqlId);
@@ -71,8 +73,6 @@ public class HTenant extends Thread {
 					connection.doSQL(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
 					this.bonus --;
 				}
-				this.checkDoSQLNow(-1);
-			}
 		}
 		
 	}
