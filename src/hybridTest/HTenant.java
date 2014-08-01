@@ -58,6 +58,7 @@ public class HTenant extends Thread {
 			if(Main.isActive == false){
 				break;
 			}
+			while(this.doSQLNow > 0){
 				for(int i = 0; i < base; i++){
 					int sqlId = sequence.nextSequence();
 					driver.initiatePara(sqlId);
@@ -73,6 +74,8 @@ public class HTenant extends Thread {
 					connection.doSQL(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
 					this.bonus --;
 				}
+				this.doSQLNow--;
+			}
 		}
 		
 	}

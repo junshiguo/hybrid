@@ -1,5 +1,7 @@
 package hybridController;
 
+import hybridConfig.HConfig;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,21 +16,49 @@ import org.voltdb.client.ProcCallException;
 import retrivers.*;
 import utility.DBManager;
 
-public class DataMover {
+public class DataMover extends Thread {
 	public Connection conn;
 	public Client voltdbConn;
-	public String dbURL = "jdbc:mysql://10.20.2.211/tpcc10";
+	public String dbURL = "jdbc:mysql://127.0.0.1/tpcc10";
 	public String dbUsername = "remote";
 	public String dbPassword = "remote";
-	public String voltdbServer = "10.20.2.211";
+	public String voltdbServer = "127.0.0.1";
+	public int tenantId;
+	public boolean isM2V;
 
-	public DataMover(String url, String username, String password, String voltdbServer){
+	public DataMover(String url, String username, String password, String voltdbServer, int tenantId, boolean isM2V){
 		this.dbURL = url;
 		this.dbUsername = username;
 		this.dbPassword = password;
 		this.voltdbServer = voltdbServer;
+		this.tenantId = tenantId;
+		this.isM2V = isM2V;
 		conn = DBManager.connectDB(url, username, password);
 		voltdbConn = DBManager.connectVoltdb(voltdbServer);
+	}
+	
+	public void run(){
+		try{
+			if(isM2V){
+				int emptyVolumn = VMMatch.findVolumn();
+				if(emptyVolumn != -1){
+					HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 1);
+					VMMatch.addMatch(emptyVolumn, tenantId);
+					this.Mysql2Voltdb(tenantId, emptyVolumn);
+					HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 0);
+				}
+			}else{
+				int volumnId = VMMatch.findTenant(tenantId);
+				if(volumnId != -1){
+					HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 1);
+					this.Voltdb2Mysql(tenantId, volumnId);
+					VMMatch.deleteMatch(volumnId, tenantId);
+					HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 0, 0);
+				}
+			}
+		}catch (SQLException | IOException | ProcCallException e) {
+				e.printStackTrace();
+		}
 	}
 	
 	public void Mysql2Voltdb(int tenantId, int volumnId) throws SQLException, NoConnectionsException, IOException, ProcCallException{

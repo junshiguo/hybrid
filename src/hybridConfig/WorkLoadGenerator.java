@@ -11,8 +11,8 @@ public class WorkLoadGenerator {
 	public static double activeRatio = 0.2;
 	public static double exchangeRatio = 0.3;
 	public static int totalTenant = 1000;
-	public static int timePerInterval = 10; //min
-	public static int totalInterval = 6; // 1 h
+	public static int timePerInterval = 5; //min
+	public static int totalInterval = 3; // 1 h
 	public static int HRan = 180;
 	public static int MRan = 80;
 	public static int LRan = 10;
@@ -91,7 +91,7 @@ public class WorkLoadGenerator {
 		for(int i = 0; i < totalInterval; i++){
 			isBursty[i] = false;
 		}
-		isBursty[3] = true;
+		isBursty[1] = true;
 	}
 	
 	public static void setActivePattern(){

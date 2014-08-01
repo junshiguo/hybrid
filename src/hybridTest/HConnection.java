@@ -59,6 +59,7 @@ public class HConnection extends Thread {
 	}
 	
 	public boolean connectDB(){
+//		this.voltdbConn = DBManager.connectVoltdb(voltdbServer);
 		conn = DBManager.connectDB(mysqlURL, mysqlUsername, mysqlPassword);
 		if(conn == null){
 			System.out.println("Tenant "+tenantId+" connecting mysql failed...");
@@ -113,7 +114,7 @@ public class HConnection extends Thread {
 		int tableId = sqlId % 9;
 		int queryId = sqlId / 9;
 		int[] state = new int[2];
-		
+
 		if(Main.onlyMysql == true || (this.isUsingVoltdb() == false && this.isPartiallUsingVoltdb() == false)){ //only mysql, for mysql test
 //			if(queryId == 3){//insert, for primary key constraint
 //				paratmpNumber = setActualPara(0, true, para, paraType, paraNumber, PKNumber, 0, 0);
@@ -142,11 +143,15 @@ public class HConnection extends Thread {
 					}else{
 						success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paraType, true);
 						if(success){
-							state[0] = 0; state[1] = 1;
+							paratmpNumber = setActualPara(3, false, para, paraType, paraNumber, PKNumber, 0, 1);
 							success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
-						}else if(queryId == 3){
-							state[0] = 1; state[1] = 0;
-							success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
+						}else{
+							if(queryId == 3){
+								paratmpNumber = setActualPara(3, false, para, paraType, paraNumber, PKNumber, 1, 0);
+								success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
+							}else{
+								success = true;
+							}
 						}
 					}
 				}
@@ -156,15 +161,19 @@ public class HConnection extends Thread {
 				paratmpNumber = setActualPara(queryId, true, para, paraType, paraNumber, PKNumber, 0, 0);
 				success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType, false);
 			}
-//			success = doSQLInVoltdb(tableId, queryId, paratmpNumber, paratmp, true, state);
 		}else if(this.isUsingVoltdb() == true && this.isPartiallUsingVoltdb() == false){ // this tenant has all his data in voltdb
 			if(queryId == 3 || queryId == 1){ //insert or update
 				paratmpNumber = setActualPara(0, false, para, paraType, paraNumber, PKNumber, 0, 0);
 				success = doSQLInVoltdb(tableId, 0, paratmpNumber, paratmp, true, state);
-				if(success){ //change to update
-					paratmpNumber = setActualPara(1, false, para, paraType, paraNumber, PKNumber, state[0], 1);
-					success = doSQLInVoltdb(tableId, 1, paratmpNumber, paratmp, false, state);
+				if(success){ 
+					if(queryId == 1){
+						paratmpNumber = setActualPara(1, false, para, paraType, paraNumber, PKNumber, state[0], 1);
+						success = doSQLInVoltdb(tableId, 1, paratmpNumber, paratmp, false, state);
+					}
 				}else{ 
+					if(queryId == 1){
+						success = true;
+					}
 					if(queryId == 3){// still insert
 						paratmpNumber = setActualPara(3, false, para, paraType, paraNumber, PKNumber, 1, 0);
 						success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
@@ -301,14 +310,15 @@ public class HConnection extends Thread {
 				if(result.getRowCount() == 0){
 					return false;
 				}else{
-					state[0] = (int) result.get("is_insert", VoltType.INTEGER);
-					state[1] = (int) result.get("is_update", VoltType.INTEGER);
+					state[0] = (int) result.fetchRow(0).get("is_insert", VoltType.INTEGER);
+					state[1] = (int) result.fetchRow(0).get("is_update", VoltType.INTEGER);
 					return true;
 				}
 			}
 			return true;
 		} catch (IOException | ProcCallException e) {
 			e.printStackTrace();
+			System.out.println("Exception: tenant id:"+tenantId+"; table id:"+tableId+"; queryId:"+queryId+"; paraNumber:"+paraNumber);
 			return false;
 		}
 	}
@@ -364,17 +374,41 @@ public class HConnection extends Thread {
 		case 16:
 			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15]);
 			break;
+		case 17:
+			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16]);
+			break;
+		case 18:
+			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17]);
+			break;
 		case 19:
 			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18]);
+			break;
+		case 20:
+			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19]);
 			break;
 		case 21:
 			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20]);
 			break;
+		case 22:
+			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21]);
+			break;
 		case 23:
 			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22]);
 			break;
+		case 24:
+			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23]);
+			break;
+		case 25:
+			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24]);
+			break;
 		case 26:
 			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25]);
+			break;
+		case 27:
+			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25], para[26]);
+			break;
+		case 28:
+			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25], para[26], para[27]);
 			break;
 			default:
 		}

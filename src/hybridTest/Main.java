@@ -1,5 +1,7 @@
 package hybridTest;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -12,22 +14,23 @@ public class Main extends Thread {
 	public static int IDStart;
 	public static int TYPE = 0;
 	public static int QTMax;
-	public static String dbURL = "jdbc:mysql://127.0.0.1:3306/tpcc10";
+	public static String dbURL = "jdbc:mysql://10.20.2.211:3306/tpcc10";
 	public static String dbUsername = "remote";
 	public static String dbPassword = "remote";
-	public static String voltdbServer = "127.0.0.1";
+	public static String voltdbServer = "10.20.2.211";
+	public static String loadPath = "data/load.txt";
 
 	public static boolean[] usingVoltdb; //set by setDBState
 	public static boolean[] partiallyUsingVoltdb; //set by setDBState
 	public static int[] throughputPerTenant; //planned throughput, set by setQT()
 	public static int[] actualThroughputPerTenant; // updated in Main per minute
-	public static ArrayList<Long> timePerQuery;
+	public static ArrayList<Long> timePerQuery = new ArrayList<Long>();
 	public static double concurrency = 0.1; //set by setConcurrency
 	
 	public static int port = 8899;
-	public static String SocketServer = "127.0.0.1";
-	public static SocketSender socketSender = new SocketSender();
-	public static StateReceiver socketReceiver = new StateReceiver();
+	public static String SocketServer = "10.20.2.211";
+	public static SocketSender socketSender;
+	public static StateReceiver socketReceiver;
 	public static PerformanceMonitor performanceMonitor;
 	public static int MAXRETRY = 2;
 	
@@ -51,14 +54,14 @@ public class Main extends Thread {
 	public static int checkTp = 60; //check throughput every 60 seconds
 	
 	public static void main(String[] args) throws InterruptedException{
-		TYPE = 1;
+		TYPE = 0;
 		if(args.length > 0){
 			TYPE = Integer.parseInt(args[0]);
 		}
 		totalTenantNumber = 1000;
-		onlyMysql = true;
-		testTime = 60000;
-		intervalTime = 60000;
+		onlyMysql = false;
+		testTime = 900000;
+		intervalTime = 300000;
 		HConfig.init(totalTenantNumber);
 		init();
 		
@@ -70,7 +73,7 @@ public class Main extends Thread {
 		socketReceiver = new StateReceiver();
 		socketSender.start();
 		socketReceiver.start();
-		Thread.sleep(3000);
+		Thread.sleep(20000);
 		socketSender.sendInfo("in position");
 		synchronized(socketSender){
 			socketSender.notify();
@@ -111,7 +114,8 @@ public class Main extends Thread {
 					this.wait();
 				}
 				if(Main.setQTNow > 0){
-					Main.setQT();
+//					Main.setQT();
+					Main.setQT(Main.loadPath);
 					Main.setQTNow --;
 				}
 				if(Main.resetActualQT > 0){
@@ -120,6 +124,7 @@ public class Main extends Thread {
 				}
 				if(Main.doSQLNow > 0){
 					for(int id = 0; id < tenantNumber; id++){
+						tenants[id].doSQLNow++;
 						synchronized(tenants[id]){
 							tenants[id].notify();
 						}
@@ -196,38 +201,31 @@ public class Main extends Thread {
 	}
 	
 	public static void setQT(){
-//		int activeTenantNumber = (int) (tenantNumber * concurrency);
-//		int[] activeTenant = Support.Rands(0, tenantNumber, activeTenantNumber);
-//		boolean[] flags = new boolean[tenantNumber];
-//		for(int i = 0; i < activeTenantNumber; i++){
-//			flags[activeTenant[i]] = true; 
-//		}
 		for(int i = 0; i < tenantNumber; i++){
-//			if(flags[i]){
-//				Main.throughputPerTenant[i] = Main.QTMax;
-//			}else{
-//				Random ran = new Random();
-//				switch(Main.QTMax){
-//				case 20:
-//					Main.throughputPerTenant[i] = 0;
-//					break;
-//				case 60:
-//					int tt = ran.nextInt(3);
-//					if(tt == 0)	Main.throughputPerTenant[i] = 0;
-//					else if(tt == 1) Main.throughputPerTenant[i] = 20;
-//					else Main.throughputPerTenant[i] = 40;
-//					break;
-//				case 100:
-//					int ttt = ran.nextInt(4);
-//					if(ttt == 0)	Main.throughputPerTenant[i] = 20;
-//					else if(ttt == 1) Main.throughputPerTenant[i] = 40;
-//					else if(ttt == 2) Main.throughputPerTenant[i] = 60;
-//					else Main.throughputPerTenant[i] = 0;
-//					break;
-//				}
-//			}
 			Main.throughputPerTenant[i] = HConfig.getQT(i+IDStart, false);
 			Main.tenants[i].setQT(Main.throughputPerTenant[i]);
+		}
+	}
+	
+	public static boolean loadLoaded = false;
+	public static BufferedReader loadReader;
+	public static void setQT(String file){
+		String str = null;
+		String[] workload;
+		try{
+			if(loadLoaded == false){
+				loadReader = new BufferedReader(new FileReader(file));
+				loadLoaded = true;
+			}
+			str = loadReader.readLine();
+			if(str == null) return;
+			workload = str.split(" ");
+			for(int i = 0; i < tenantNumber; i++){
+				Main.throughputPerTenant[i] = Integer.parseInt(workload[i+Main.IDStart+1]);
+				Main.tenants[i].setQT(Main.throughputPerTenant[i]);
+			}
+		}catch(IOException e){
+			
 		}
 	}
 	
@@ -241,6 +239,13 @@ public class Main extends Thread {
 		int index = tenantId - Main.IDStart;
 		Main.usingVoltdb[index] = usingV;
 		Main.partiallyUsingVoltdb[index] = usingPV;
+		if(usingV == false && usingPV == false){
+			try {
+				Main.tenants[index].connection.voltdbConn.close();
+			} catch (InterruptedException e) {
+				System.out.println("error in closing voltdb connection...");
+			}
+		}
 	}
 	
 	public static void setDBState(int tenantId, int usingV, int usingPV){
@@ -249,6 +254,13 @@ public class Main extends Thread {
 		else Main.usingVoltdb[index] = false;
 		if(usingPV == 1)	Main.partiallyUsingVoltdb[index] = true;
 		else Main.partiallyUsingVoltdb[index] = false;
+		if(usingV == 0 && usingPV == 0){
+			try {
+				Main.tenants[index].connection.voltdbConn.close();
+			} catch (InterruptedException e) {
+				System.out.println("error in closing voltdb connection...");
+			}
+		}
 	}
 	
 }

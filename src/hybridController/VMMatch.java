@@ -7,7 +7,7 @@ public class VMMatch {
 	public static boolean isInitiated = false;
 	
 	public static void init(){
-		maxTenantPerVolumn = 10;
+		maxTenantPerVolumn = 2;
 		vmMatch = new int[100][maxTenantPerVolumn];
 		tenantPerVolumn = new int[100];
 		for(int i = 0; i < 100; i++){
@@ -17,6 +17,29 @@ public class VMMatch {
 			}
 		}
 		isInitiated = true;
+	}
+	
+	public static int findTenant(int tenantId){
+		for(int j = 0; j < maxTenantPerVolumn; j++){
+			for(int i = 0; i < 100; i++){
+				if(vmMatch[i][j] == tenantId)
+					return i;
+			}
+		}
+		return -1;
+	}
+	
+	public static int findVolumn(){
+		if(isInitiated == false){
+			init();
+		}
+		for(int j = 0; j < maxTenantPerVolumn; j++){
+			for(int i = 0; i < 100; i++){
+				if(vmMatch[i][j] == -1)
+					return i;
+			}
+		}
+		return -1;
 	}
 	//add before actually offloaded data
 	public static boolean addMatch(int volumnId, int tenantId){

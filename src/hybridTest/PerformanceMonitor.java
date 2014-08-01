@@ -49,7 +49,7 @@ public class PerformanceMonitor extends Thread {
 		}
 		while(Main.isActive){
 			try {
-				Main.timePerQuery = new ArrayList<Long>();
+				Main.timePerQuery.clear();
 				writeQuery = 0;
 				readQuery = 0;
 				Thread.sleep(checkInterval);
@@ -62,7 +62,7 @@ public class PerformanceMonitor extends Thread {
 				}
 				//send data to PerformanceController using socket: throughput, writePercent&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 //				Main.socketSender.sendInfo(time/1000, (readNumber+writeNumber), writePercent);
-				System.out.println(""+time/1000+"  read: "+readNumber+", write: "+writeNumber+", write percent: "+new BigDecimal(writePercent).setScale(4, BigDecimal.ROUND_HALF_DOWN));
+//				System.out.println(""+time/1000+"  read: "+readNumber+", write: "+writeNumber+", write percent: "+new BigDecimal(writePercent).setScale(4, BigDecimal.ROUND_HALF_DOWN));
 				ArrayList<Long> tmpList = new ArrayList<Long>(Main.timePerQuery);
 				Iterator<Long> iter = tmpList.iterator();
 				ArrayList<Long> toRemove = new ArrayList<Long>();

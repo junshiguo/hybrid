@@ -39,14 +39,14 @@ public class SocketTask extends Thread {
 			
 			if(info[1].equals("sender")){
 				this.isSender = false;
-				HybridController.launchTask(this, TYPE, isSender);
-//				System.out.println("server: TYPE "+TYPE+" receive task working...");
 				while((str = reader.readLine()) != null){
 					info = str.trim().split("&");
 					switch(Integer.parseInt(info[1])){
 					case 0: 
 						if(info[2].trim().equals("in position")){
 							System.out.println("server received: Main "+TYPE);
+							HybridController.launchTask(this, TYPE, isSender); // lauch task
+							
 						}else if(info[2].trim().equals("end test")){
 							HybridController.sendTask[TYPE].sendInfo("end test");
 							System.out.println("server received: Main "+TYPE+" end test!");

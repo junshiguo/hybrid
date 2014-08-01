@@ -39,10 +39,10 @@ public class Known
 		activeTenantNum = 200;
 		loadPath = "data/load.txt";
 
-		VoltDBMemory = 10;
-		transferCostPerDataSize = 0.;
-		timeInterval = 10;
-		maxTime = 50;
+		VoltDBMemory = 500;
+		transferCostPerDataSize = 0.0;
+		timeInterval = 5;
+		maxTime = 10;
 		MySQLBurstScale = 0.9;
 
 		HConfig.init(allTenantNum);
@@ -73,7 +73,7 @@ public class Known
 	// TODO
 	public static double VoltDBWorkload(double writePercent)
 	{
-		return 40000;
+		return 400000;
 	}
 
 	private static void generateList()
