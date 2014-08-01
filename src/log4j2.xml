@@ -4,19 +4,19 @@
     <Console name="Console" target="SYSTEM_OUT"> 
       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/> 
     </Console>
-    <File name="File-Known" fileName="log/Known.log"> 
+    <File name="File-Info" fileName="log/Info.log"> 
       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/> 
     </File>
-    <File name="File-Scheduler" fileName="log/Scheduler.log"> 
+    <File name="File-Util" fileName="log/Util.log"> 
       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/> 
     </File>
   </appenders> 
   <loggers>
-    <logger name="cn.edu.fudan.admis.mt.schedule.Known" level="DEBUG" additivity="false">  
-      <appender-ref ref="File-Known"/>  
+    <logger name="cn.edu.fudan.admis.mt.info.Info" level="DEBUG" additivity="false">  
+      <appender-ref ref="File-Info"/>  
     </logger>
-    <logger name="cn.edu.fudan.admis.mt.schedule.Scheduler" level="DEBUG" additivity="false">  
-      <appender-ref ref="File-Scheduler"/>  
+    <logger name="cn.edu.fudan.admis.mt.util.Util" level="DEBUG" additivity="false">  
+      <appender-ref ref="File-Util"/>  
     </logger>
     <root level="INFO"> 
       <appender-ref ref="Console"/> 

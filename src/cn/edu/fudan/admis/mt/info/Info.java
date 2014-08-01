@@ -1,4 +1,4 @@
-package cn.edu.fudan.admis.mt.schedule;
+package cn.edu.fudan.admis.mt.info;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import cn.edu.fudan.admis.mt.hybrid.config.HConfig;
 
-public class Known
+public class Info
 {
 	private static int allTenantNum;
 	private static int activeTenantNum;
@@ -22,7 +22,7 @@ public class Known
 	public static double transferCostPerDataSize;
 	public static int timeInterval;
 	public static int maxTime;
-	public static double MySQLBurstScale;
+	public static double MySQLBurstBound;
 
 	public static List<Tenant> allTenantList;
 	public static List<BurstPeriod> burstPeriodList;
@@ -30,7 +30,7 @@ public class Known
 	public static Map<Integer, Integer> timeMySQLWorkloadSumMap;
 	public static Map<Integer, List<Integer>> timeActiveTenantIdListMap;
 
-	static final Logger logger = LogManager.getLogger(Known.class);
+	static final Logger logger = LogManager.getLogger(Info.class);
 
 	// TODO
 	public static void init()
@@ -43,7 +43,7 @@ public class Known
 		transferCostPerDataSize = 0.;
 		timeInterval = 10;
 		maxTime = 50;
-		MySQLBurstScale = 0.9;
+		MySQLBurstBound = 0.9;
 
 		HConfig.init(allTenantNum);
 
@@ -67,13 +67,13 @@ public class Known
 	// TODO
 	public static double MySQLWorkload(double writePercent)
 	{
-		return 20000;
+		return 20000.;
 	}
 
 	// TODO
 	public static double VoltDBWorkload(double writePercent)
 	{
-		return 40000;
+		return 40000.;
 	}
 
 	private static void generateList()
@@ -131,14 +131,14 @@ public class Known
 				timeMySQLWritePercentAvgMap.put(time, activeWritePercentAvg);
 
 				if (!burstFlag
-						&& totalWorkload > (MySQLBurstScale * MySQLWorkload(activeWritePercentAvg)))
+						&& totalWorkload > (MySQLBurstBound * MySQLWorkload(activeWritePercentAvg)))
 				{
 					burstFlag = true;
 					burstPeriod = new BurstPeriod();
 					burstPeriod.burstStartTime = time;
 				}
 				else if (burstFlag
-						&& totalWorkload <= (MySQLBurstScale * MySQLWorkload(activeWritePercentAvg)))
+						&& totalWorkload <= (MySQLBurstBound * MySQLWorkload(activeWritePercentAvg)))
 				{
 					burstFlag = false;
 					burstPeriod.burstEndTime = time;
@@ -158,34 +158,4 @@ public class Known
 			e.printStackTrace();
 		}
 	}
-}
-
-class Tenant
-{
-	public int serviceLevelObjective;
-	public double writePercent;
-	public double dataSize;
-	public Map<Integer, Integer> timeWorkloadMap;
-
-	@Override
-	public String toString()
-	{
-		return "Tenant [serviceLevelObjective=" + serviceLevelObjective
-				+ ", writePercent=" + writePercent + ", dataSize=" + dataSize
-				+ ", timeWorkloadMap=" + timeWorkloadMap + "]" + "\n";
-	}
-}
-
-class BurstPeriod
-{
-	public int burstStartTime;
-	public int burstEndTime;
-
-	@Override
-	public String toString()
-	{
-		return "BurstPeriod [burstStartTime=" + burstStartTime
-				+ ", burstEndTime=" + burstEndTime + "]" + "\n";
-	}
-
 }
