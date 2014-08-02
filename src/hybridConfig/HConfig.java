@@ -10,22 +10,22 @@ public class HConfig {
 	public static double[]  PercentTenantSplits  = {
 		0.06	//QT: 20, DS: 3, write heavy
 		,0.09	//QT: 20, DS: 3, read heavy
-		,0.036		//QT: 20, DS: 6.9, write heavy
-		,0.054	//QT: 20, DS: 6.9, read heavy
-		,0.024	//QT: 20, DS: 18.3, write heavy
-		,0.036	//QT: 20, DS: 18.3, read heavy
-		
 		,0.1	//QT: 60, DS: 3, write heavy
 		,0.15	//QT: 60, DS: 3, read heavy
-		,0.06	//QT: 60, DS: 6.9, write heavy
-		,0.09	//QT: 60, DS: 6.9, read heavy
-		,0.04	//QT: 60, DS: 18.3, write heavy
-		,0.06	//QT: 60, DS: 18.3, write heavy
-		
 		,0.04	//QT: 100, DS: 3, write heavy
 		,0.06	//QT: 100, DS: 3, read heavy
+		
+		,0.036		//QT: 20, DS: 6.9, write heavy
+		,0.054	//QT: 20, DS: 6.9, read heavy
+		,0.06	//QT: 60, DS: 6.9, write heavy
+		,0.09	//QT: 60, DS: 6.9, read heavy
 		,0.024	//QT: 100, DS: 6.9, write heavy
 		,0.036	//QT: 100, DS: 6.9, read heavy
+		
+		,0.024	//QT: 20, DS: 18.3, write heavy
+		,0.036	//QT: 20, DS: 18.3, read heavy
+		,0.04	//QT: 60, DS: 18.3, write heavy
+		,0.06	//QT: 60, DS: 18.3, write heavy
 		,0.016	//QT: 100, DS: 18.3, write heavy
 		,0.024	//QT: 100, DS: 18.3, write heavy
 	};

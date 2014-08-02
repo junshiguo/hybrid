@@ -29,7 +29,7 @@ public class PerformanceMonitor extends Thread {
 	public void run() {
 		FileWriter fstream = null;
 		try {
-			fstream = new FileWriter("HTest"+Main.TYPE+".txt", true);
+			fstream = new FileWriter("HTest"+Main.totalTenantNumber+"."+Main.TYPE+".txt", true);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
