@@ -113,23 +113,25 @@ public class Main extends Thread {
 				synchronized(this){
 					this.wait();
 				}
-				if(Main.setQTNow > 0){
+				if(Main.checkSetQT(0) > 0){
 //					Main.setQT();
 					Main.setQT(Main.loadPath);
-					Main.setQTNow --;
+					Main.checkSetQT(-1);
 				}
-				if(Main.resetActualQT > 0){
+				if(Main.checkResetActualQT(0) > 0){
 					Main.resetActualTP();
-					Main.resetActualQT--;
+					Main.checkResetActualQT(-1);
 				}
-				if(Main.doSQLNow > 0){
+				if(Main.checkDoSQL(0) > 0){
 					for(int id = 0; id < tenantNumber; id++){
-						tenants[id].doSQLNow++;
-						synchronized(tenants[id]){
-							tenants[id].notify();
+						if(Main.throughputPerTenant[id] > 0){
+							tenants[id].checkDoSQLNow(1);
+							synchronized(tenants[id]){
+								tenants[id].notify();
+							}
 						}
 					}
-					Main.doSQLNow --;
+					Main.checkDoSQL(-1);
 				}
 				if(Main.isActive == false){
 					for(int id = 0; id < tenantNumber; id++){
@@ -169,6 +171,15 @@ public class Main extends Thread {
 			Main.doSQLNow --;
 		}
 		return Main.doSQLNow;
+	}
+	
+	public static synchronized int checkResetActualQT(int action){
+		if(action == 1){
+			Main.resetActualQT++;
+		}else if(action == -1){
+			Main.resetActualQT--;
+		}
+		return Main.resetActualQT;
 	}
 	
 	public static void init(){
@@ -222,7 +233,7 @@ public class Main extends Thread {
 			workload = str.split(" ");
 			for(int i = 0; i < tenantNumber; i++){
 				Main.throughputPerTenant[i] = Integer.parseInt(workload[i+Main.IDStart+1]);
-				Main.tenants[i].setQT(Main.throughputPerTenant[i]);
+//				Main.tenants[i].setQT(Main.throughputPerTenant[i]);
 			}
 		}catch(IOException e){
 			
@@ -232,6 +243,7 @@ public class Main extends Thread {
 	public static void resetActualTP(){
 		for(int i = 0; i < Main.tenantNumber; i++){
 			Main.actualThroughputPerTenant[i] = 0;
+			Main.tenants[i].setQT(Main.throughputPerTenant[i]);
 		}
 	}
 	
@@ -239,28 +251,29 @@ public class Main extends Thread {
 		int index = tenantId - Main.IDStart;
 		Main.usingVoltdb[index] = usingV;
 		Main.partiallyUsingVoltdb[index] = usingPV;
-		if(usingV == false && usingPV == false){
-			try {
-				Main.tenants[index].connection.voltdbConn.close();
-			} catch (InterruptedException e) {
-				System.out.println("error in closing voltdb connection...");
-			}
-		}
+//		if(usingV == false && usingPV == false){
+//			try {
+//				Main.tenants[index].connection.voltdbConn.close();
+//			} catch (InterruptedException e) {
+//				System.out.println("error in closing voltdb connection...");
+//			}
+//		}
 	}
 	
-	public static void setDBState(int tenantId, int usingV, int usingPV){
+	public static void setDBState(int tenantId, int usingV, int usingPV, int volumnId){
 		int index = tenantId - Main.IDStart;
 		if(usingV == 1)	Main.usingVoltdb[index] = true;
 		else Main.usingVoltdb[index] = false;
 		if(usingPV == 1)	Main.partiallyUsingVoltdb[index] = true;
 		else Main.partiallyUsingVoltdb[index] = false;
-		if(usingV == 0 && usingPV == 0){
-			try {
-				Main.tenants[index].connection.voltdbConn.close();
-			} catch (InterruptedException e) {
-				System.out.println("error in closing voltdb connection...");
-			}
-		}
+//		if(usingV == 0 && usingPV == 0){
+//			try {
+//				Main.tenants[index].connection.voltdbConn.close();
+//			} catch (InterruptedException e) {
+//				System.out.println("error in closing voltdb connection...");
+//			}
+//		}
+		Main.tenants[index].idInVoltdb = volumnId;
 	}
 	
 }

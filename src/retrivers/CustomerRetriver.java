@@ -61,12 +61,13 @@ public class CustomerRetriver extends Thread {
 		//******************************************************************************//
 		ClientResponse response = null;
 		VoltTable result = null;
+		VoltTableRow row = null;
 		try {
 			response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM customer"	+ volumnId + " WHERE tenant_id = " + tenantId+ " AND is_insert = 0 AND is_update = 1");
 			if (response.getStatus() == ClientResponse.SUCCESS	&& response.getResults()[0].getRowCount() != 0) {
 				result = response.getResults()[0];
 				for (int i = 0; i < result.getRowCount(); i++) {
-					VoltTableRow row = result.fetchRow(i);
+					row = result.fetchRow(i);
 					statements[0].setInt(1, (int) row.get("c_id", VoltType.INTEGER));
 					statements[0].setInt(2, (int) row.get("c_d_id", VoltType.TINYINT));
 					statements[0].setInt(3,	(int) row.get("c_w_id", VoltType.SMALLINT));
@@ -100,10 +101,10 @@ public class CustomerRetriver extends Thread {
 			if (response.getStatus() == ClientResponse.SUCCESS	&& response.getResults()[0].getRowCount() != 0) {
 				result = response.getResults()[0];
 				for (int i = 0; i < result.getRowCount(); i++) {
-					VoltTableRow row = result.fetchRow(i);
+					row = result.fetchRow(i);
 					statements[1].setInt(1, (int) row.get("c_id", VoltType.INTEGER));
-					statements[1].setInt(2, (int) row.get("c_d_id", VoltType.TINYINT));
-					statements[1].setInt(3,	(int) row.get("c_w_id", VoltType.SMALLINT));
+					statements[1].setInt(2, new Byte((byte) row.get("c_d_id", VoltType.TINYINT)).intValue());
+					statements[1].setShort(3,	(short) row.get("c_w_id", VoltType.SMALLINT));
 					statements[1].setString(4, row.getString("c_first"));
 					statements[1].setString(5, row.getString("c_middle"));
 					statements[1].setString(6, row.getString("c_last"));
@@ -129,8 +130,9 @@ public class CustomerRetriver extends Thread {
 			voltdbConn.callProcedure("@AdHoc", "DELETE FROM customer" + volumnId + " WHERE tenant_id = " + tenantId);
 		} catch (IOException | ProcCallException | SQLException e) {
 			e.printStackTrace();
+			System.out.println("************"+row.get("c_d_id", VoltType.TINYINT)+"************");
 		}
-		System.out.println("\n customer: " + tenantId + " truncated...");
+//		System.out.println("\n customer: " + tenantId + " truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();

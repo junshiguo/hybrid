@@ -29,7 +29,7 @@ public class HConnection extends Thread {
 	public Connection conn;
 	public Client voltdbConn;
 	public PreparedStatement[] statements;
-	public int doSQLNow = 0;  //set in Tenant. very important
+	public int doSQLNow = 0;  
 	public Vector<WaitList> waitList;
 	
 	public class WaitList{
@@ -94,11 +94,11 @@ public class HConnection extends Thread {
 					e.printStackTrace();
 				}
 			}
-			if(doSQLNow > 0 && waitList.isEmpty() == false){
+			if(waitList.isEmpty() == false){
 				WaitList tmp = waitList.firstElement();
 				waitList.remove(0);
 				doSQL(tmp.sqlId, tmp.para, tmp.paraType, tmp.paraNumber, tmp.PKNumber);
-				this.doSQLNow --;
+				this.doSQLNow--;
 			}
 		}
 	}
@@ -108,7 +108,7 @@ public class HConnection extends Thread {
 	int paratmpNumber = 0;
 	
 	public boolean doSQL(int sqlId, Object[] para, int[] paraType, int paraNumber, int PKNumber){
-		boolean success = false;
+		boolean success = true;
 		
 		long start = System.nanoTime();
 		int tableId = sqlId % 9;
@@ -196,11 +196,14 @@ public class HConnection extends Thread {
 			}
 		}
 		long end = System.nanoTime();
-		if(success == true && Main.isActive == true){
+		if(success == true){
 			Main.timePerQuery.add(new Long(end - start));
 			Main.actualThroughputPerTenant[this.tenantId - Main.IDStart]++;
 			if(sqlId <= 8)	PerformanceMonitor.readQuery++;
 			else PerformanceMonitor.writeQuery++;
+		}
+		if(success == false){
+			System.out.print("*");
 		}
 		return success;
 	}
@@ -325,90 +328,91 @@ public class HConnection extends Thread {
 	
 	public ClientResponse callProc(int threadId, int paraNumber, int tableId, int queryId, Object[] para) throws NoConnectionsException, IOException, ProcCallException{
 		ClientResponse response = null;
+		int volumnId = Main.tenants[threadId - Main.IDStart].idInVoltdb;
 		switch(paraNumber){
 		case 1:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0]);
 			break;
 		case 2:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1]);
 			break;
 		case 3:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2]);
 			break;
 		case 4:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3]);
 			break;
 		case 5:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4]);
 			break;
 		case 6:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5]);
 			break;
 		case 7:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6]);
 			break;
 		case 8:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7]);
 			break;
 		case 9:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8]);
 			break;
 		case 10:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9]);
 			break;
 		case 11:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10]);
 			break;
 		case 12:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11]);
 			break;
 		case 13:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12]);
 			break;
 		case 14:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13]);
 			break;
 		case 15:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14]);
 			break;
 		case 16:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15]);
 			break;
 		case 17:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16]);
 			break;
 		case 18:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17]);
 			break;
 		case 19:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18]);
 			break;
 		case 20:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19]);
 			break;
 		case 21:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20]);
 			break;
 		case 22:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21]);
 			break;
 		case 23:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22]);
 			break;
 		case 24:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23]);
 			break;
 		case 25:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24]);
 			break;
 		case 26:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25]);
 			break;
 		case 27:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25], para[26]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25], para[26]);
 			break;
 		case 28:
-			response = this.voltdbConn.callProcedure(tables[tableId]+threadId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25], para[26], para[27]);
+			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25], para[26], para[27]);
 			break;
 			default:
 		}
@@ -425,6 +429,7 @@ public class HConnection extends Thread {
 	
 	public void setPara(int sqlId, Object[] para, int[] paraType, int paraNumber, int PKNumber){
 		waitList.add(new WaitList(sqlId, para, paraType, paraNumber, PKNumber));
+		this.doSQLNow++;
 	}
 	
 	public void sqlPrepare() throws SQLException{

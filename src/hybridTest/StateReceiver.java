@@ -38,7 +38,8 @@ public class StateReceiver extends Thread {
 					int tenantId = Integer.parseInt(message[0].trim());
 					int usingV = Integer.parseInt(message[1].trim());
 					int usingPV = Integer.parseInt(message[2].trim());
-					Main.setDBState(tenantId, usingV, usingPV);
+					int volumnId = Integer.parseInt(message[3].trim());
+					Main.setDBState(tenantId, usingV, usingPV, volumnId);
 				}
 			}
 		} catch (IOException e1) {

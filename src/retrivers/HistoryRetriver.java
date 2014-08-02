@@ -97,7 +97,7 @@ public class HistoryRetriver extends Thread {
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		System.out.println("\n history: "+tenantId+" truncated...");
+//		System.out.println("\n history: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();

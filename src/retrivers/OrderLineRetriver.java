@@ -102,7 +102,7 @@ public class OrderLineRetriver extends Thread {
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		System.out.println("\n order_line: "+tenantId+" truncated...");
+//		System.out.println("\n order_line: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();

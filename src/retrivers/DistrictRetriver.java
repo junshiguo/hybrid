@@ -43,7 +43,7 @@ public class DistrictRetriver extends Thread {
 			stmt = conn.createStatement();
 			statements = new PreparedStatement[2];
 			statements[0] = conn.prepareStatement("UPDATE district"+tenantId+" SET d_id = ?, d_w_id = ?, d_name = ?, d_street_1 = ?, d_street_2 = ?, d_city = ?, d_state = ?, d_zip = ?, d_tax = ?, d_ytd = ?, d_next_o_id = ? WHERE d_w_id = ? AND d_id = ?");
-			statements[1] = conn.prepareStatement("INSERT INTO district"+tenantId+" VALUES (?,?,?,?,？,?,?,?,?,?,?)");
+			statements[1] = conn.prepareStatement("INSERT INTO district"+tenantId+" VALUES (?,?,?,?,?,?,?,?,?,?,?)");
 		} catch (Exception e1) {
 			System.out.println("error in creating or preparing mysql statement for retriving data...");
 		}
@@ -102,7 +102,7 @@ public class DistrictRetriver extends Thread {
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		System.out.println("\n district: "+tenantId+" truncated...");
+//		System.out.println("\n district: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();

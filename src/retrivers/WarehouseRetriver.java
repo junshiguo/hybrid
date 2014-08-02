@@ -97,7 +97,7 @@ public class WarehouseRetriver extends Thread {
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		System.out.println("\n warehouse: "+tenantId+" truncated...");
+//		System.out.println("\n warehouse: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();

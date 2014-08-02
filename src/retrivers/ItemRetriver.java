@@ -89,7 +89,7 @@ public class ItemRetriver extends Thread {
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		System.out.println("\n item: "+tenantId+" truncated...");
+//		System.out.println("\n item: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();

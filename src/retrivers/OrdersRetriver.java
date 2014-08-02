@@ -96,7 +96,7 @@ public class OrdersRetriver extends Thread {
 			}catch(IOException | ProcCallException | SQLException e){
 				e.printStackTrace();
 			}
-		System.out.println("\n orders: "+tenantId+" truncated...");
+//		System.out.println("\n orders: "+tenantId+" truncated...");
 		//******************************************************************************//
 		try {
 			conn.close();

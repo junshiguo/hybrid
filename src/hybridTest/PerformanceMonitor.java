@@ -22,7 +22,7 @@ public class PerformanceMonitor extends Thread {
 	public PerformanceMonitor(int tenantNumber){
 		writeQuery = 0;
 		readQuery = 0;
-		checkInterval = 3000;
+		checkInterval = 5000;
 		time = 0;
 	}
 	

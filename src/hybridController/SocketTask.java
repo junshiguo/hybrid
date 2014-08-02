@@ -71,6 +71,9 @@ public class SocketTask extends Thread {
 				HybridController.launchTask(this, TYPE, isSender);
 //				System.out.println("server: TYPE "+TYPE+" send task working...");
 				while(true){
+					synchronized(this){
+						this.wait();
+					}
 					if(this.checkSendNow(0) > 0){
 						int tmp = this.infoType.get(0);
 						this.infoType.remove(0);
@@ -82,7 +85,7 @@ public class SocketTask extends Thread {
 					}
 				}
 			}
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			HybridController.senderInPosition[TYPE] = false;
 			HybridController.inPosition[TYPE] = false;
 //			e.printStackTrace();
@@ -106,12 +109,18 @@ public class SocketTask extends Thread {
 		this.infoType.add(0);
 		this.stringInfo.add(info);
 		this.checkSendNow(1);
+		synchronized(this){
+			this.notify();
+		}
 	}
 	
-	public void sendInfo(int tenantId, int isUsingV, int isPartiallyUsingV){
+	public void sendInfo(int tenantId, int isUsingV, int isPartiallyUsingV, int volumnId){
 		this.infoType.add(1);
-		this.stringInfo.add(""+tenantId+" "+isUsingV+" "+isPartiallyUsingV);
+		this.stringInfo.add(""+tenantId+" "+isUsingV+" "+isPartiallyUsingV+" "+volumnId);
 		this.checkSendNow(1);
+		synchronized(this){
+			this.notify();
+		}
 	}
 
 }

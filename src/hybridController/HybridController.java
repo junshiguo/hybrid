@@ -49,6 +49,7 @@ public class HybridController extends Thread {
 				}
 				String[] offloadingIds = str.split(" ");
 				int time = Integer.parseInt(offloadingIds[0].trim());
+				System.out.println(time);
 				HybridController.sleep(time*60*1000);
 				for(int i = 1; i < offloadingIds.length - 1; i++){
 					new DataMover("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote", "127.0.0.1", Integer.parseInt(offloadingIds[i].trim()), true).start();
@@ -89,10 +90,10 @@ public class HybridController extends Thread {
 			for(int i = 0; i < typeNumber; i++){
 				sendTask[i].sendInfo("all in position");
 			}
-		informStart = true;
-		synchronized(HybridController.controller){
-			controller.notify();
-		}
+			informStart = true;
+			synchronized(HybridController.controller){
+				controller.notify();
+			}
 		}
 	}
 	
