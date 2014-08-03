@@ -301,34 +301,35 @@ public class HConnection extends Thread {
 		if(this.voltdbConn == null){
 			this.voltdbConn = DBManager.connectVoltdb(this.voltdbServer);
 		}
-		try {
-			ClientResponse response = null;
+
+		ClientResponse response = null;
+		for (int i = 0; i < 2; i++) {
 			response = callProc(this.tenantId, paraNumber, tableId, queryId, para);
-			if(response.getStatus() != ClientResponse.SUCCESS){
-				System.out.println("response failed");
-				return false;
+			if (response != null && response.getStatus() == ClientResponse.SUCCESS) {
+				break;
 			}
-			if(careResult && queryId == 0){
-				VoltTable result = response.getResults()[0];
-				if(result.getRowCount() == 0){
-					return false;
-				}else{
-					state[0] = (int) result.fetchRow(0).get("is_insert", VoltType.INTEGER);
-					state[1] = (int) result.fetchRow(0).get("is_update", VoltType.INTEGER);
-					return true;
-				}
-			}
-			return true;
-		} catch (IOException | ProcCallException e) {
-			e.printStackTrace();
-			System.out.println("Exception: tenant id:"+tenantId+"; table id:"+tableId+"; queryId:"+queryId+"; paraNumber:"+paraNumber);
+		}
+		if (response == null || response.getStatus() != ClientResponse.SUCCESS) {
+			System.out.println("response failed");
 			return false;
 		}
+		if (careResult && queryId == 0) {
+			VoltTable result = response.getResults()[0];
+			if (result.getRowCount() == 0) {
+				return false;
+			} else {
+				state[0] = (int) result.fetchRow(0).get("is_insert", VoltType.INTEGER);
+				state[1] = (int) result.fetchRow(0).get("is_update", VoltType.INTEGER);
+				return true;
+			}
+		}
+		return true;
 	}
 	
-	public ClientResponse callProc(int threadId, int paraNumber, int tableId, int queryId, Object[] para) throws NoConnectionsException, IOException, ProcCallException{
+	public ClientResponse callProc(int threadId, int paraNumber, int tableId, int queryId, Object[] para){
 		ClientResponse response = null;
 		int volumnId = Main.tenants[threadId - Main.IDStart].idInVoltdb;
+		try{
 		switch(paraNumber){
 		case 1:
 			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0]);
@@ -415,6 +416,8 @@ public class HConnection extends Thread {
 			response = this.voltdbConn.callProcedure(tables[tableId]+volumnId+"."+querys[queryId], para[0], para[1], para[2], para[3], para[4], para[5], para[6], para[7], para[8], para[9], para[10], para[11], para[12], para[13], para[14], para[15], para[16], para[17], para[18], para[19], para[20], para[21], para[22], para[23], para[24], para[25], para[26], para[27]);
 			break;
 			default:
+		}
+		}catch(Exception e){
 		}
 		return response;
 	}

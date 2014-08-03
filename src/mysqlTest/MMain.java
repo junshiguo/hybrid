@@ -3,6 +3,7 @@ package mysqlTest;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 
 
 /**
@@ -106,14 +107,15 @@ public class MMain {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-//		for(int i=0; i<numberOfThread; i++){
-//			try {
-//				Tenant.tenants[i].join(30000);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-//		}
-		System.exit(0);
+		try {
+			Thread.sleep(3000);
+			for(int i = 0; i < numberOfThread; i++){
+				Tenant.tenants[i].conn.close();
+			}
+		} catch (InterruptedException | SQLException e1) {
+			e1.printStackTrace();
+		}
+//		System.exit(0);
 	}
 	
 	public static void initDBPara(String url, String user, String pwd){

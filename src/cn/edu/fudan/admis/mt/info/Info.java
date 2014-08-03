@@ -10,7 +10,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import cn.edu.fudan.admis.mt.hybrid.config.HConfig;
+import hybridConfig.HConfig;
 
 public class Info
 {
@@ -37,13 +37,13 @@ public class Info
 	{
 		allTenantNum = 1000;
 		activeTenantNum = 200;
-		loadPath = "data/load.txt";
+		loadPath = "load.txt";
 
-		VoltDBMemory = 10;
-		transferCostPerDataSize = 0.;
-		timeInterval = 10;
-		maxTime = 50;
-		MySQLBurstBound = 0.9;
+		VoltDBMemory = 1024;
+		transferCostPerDataSize = 1.;
+		timeInterval = 5;
+		maxTime = 25;
+		MySQLBurstBound = 0.80;
 
 		HConfig.init(allTenantNum);
 
@@ -67,13 +67,13 @@ public class Info
 	// TODO
 	public static double MySQLWorkload(double writePercent)
 	{
-		return 20000.;
+		return 100000.;
 	}
 
 	// TODO
 	public static double VoltDBWorkload(double writePercent)
 	{
-		return 40000.;
+		return 400000.;
 	}
 
 	private static void generateList()

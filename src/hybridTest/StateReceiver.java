@@ -29,7 +29,6 @@ public class StateReceiver extends Thread {
 				if(info[0].trim().equals("0")){
 					if(info[1].trim().equals("all in position")){
 						Main.checkStart(true);
-						System.out.println("Main: start test");
 					}else{
 						alive = false;
 					}

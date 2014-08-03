@@ -3,6 +3,7 @@ package hybridController;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import hybridConfig.HConfig;
 
@@ -14,7 +15,7 @@ public class HybridController extends Thread {
 	public static boolean[] senderInPosition;
 //	public static boolean[] endTest;
 	public static int typeNumber = 18;
-	public static int totalTime = 60; //minutes
+	public static int totalTime = 30; //minutes
 //	public static boolean ENDTEST = false;
 	public static boolean[] usingVoltdb;
 	public static boolean[] partiallyUsingVoltdb;
@@ -36,28 +37,43 @@ public class HybridController extends Thread {
 		//use sendTask[TYPE].sendInfo(tenantId, usingV, usingPV);
 	}
 	
+	public ArrayList<ArrayList<Integer>> tenantInVoltdb = new ArrayList<ArrayList<Integer>>();
 	public void run(){
 		try{
+			BufferedReader burstReader = new BufferedReader(new FileReader("data/burst.txt"));
+			String str;
+			while((str = burstReader.readLine()) != null){
+				String[] offloadingIds = str.split(" ");
+				ArrayList<Integer> tmp = new ArrayList<Integer>();
+				for(int i = 0; i < offloadingIds.length; i++){
+					tmp.add(Integer.parseInt(offloadingIds[i].trim()));
+				}
+				tenantInVoltdb.add(tmp);
+			}
 			synchronized(this){
 				this.wait();
 			}
-			BufferedReader burstReader = new BufferedReader(new FileReader("data/burst.txt"));
-			while(true){
-				String str = burstReader.readLine();
-				if(str == null){
-					break;
+			for(int i = 0; i < tenantInVoltdb.size(); i++){
+				ArrayList<Integer> row = tenantInVoltdb.get(i);
+				if(i == 0){
+					if(row.size() > 1){
+						for(int j = 1; j < row.size(); j++){
+							new DataMover("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote", "127.0.0.1", row.get(j), true).start();
+						}
+					}
+				}else{
+					ArrayList<Integer> lastRow = tenantInVoltdb.get(i-1);
+					for (int j = 1; j < row.size(); j++) {
+						if (lastRow.contains(row.get(j)) == false)
+							new DataMover("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote", "127.0.0.1", row.get(j), true).start();
+					}
+					HybridController.sleep(30000);
+					for (int j = 1; j < lastRow.size(); j++) {
+						if (row.contains(lastRow.get(j)) == false)
+							new DataMover("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote", "127.0.0.1", lastRow.get(j), false).start();
+					}
 				}
-				String[] offloadingIds = str.split(" ");
-				int time = Integer.parseInt(offloadingIds[0].trim());
-				System.out.println(time);
-				HybridController.sleep(time*60*1000);
-				for(int i = 1; i < offloadingIds.length - 1; i++){
-					new DataMover("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote", "127.0.0.1", Integer.parseInt(offloadingIds[i].trim()), true).start();
-				}
-				HybridController.sleep(5*60*1000);
-				for(int i = 1; i < offloadingIds.length - 1; i++){
-					new DataMover("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote", "127.0.0.1", Integer.parseInt(offloadingIds[i].trim()), false).start();
-				}
+				HybridController.sleep(5*60*1000 - 30000);
 			}
 		}catch (IOException | InterruptedException | NumberFormatException e) {
 				e.printStackTrace();
@@ -74,13 +90,6 @@ public class HybridController extends Thread {
 		}
 		
 		if(informStart == true)	return;
-//		sendTask[type].sendInfo("all in position");
-		
-//		if(inPosition[1] == true && senderInPosition[1] == true && inPosition[6] == true && senderInPosition[6] == true){
-//			sendTask[1].sendInfo("all in position");
-//			sendTask[6].sendInfo("all in position");
-//			informStart = true;
-//		}
 		boolean flag = true;
 		for(int i = 0; i < typeNumber; i++){
 			if(inPosition[i] == false || senderInPosition[i] == false)

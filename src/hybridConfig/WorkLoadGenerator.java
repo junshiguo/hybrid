@@ -12,10 +12,10 @@ public class WorkLoadGenerator {
 	public static double exchangeRatio = 0.2;
 	public static int totalTenant = 1000;
 	public static int timePerInterval = 5; //min
-	public static int totalInterval = 6; // 1 h
-	public static int HRan = 180;
-	public static int MRan = 60;
-	public static int LRan = 10;
+	public static int totalInterval = 6; // 30 min
+	public static int HRan = 1000;
+	public static int MRan = 100;
+	public static int LRan = 50;
 	public static int dRan = 5;
 	public static boolean[][] activePattern = new boolean[totalTenant][totalInterval];
 	public static boolean[] isBursty = new boolean[totalInterval];

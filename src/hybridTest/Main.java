@@ -38,7 +38,7 @@ public class Main extends Thread {
 //	public static boolean startCount = false;
 //	public static double writePercent = 0.0; //set in performanceMonitor
 	public static boolean onlyMysql = true;
-	public static long testTime = 900000; //15 mins
+	public static long testTime = 1800000; //30 mins
 	public static long intervalTime = 300000; //5 min, must be integer mins
 	public static long intervalNumber = 3;
 	public static long minPerInterval = 5;
@@ -59,8 +59,15 @@ public class Main extends Thread {
 			TYPE = Integer.parseInt(args[0]);
 		}
 		totalTenantNumber = 1000;
+		if(args.length > 1){
+			totalTenantNumber = Integer.parseInt(args[1]);
+		}
 		onlyMysql = false;
-		testTime = 900000;
+		if(args.length > 2){
+			if(Integer.parseInt(args[2]) == 1)	onlyMysql = true;
+			else onlyMysql = false;
+		}
+		testTime = 1800000;
 		intervalTime = 300000;
 		HConfig.init(totalTenantNumber);
 		init();

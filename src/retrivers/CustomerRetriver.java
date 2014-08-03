@@ -69,8 +69,8 @@ public class CustomerRetriver extends Thread {
 				for (int i = 0; i < result.getRowCount(); i++) {
 					row = result.fetchRow(i);
 					statements[0].setInt(1, (int) row.get("c_id", VoltType.INTEGER));
-					statements[0].setInt(2, (int) row.get("c_d_id", VoltType.TINYINT));
-					statements[0].setInt(3,	(int) row.get("c_w_id", VoltType.SMALLINT));
+					statements[0].setInt(2, new Byte((byte) row.get("c_d_id", VoltType.TINYINT)).intValue());
+					statements[0].setShort(3,	(short) row.get("c_w_id", VoltType.SMALLINT));
 					statements[0].setString(4, row.getString("c_first"));
 					statements[0].setString(5, row.getString("c_middle"));
 					statements[0].setString(6, row.getString("c_last"));
@@ -82,7 +82,7 @@ public class CustomerRetriver extends Thread {
 					statements[0].setString(12, row.getString("c_phone"));
 					statements[0].setTimestamp(13, row.getTimestampAsSqlTimestamp("c_since"));
 					statements[0].setString(14, row.getString("c_credit"));
-					statements[0].setInt(15, (int) row.get("c_credit_limit", VoltType.BIGINT));
+					statements[0].setInt(15, (int) row.get("c_credit_lim", VoltType.BIGINT));
 					statements[0].setBigDecimal(	16, row.getDecimalAsBigDecimal("c_discount").setScale(4, BigDecimal.ROUND_HALF_DOWN));
 					statements[0].setBigDecimal(17, row.getDecimalAsBigDecimal("c_balance").setScale(12, BigDecimal.ROUND_HALF_DOWN));
 					statements[0].setBigDecimal(18, row.getDecimalAsBigDecimal("c_ytd_payment").setScale(12, BigDecimal.ROUND_HALF_DOWN));
@@ -116,7 +116,7 @@ public class CustomerRetriver extends Thread {
 					statements[1].setString(12, row.getString("c_phone"));
 					statements[1].setTimestamp(13, row.getTimestampAsSqlTimestamp("c_since"));
 					statements[1].setString(14, row.getString("c_credit"));
-					statements[1].setInt(15, (int) row.get("c_credit_limit", VoltType.BIGINT));
+					statements[1].setInt(15, (int) row.get("c_credit_lim", VoltType.BIGINT));
 					statements[1].setBigDecimal(	16, row.getDecimalAsBigDecimal("c_discount").setScale(4, BigDecimal.ROUND_HALF_DOWN));
 					statements[1].setBigDecimal(17, row.getDecimalAsBigDecimal("c_balance").setScale(12, BigDecimal.ROUND_HALF_DOWN));
 					statements[1].setBigDecimal(18, row.getDecimalAsBigDecimal("c_ytd_payment").setScale(12, BigDecimal.ROUND_HALF_DOWN));

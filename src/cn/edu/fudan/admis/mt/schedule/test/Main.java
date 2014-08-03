@@ -21,8 +21,8 @@ public class Main
 		Info.init();
 
 		testWorkloadPerDataSizeSchedulerImpl();
-		testWorkloadSchedulerImpl();
-		testDataSizeSchedulerImpl();
+//		testWorkloadSchedulerImpl();
+//		testDataSizeSchedulerImpl();
 	}
 
 	static void testWorkloadPerDataSizeSchedulerImpl()

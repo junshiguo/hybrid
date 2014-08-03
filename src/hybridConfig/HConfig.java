@@ -1,9 +1,9 @@
 package hybridConfig;
 
 public class HConfig {
-	public static int[] ValueQT = { 60, 120, 200 };  // per minute
-	public static double[] ValueDS = {3, 6.9, 18.3 };  // MB
-	public static double[] ValueWP = { 0.6, 0.2 };  //
+	public static int[] ValueQT = { 100, 600, 1200 };  // per minute
+	public static double[] ValueDS = {6.9, 18.3, 38.7 };  // MB
+	public static double[] ValueWP = { 0.6, 0.3 };  //
 	public static double[] PercentQT = { 0.3, 0.5, 0.2 };
 	public static double[] PercentDS = { 0.5, 0.3, 0.2 };
 	public static double[] PercentWH = { 0.4, 0.6 };  // 0.4 for write heavy and 0.6 for read heavy
@@ -31,12 +31,12 @@ public class HConfig {
 	};
 	public static double[] PercentTenantSplitsSum;
 	public static int[] TenantIdRange;
-	public static int QTMatrix[] = {ValueQT[0],ValueQT[0],ValueQT[0],ValueQT[0],ValueQT[0],ValueQT[0],
-		ValueQT[1],ValueQT[1],ValueQT[1],ValueQT[1],ValueQT[1],ValueQT[1],
-		ValueQT[2],ValueQT[2],ValueQT[2],ValueQT[2],ValueQT[2],ValueQT[2],};
-	public static double DSMatrix[] = {ValueDS[0],ValueDS[0],ValueDS[1],ValueDS[1],ValueDS[2],ValueDS[2],
-		ValueDS[0],ValueDS[0],ValueDS[1],ValueDS[1],ValueDS[2],ValueDS[2],
-		ValueDS[0],ValueDS[0],ValueDS[1],ValueDS[1],ValueDS[2],ValueDS[2]};
+	public static int QTMatrix[] = {ValueQT[0],ValueQT[0],ValueQT[1],ValueQT[1],ValueQT[2],ValueQT[2],
+		ValueQT[0],ValueQT[0],ValueQT[1],ValueQT[1],ValueQT[2],ValueQT[2],
+		ValueQT[0],ValueQT[0],ValueQT[1],ValueQT[1],ValueQT[2],ValueQT[2]};
+	public static double DSMatrix[] = {ValueDS[0],ValueDS[0],ValueDS[0],ValueDS[0],ValueDS[0],ValueDS[0],
+		ValueDS[1],ValueDS[1],ValueDS[1],ValueDS[1],ValueDS[1],ValueDS[1],
+		ValueDS[2],ValueDS[2],ValueDS[2],ValueDS[2],ValueDS[2],ValueDS[2]};
 	public static boolean WHMatrix[] = {true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false};
 	
 	public static int totalTenant = 1000;

@@ -1,5 +1,7 @@
 package hybridTest;
 
+import java.sql.SQLException;
+
 import utility.Sequence;
 import hybridConfig.HConfig;
 
@@ -77,7 +79,10 @@ public class HTenant extends Thread {
 				this.checkDoSQLNow(-1);
 			}
 		}
-		
+		try {
+			connection.conn.close();
+		} catch (SQLException e) {
+		}
 	}
 	
 	public synchronized int checkDoSQLNow(int action){

@@ -6,6 +6,21 @@ public class HTimer extends Thread {
 		int count = -1;
 		try {
 			HTimer.sleep(3000);
+//			Main.checkDoSQL(1);
+//			Main.checkResetActualQT(+1);
+//			Main.checkSetQT(1);
+//			synchronized(Main.mainThread){
+//				Main.mainThread.notify();
+//			}
+//			for(int i = 0; i < 3; i++){
+//				Main.actualThroughputPerTenant = new int[Main.tenantNumber];
+//				HTimer.sleep(60000);
+//				int[] tmp = Main.actualThroughputPerTenant.clone();
+//				int tp = 0;
+//				for(int j = 0; j < tmp.length; j++)
+//					tp += tmp[j];
+//				System.out.println(i+" "+Main.TYPE+" "+tp+"  ");
+//			}
 			for(int intervalId = 0; intervalId < Main.intervalNumber; intervalId++){
 				for(int min = 0; min < Main.minPerInterval; min++){
 					for(int i = 0; i < 20; i++){
@@ -20,9 +35,9 @@ public class HTimer extends Thread {
 						synchronized(Main.mainThread){
 							Main.mainThread.notify();
 						}
-						HTimer.sleep(2500);
+						HTimer.sleep(2900);
 					}
-					HTimer.sleep(10000);
+					HTimer.sleep(2000);
 					Main.socketSender.sendInfo((intervalId*Main.minPerInterval+min),Main.throughputPerTenant.clone(), Main.actualThroughputPerTenant.clone());
 					synchronized(Main.socketSender){
 						Main.socketSender.notify();

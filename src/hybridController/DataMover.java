@@ -45,7 +45,6 @@ public class DataMover extends Thread {
 		try{
 			if(isM2V){
 				int emptyVolumn = VMMatch.findVolumn();
-				emptyVolumn = 0;
 				if(emptyVolumn != -1){
 					HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 1, emptyVolumn);
 					long start = System.nanoTime();
@@ -57,7 +56,6 @@ public class DataMover extends Thread {
 				}
 			}else{
 				int volumnId = VMMatch.findTenant(tenantId);
-				volumnId = 0;
 				if(volumnId != -1){
 					HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 1, volumnId);
 					long start = System.nanoTime();
