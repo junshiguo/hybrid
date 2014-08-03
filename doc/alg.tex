@@ -6,39 +6,39 @@
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
 
 \begin{document}
-When the data access requests from multiple tenants burst simultaneously, the corresponding database server will be overloaded and violate the service level agreements of some tenants. To handle this critical situation, we proposes a hybrid solution that combines disk based database MySQL and in-memory database VoltDB. We start using only MySQL to provide data access service, and reserve some system resources for VoltDB. When work load burst comes to MySQL, we start using VoltDB and transfer some tenants from MySQL to VoltDB so that our solution can meet the service level agreements of tenants as many as possible. The crux of our solution is to determine which tenants should be transferred from MySQL to VoltDB.
+When the data access requests from multiple tenants burst simultaneously, the corresponding database server will suffer the overload and violate the service level agreements of some tenants consequently. To handle this critical situation, we proposes a hybrid solution that combines disk based database MySQL and in-memory database VoltDB to provide data access service for multiple tenants. We start using only MySQL to provide data access service, and reserve some system resources for VoltDB. When workload bursts come to MySQL, we start using VoltDB and transfer some tenants from MySQL to VoltDB so that our solution can meet the service level agreements of tenants as many as possible. The crux of our solution is to determine which tenants should be transferred from MySQL to VoltDB.
 
-We first give formal definitions as follows.
+We first give formal definitions about tenants and database servers as follows.
 
 $T$ denotes the set of all tenants.
 
-Each tenant $T_i \in T$ can be denoted by $\{SLO_i, WP_i, DS_i, (WL_{i, t}, t)\}$.
+Each tenant $T_i \in T$ can be denoted by $\{SLO_i, WP_i, DS_i, (WL_{i, t})\}$.
 
-$SLO_i$ denotes the service level objective as well as maximum work load of tenant $T_i$. We consider it as one of high, middle or low level.
+$SLO_i$ denotes the service level objective as well as the maximum workload of tenant $T_i$. We consider three kinds of service level objectives, namely, high, middle and low level.
 
-$WP_i$ denotes the write percentage of tenant $T_i$. We consider it as either write-heavy or read-heavy level.
+$WP_i$ denotes the write percentage of tenant $T_i$. We consider two kinds of write percentages, namely, write-heavy and read-heavy level.
 
-$DS_i$ denotes the data size of tenant $T_i$. We consider it as one of large, middle or small level.
+$DS_i$ denotes the data size of tenant $T_i$. We consider three kinds of data size, namely, large, middle and small level.
 
-$(WL_{i, t}, t)$ denotes the work load of tenant $T_i$ at time $t$.
+$(WL_{i, t})$ denotes the workload of tenant $T_i$ at time $t$.
 
-At time $t$, all tenants with non-zero work load $WL_{i, t}$ are denoted as active tenants $T_{a, t}$. We consider the size of active tenants $T_{a, t}$ as a constant proportion of the size of all tenants $T$.
+Furthermore, at time $t$, all tenants with non-zero workload $WL_{i, t}$ are denoted as active tenants $T_{a, t}$. We consider the size of active tenants $T_{a, t}$ as a constant proportion of the size of all tenants $T$.
 
-$\overline{WP}$ denotes the average write percentage of active tenants served by the specific database.
+$\overline{WP_t}$ denotes the average write percentage of active tenants served by the specific database at time $t$.
 
-$WL_M = F(\overline{WP})$ denotes the maximum work load provided by MySQL. We consider it as an exponential function of the average write percentage $\overline{WP}$ of active tenants served by MySQL.
+$WL_{M, t} = F(\overline{WP_t})$ denotes the maximum workload provided by MySQL at time $t$. We consider it as an exponential function of the average write percentage $\overline{WP_t}$ of active tenants served by MySQL at time $t$, which is validated in our experiments.
 
-At time $t$, we say work load burst comes to MySQL if the work load sum of active tenants $T_{a, t}$ exceeds a certain bound $B_M$ of the maximum work load $WL_M$ provided by MySQL.
+At time $t$, we say workload burst comes to MySQL if the sum of workloads of active tenants $T_{a, t}$ exceeds an upper bound $B_M$ of the maximum workload $WL_M$ provided by MySQL.
 
-$WL_V = G(\overline{WP})$ denotes the maximum work load provided by VoltDB. We consider it as a linear function of the average write percentage $\overline{WP}$ of active tenants served by VoltDB.
-
-When data is transferring from MySQL to VoltDB, $C_V$ denotes the work load of transferring per data size.
+$WL_{V, t} = G(\overline{WP_t})$ denotes the maximum workload provided by VoltDB. We consider it as a linear function of the average write percentage $\overline{WP_t}$ of active tenants served by VoltDB at time $t$, which is validated in our experiments.
 
 $M_V$ denotes the maximum memory provided by VoltDB.
 
+When data is transferring from MySQL to VoltDB, $C_V$ denotes the workload of transferring per data size.
+
 We then formalize the crux of our solution as an optimization problem.
 
-At time $t$, work load burst is coming to MySQL. Our goal is to find a tenant set $T_{M, t}$ in MySQL, a tenant set $T_{Vo, t}$ in VoltDB and a tenant set $T_{Vi, t}$ whose service level agreements are violated. Our goal is to
+At time $t$, workload burst is coming to MySQL. Our goal is to find a tenant set $T_{M, t}$ of MySQL, a tenant set $T_{Vo, t}$ of VoltDB and a tenant set $T_{Vi, t}$ whose service level agreements are violated. Our goal is to
 \begin{equation}\label{objectivefunction}
 minimize |T_{Vi ,t}|
 \end{equation}
@@ -50,30 +50,32 @@ T_{M, t} \cup T_{Vo, t} \cup T_{Vi, t} = T_{a, t}
 T_{M, t} \cap T_{Vo, t} \cap T_{Vi, t} = \emptyset
 \end{equation}
 \begin{equation}\label{constraint3}
-\sum_{m \in T_{M, t}}{WL_{m, t}} \leq WL_M * B_M
+\sum_{m \in T_{M, t}}{WL_{m, t}} \leq B_M * WL_{M, t}
 \end{equation}
 \begin{equation}\label{constraint4}
 \sum_{v \in T_{Vo, t}}{DS_v} \leq M_V
 \end{equation}
 \begin{equation}\label{constraint5}
-C_V\sum_{v \in T_{Vo, t}}{DS_v} + \sum_{v \in T_{Vo, t}}{WL_{v, t}} \leq WL_V
+C_V * \sum_{v \in T_{Vo, t}}{DS_v} + \sum_{v \in T_{Vo, t}}{WL_{v, t}} \leq WL_{V, t}
 \end{equation}
-The first two constraints guarantee that every active tenant is assigned to exact one of MySQL, VoltDB or violated set. The third constraint guarantees that the work load sum of tenants in MySQL does not exceed a certain bound of the maximum work load provided by MySQL. The fourth constraint guarantees that the data size sum of tenants in VoltDB does not exceed the maximum memory provided by VoltDB. The fifth constraint guarantees that the sum of work load caused by transferring and work load sum of tenants in VoltDB does not exceed the maximum work load provided by VoltDB.
+The first two constraints guarantee that every active tenant is assigned to exact one of MySQL, VoltDB or violated set. The third constraint guarantees that the sum of workload of active tenants of MySQL does not exceed an upper bound of the maximum workload provided by MySQL. The fourth constraint guarantees that the sum of data size of active tenants of VoltDB does not exceed the maximum memory provided by VoltDB. The fifth constraint guarantees that the of workload caused by transferring plus the sum of workloads of active tenants of VoltDB does not exceed the maximum workload provided by VoltDB.
 
 Finally, we design algorithms to solve this optimization problem.
 
-Starting with brute-force search, by systematically assigning every tenant to exact one of MySQL, VoltDB or violated set and checking whether each candidate satisfies the problem's statement, we can find all optimal solutions to this optimization problem. However, the time complexity of brute-force search is $O(3^n)$, which is not practicable.
+Starting with brute-force search, by systematically assigning every tenant to exact one of MySQL, VoltDB or violated set and checking whether each candidate satisfies the problem's statement, we can find all optimal solutions to this optimization problem. However, the time complexity of brute-force search is $O(3^n)$, which is definitely not practicable.
 
-When work load burst is coming, all tenants are served by MySQL. And we should determine which tenants should be transferred as soon as possible. Based on these prerequisites, we proposes a heuristic algorithm to solve this optimization problem, which is described in Algorithm~\ref{alg:tenanttransfer}.
-\begin{algorithm}[h]
-\caption{Tenant transfer for work load burst}
+When workload burst is coming, all active tenants are served by MySQL. And we should determine one solution as soon as possible rather than find all optimal solutions. Based on these prerequisites, we proposes a heuristic algorithm to solve this optimization problem, which is described in Algorithm~\ref{alg:tenanttransfer}.
+\begin{algorithm}[ht]
+\caption{Tenant transfer}
 \label{alg:tenanttransfer}
     \begin{algorithmic}[1]
-    \Require $t, T_{a, t}$
+    \Require Burst time $t$, active tenants $T_{a, t}$
     \State $T_{M, t} \gets sortTenants(T_{a, t})$
+    \State $T_{Vo, t} \gets \{\}$
+    \State $T_{Vi, t} \gets \{\}$
     \While {true}
     \State $f \gets removeFirst(T_{M, t})$
-    \If {$canHandleWhenAdd(T_{Vo, t}, f)$}
+    \If {$canHandleIfAdd(T_{Vo, t}, f)$}
         \State $T_{Vo, t} \gets add(f)$
     \Else
         \State $T_{Vi, t} \gets add(f)$
@@ -82,12 +84,11 @@ When work load burst is coming, all tenants are served by MySQL. And we should d
         \State break
     \EndIf
     \EndWhile
-    \State
     \Ensure $T_{M, t}, T_{Vo, t}$ and $T_{Vo, t}$
     \end{algorithmic}
 \end{algorithm}
 
-The function $sortTenants(T_{a, t})$ sorts active tenants by their work load per data size in descending order. The function $removeFirst(T_{M, t})$ removes the first tenant from MySQL. The function $canHandleWhenAdd(T_{Vo, t}, f)$ checks whether VoltDB can handle when the first tenant is added. The function $canHandleAfterRemove(T_{M, t}, f)$ checks whether MySQL can handle after the first tenant is removed.
+The function $sortTenants(T_{a, t})$ sorts active tenants by their workload per data size in descending order. We also implement two baselines as comparisons, including sorting active tenants by their workload in descending order and sorting active tenants by their data size in ascending order. The function $removeFirst(T_{M, t})$ removes the first tenant from MySQL. The function $canHandleIfAdd(T_{Vo, t}, f)$ checks whether VoltDB can handle if the first tenant is added. The function $canHandleAfterRemove(T_{M, t}, f)$ checks whether MySQL can handle after the first tenant is removed.
 
 The time complexity of Algorithm~\ref{alg:tenanttransfer} is $O(nlog(n))$, which is fast enough in practice. Usually, active tenants can fit into MySQL and VoltDB totally, so that the violated tenant set is empty. In such situation, our Algorithm~\ref{alg:tenanttransfer} guarantees an optimal solution.
 
