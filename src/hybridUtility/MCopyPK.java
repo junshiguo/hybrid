@@ -1,4 +1,4 @@
-package hybridTest;
+package hybridUtility;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

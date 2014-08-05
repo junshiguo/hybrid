@@ -13,9 +13,9 @@ public class WorkLoadGenerator {
 	public static int totalTenant = 1000;
 	public static int timePerInterval = 5; //min
 	public static int totalInterval = 6; // 30 min
-	public static int HRan = 1000;
-	public static int MRan = 100;
-	public static int LRan = 50;
+	public static int HRan = -40;
+	public static int MRan = -100;
+	public static int LRan = -120;
 	public static int dRan = 5;
 	public static boolean[][] activePattern = new boolean[totalTenant][totalInterval];
 	public static boolean[] isBursty = new boolean[totalInterval];
@@ -25,7 +25,7 @@ public class WorkLoadGenerator {
 	public static int[] inactiveTenant;
 	
 	public static void main(String[] args) throws IOException{
-		totalTenant = 1000;
+		totalTenant = 3000;
 		activeNumber = (int) (activeRatio * totalTenant);
 		activeTenant = new int[activeNumber];
 		inactiveTenant = new int[totalTenant - activeNumber];
@@ -49,13 +49,13 @@ public class WorkLoadGenerator {
 				if (isActive) {
 					load[tenantId] = ran.nextInt(QT) + 1;
 					if(isBursty[intervalId]){
-						load[tenantId] = (load[tenantId]+HRan > QT)?QT:(load[tenantId]+HRan);
+						load[tenantId] = (load[tenantId]+HRan < 0)?20:(load[tenantId]+HRan);
 					}else{
 						boolean tmp = ran.nextBoolean();
 						if (tmp) {
-							load[tenantId] = (load[tenantId] + MRan > QT) ? QT: load[tenantId] + MRan;
+							load[tenantId] = (load[tenantId] + MRan < 0) ? 10: load[tenantId] + MRan;
 						} else {
-							load[tenantId] = (load[tenantId] + LRan > QT) ? QT: load[tenantId] + LRan;
+							load[tenantId] = (load[tenantId] + LRan < 0) ? 10: load[tenantId] + LRan;
 						}
 					}
 				} else {

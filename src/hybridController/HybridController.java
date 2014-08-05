@@ -1,7 +1,9 @@
 package hybridController;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -27,7 +29,11 @@ public class HybridController extends Thread {
 	public static HybridController controller;
 	
 	public static void main(String[] args){
-		HConfig.init(1000);
+		int tenantNumber = 1000;
+		if(args.length > 0){
+			tenantNumber = Integer.parseInt(args[0]);
+		}
+		HConfig.init(tenantNumber);
 		init();
 		socketServer = new SocketServer();
 		socketServer.start();
@@ -74,6 +80,19 @@ public class HybridController extends Thread {
 					}
 				}
 				HybridController.sleep(5*60*1000 - 30000);
+			}
+			FileWriter fstream = null;
+			try {
+				fstream = new FileWriter("violation.txt", false);
+				BufferedWriter out = new BufferedWriter(fstream);
+				for(int i = 0; i < HybridController.totalTime; i++){
+					out.write(i+" "+HybridController.lateTenant[i]+" "+HybridController.lateQuery[i]);
+					out.newLine();
+				}
+				out.flush();
+				out.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
 		}catch (IOException | InterruptedException | NumberFormatException e) {
 				e.printStackTrace();

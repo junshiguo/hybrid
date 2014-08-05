@@ -38,7 +38,6 @@ public class Tenant extends Thread {
 	public Connection conn;
 	public Statement stmt;
 	public Sequence sequence;
-	public boolean isLoaded = false;
 	public Tenant(int id, String dbURL, String dbUserName, String dbPassword, boolean copyTable, Connection conn){
 		this.id = id;
 		this.dbURL = dbURL;

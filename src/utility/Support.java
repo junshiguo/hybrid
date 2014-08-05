@@ -115,6 +115,17 @@ public class Support {
 		return sum;
 	}
 	
+	public static Double getDoubleAverage(ArrayList<Double> list){
+		Double sum = new Double(0.0);
+		if(!list.isEmpty()){
+			for(Double n : list){
+				sum += n;
+			}
+			return sum/list.size();
+		}
+		return sum;
+	}
+	
 	public static Long getAverage(ArrayList<Long> list, int number){
 		Long sum = new Long(0);
 		if(!list.isEmpty()){
