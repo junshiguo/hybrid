@@ -17,7 +17,7 @@ public class HLoadTables {
 	public static int tenantNumber;
 	
 	public static void main(String[] args){
-		conn = DBManager.connectDB("jdbc:mysql://127.0.0.1/tpcc10", "root", "root");
+		conn = DBManager.connectDB("jdbc:mysql://127.0.0.1/tpcc3000", "root", "root");
 		voltdbConn = DBManager.connectVoltdb("127.0.0.1");
 		System.out.println("db connected...");
 //		tenantNumber = Main.numberOfThread;

@@ -23,7 +23,7 @@ public class MysqlWarmUp extends Thread {
 		isActive = true;
 		warmupThread = new MysqlWarmUp[threadNumber];
 		for(int i = 0; i < threadNumber; i++){
-			warmupThread[i] = new MysqlWarmUp(i, "jdbc:mysql://10.20.2.211/tpcc10", "remote", "remote");
+			warmupThread[i] = new MysqlWarmUp(i, "jdbc:mysql://10.20.2.211/tpcc3000", "remote", "remote");
 			warmupThread[i].start();
 		}
 		try {

@@ -57,7 +57,7 @@ public class MMain {
 			else copyTable = true;
 		}			
 		tenantPerThread = totalTenant / numberOfThread;
-		initDBPara("jdbc:mysql://"+server+"/tpcc10", "remote", "remote");
+		initDBPara("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote");
 		Tenant.init(numberOfThread, MMain.dbURL, MMain.dbUserName, MMain.dbPassword, copyTable);
 		
 		Driver.IsActive = true;

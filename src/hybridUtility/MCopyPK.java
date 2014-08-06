@@ -21,7 +21,7 @@ public class MCopyPK {
 	public static void CopyTables(int tenantNumber){
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote");
+			conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1/tpcc3000", "remote", "remote");
 			System.out.println("db connected~");
 		} catch (ClassNotFoundException | SQLException e1) {
 			e1.printStackTrace();

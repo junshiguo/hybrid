@@ -14,7 +14,7 @@ public class Main extends Thread {
 	public static int IDStart;
 	public static int TYPE = 0;
 	public static int QTMax;
-	public static String dbURL = "jdbc:mysql://10.20.2.211:3306/tpcc10";
+	public static String dbURL = "jdbc:mysql://10.20.2.211:3306/tpcc3000";
 	public static String dbUsername = "remote";
 	public static String dbPassword = "remote";
 	public static String voltdbServer = "10.20.2.211";
