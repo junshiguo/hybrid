@@ -22,12 +22,18 @@ public class MysqlWarmUp extends Thread {
 	public static void main(String[] args){
 		isActive = true;
 		warmupThread = new MysqlWarmUp[threadNumber];
+		String dbname = "tpcc3000";
+		if(args.length > 0){
+			dbname = args[0].trim();
+			if(dbname.equals("tpcc3000") || dbname.equals("tpccM3000"))	tenantPerThread = 30;
+			else if(dbname.equals("tpccM1500"))	tenantPerThread = 15;
+		}
 		for(int i = 0; i < threadNumber; i++){
-			warmupThread[i] = new MysqlWarmUp(i, "jdbc:mysql://10.20.2.211/tpcc3000", "remote", "remote");
+			warmupThread[i] = new MysqlWarmUp(i, "jdbc:mysql://10.20.2.211/"+dbname, "remote", "remote");
 			warmupThread[i].start();
 		}
 		try {
-			for(int i = 0; i < 120; i++){
+			for(int i = 0; i < 180; i++){
 				Thread.sleep(5*1000);
 				System.out.print(" . ");
 				if(i % 12 == 11){

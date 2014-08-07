@@ -64,19 +64,19 @@ public class HybridController extends Thread {
 				if(i == 0){
 					if(row.size() > 1){
 						for(int j = 1; j < row.size(); j++){
-							new DataMover("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote", "127.0.0.1", row.get(j), true).start();
+							new DataMover("jdbc:mysql://127.0.0.1/tpcc3000", "remote", "remote", "127.0.0.1", row.get(j), true).start();
 						}
 					}
 				}else{
 					ArrayList<Integer> lastRow = tenantInVoltdb.get(i-1);
 					for (int j = 1; j < row.size(); j++) {
 						if (lastRow.contains(row.get(j)) == false)
-							new DataMover("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote", "127.0.0.1", row.get(j), true).start();
+							new DataMover("jdbc:mysql://127.0.0.1/tpcc3000", "remote", "remote", "127.0.0.1", row.get(j), true).start();
 					}
 					HybridController.sleep(30000);
 					for (int j = 1; j < lastRow.size(); j++) {
 						if (row.contains(lastRow.get(j)) == false)
-							new DataMover("jdbc:mysql://127.0.0.1/tpcc10", "remote", "remote", "127.0.0.1", lastRow.get(j), false).start();
+							new DataMover("jdbc:mysql://127.0.0.1/tpcc3000", "remote", "remote", "127.0.0.1", lastRow.get(j), false).start();
 					}
 				}
 				HybridController.sleep(5*60*1000 - 30000);

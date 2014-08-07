@@ -22,7 +22,7 @@ public class HTimer extends Thread {
 //				System.out.println(i+" "+Main.TYPE+" "+tp+"  ");
 //			}
 			for(int intervalId = 0; intervalId < Main.intervalNumber; intervalId++){
-				for(int min = 0; min < 1; min++){
+				for(int min = 0; min < Main.minPerInterval; min++){
 					for(int i = 0; i < 20; i++){
 						Main.checkDoSQL(1);
 						if(i == 0){

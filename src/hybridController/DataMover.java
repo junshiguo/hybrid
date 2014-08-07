@@ -19,7 +19,7 @@ import utility.DBManager;
 public class DataMover extends Thread {
 	public Connection conn;
 	public Client voltdbConn;
-	public String dbURL = "jdbc:mysql://127.0.0.1/tpcc10";
+	public String dbURL = "jdbc:mysql://127.0.0.1/tpcc3000";
 	public String dbUsername = "remote";
 	public String dbPassword = "remote";
 	public String voltdbServer = "127.0.0.1";

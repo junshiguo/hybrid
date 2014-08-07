@@ -27,7 +27,8 @@ public class MMain {
 
 	public static void main(String[] args){
 		String server = "10.20.2.211";
-		totalTenant = 2000;
+		String dbname = "tpccM1500";
+		totalTenant = 1500;
 		numberOfThread = 100;
 		timeInterval = 60000; //1 min
 		intervalNumber = 2;
@@ -37,10 +38,12 @@ public class MMain {
 //		MCopyData.CopyTables(numberOfThread);
 		//*******************init para from args*****************//
 		if(args.length > 0){
-			totalTenant = Integer.parseInt(args[0]);
+			server = args[0].trim();
 		}
 		if(args.length > 1){
-			numberOfThread = Integer.parseInt(args[1]);
+			dbname = args[1].trim();
+			if(dbname.equals("tpccM1500"))	totalTenant = 1500;
+			else if(dbname.equals("tpccM3000")) totalTenant = 3000;
 		}
 		if(args.length > 2){
 			intervalNumber = Integer.parseInt(args[2]);
@@ -51,13 +54,8 @@ public class MMain {
 		if(args.length > 4){
 			step = Double.parseDouble(args[4]);
 		}
-		if(args.length > 5 && args[5] != null){
-			int b = Integer.parseInt(args[5]);
-			if(b == 0) copyTable = false;
-			else copyTable = true;
-		}			
 		tenantPerThread = totalTenant / numberOfThread;
-		initDBPara("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote");
+		initDBPara("jdbc:mysql://"+server+"/"+dbname, "remote", "remote");
 		Tenant.init(numberOfThread, MMain.dbURL, MMain.dbUserName, MMain.dbPassword, copyTable);
 		
 		Driver.IsActive = true;
@@ -91,11 +89,11 @@ public class MMain {
 				retryThisInterval = 0;
 				currentInterval = i;
 				Thread.sleep(timeInterval);
-				System.out.println("Interval "+i+" finished! (Total: "+intervalNumber+" intervals...)");
 				long throughput = queryThisInterval * 60000/ timeInterval;
 //				throughput /= intervalNumber;
 				out.write(""+(i*step+base)+" "+throughput+" "+retryThisInterval*60000/timeInterval);
 				out.newLine();out.flush();
+				System.out.println("Interval "+i+" finished! Throughput: "+throughput+". Write percent: "+(i*step+base)+".  (Total: "+intervalNumber+" intervals...)");
 			} catch (InterruptedException | IOException e) {
 				e.printStackTrace();
 			}
