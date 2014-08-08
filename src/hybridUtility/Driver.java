@@ -11,10 +11,10 @@ public class Driver {
 	public static int num_ware = 1;
 	public static int num_node = 0;
 	public static int arg_offset = 0;
-	public static int MAXITEMS = 8000;
-	public static int CUST_PER_DIST = 100;
-	public static int DIST_PER_WARE = 10;
-	public static int ORD_PER_DIST = 100;
+	public static int MAXITEMS = 5000;
+	public static int CUST_PER_DIST = 50;
+	public static int DIST_PER_WARE = 5;
+	public static int ORD_PER_DIST = 50;
 	public static int MAX_NUM_ITEM = 15;
 	public static int MAX_ITEM_LEN = 24;
 	public static int TYPE_INT = 0;
@@ -98,7 +98,8 @@ public class Driver {
 		while (MysqlWarmUp.isActive) { // initiate parameter
 			int seq = MysqlWarmUp.warmupThread[Id].sequence.nextSequence();
 			int tableId = seq % 9;
-			int queryId = seq / 9;
+			int queryId = 0;
+			seq = tableId;
 			switch (tableId) {
 			case 0: // customer
 				c_id = Support.RandomNumber(1, Driver.CUST_PER_DIST);

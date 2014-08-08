@@ -26,7 +26,13 @@ public class MysqlWarmUp extends Thread {
 		if(args.length > 0){
 			dbname = args[0].trim();
 			if(dbname.equals("tpcc3000") || dbname.equals("tpccM3000"))	tenantPerThread = 30;
-			else if(dbname.equals("tpccM1500"))	tenantPerThread = 15;
+			else if(dbname.equals("tpccM1500"))	{
+				tenantPerThread = 15;
+				Driver.MAXITEMS = 1000;
+				Driver.CUST_PER_DIST = 30;
+				Driver.DIST_PER_WARE = 3;
+				Driver.ORD_PER_DIST = 30;
+			}
 		}
 		for(int i = 0; i < threadNumber; i++){
 			warmupThread[i] = new MysqlWarmUp(i, "jdbc:mysql://10.20.2.211/"+dbname, "remote", "remote");
@@ -37,7 +43,7 @@ public class MysqlWarmUp extends Thread {
 				Thread.sleep(5*1000);
 				System.out.print(" . ");
 				if(i % 12 == 11){
-					System.out.println();
+					System.out.println("end of min "+(i/12+1));
 				}
 			}
 			isActive = false;

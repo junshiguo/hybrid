@@ -29,7 +29,7 @@ public class HybridController extends Thread {
 	public static HybridController controller;
 	
 	public static void main(String[] args){
-		int tenantNumber = 1000;
+		int tenantNumber = 3000;
 		if(args.length > 0){
 			tenantNumber = Integer.parseInt(args[0]);
 		}
@@ -61,6 +61,37 @@ public class HybridController extends Thread {
 			}
 			for(int i = 0; i < tenantInVoltdb.size(); i++){
 				ArrayList<Integer> row = tenantInVoltdb.get(i);
+				
+//				if(i == 0){
+//					for(int j = 1; j < row.size(); j++){
+//						new DataMover("jdbc:mysql://127.0.0.1/tpcc3000", "remote", "remote", "127.0.0.1", row.get(j), true).start();
+//					}
+//				}
+//				HybridController.sleep(30*1000);
+//				if(i != 1){
+//					ArrayList<Integer> lastRow = tenantInVoltdb.get(i -1);
+//					for(int j = 1; j < lastRow.size(); j++){
+//						if(row.contains(lastRow.get(j)) == false){
+//							new DataMover("jdbc:mysql://127.0.0.1/tpcc3000", "remote", "remote", "127.0.0.1", lastRow.get(j), false).start();
+//						}
+//					}
+//				}
+//				HybridController.sleep(4*60*1000);
+//				if(i != (tenantInVoltdb.size() -1)){
+//					ArrayList<Integer> nextRow = tenantInVoltdb.get(i + 1);
+//					for(int j = 1; j < nextRow.size(); j++){
+//						if(row.contains(nextRow.get(j)) == false){
+//							new DataMover("jdbc:mysql://127.0.0.1/tpcc3000", "remote", "remote", "127.0.0.1", nextRow.get(j), true).start();
+//						}
+//					}
+//				}
+//				HybridController.sleep(30*1000);
+//				if(i == tenantInVoltdb.size() -1){
+//					for(int j = 1; j < row.size(); j++){
+//						new DataMover("jdbc:mysql://127.0.0.1/tpcc3000", "remote", "remote", "127.0.0.1", row.get(j), false).start();
+//					}
+//				}
+				
 				if(i == 0){
 					if(row.size() > 1){
 						for(int j = 1; j < row.size(); j++){

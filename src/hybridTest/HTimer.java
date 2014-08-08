@@ -35,9 +35,13 @@ public class HTimer extends Thread {
 						synchronized(Main.mainThread){
 							Main.mainThread.notify();
 						}
-						HTimer.sleep(2900);
+						if(i == 0){
+							HTimer.sleep(4900);
+						}else{
+							HTimer.sleep(2900);
+						}
 					}
-					HTimer.sleep(2000);
+//					HTimer.sleep(2000);
 					Main.socketSender.sendInfo((intervalId*Main.minPerInterval+min),Main.throughputPerTenant.clone(), Main.actualThroughputPerTenant.clone());
 					synchronized(Main.socketSender){
 						Main.socketSender.notify();

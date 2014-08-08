@@ -10,12 +10,12 @@ import utility.Support;
 public class WorkLoadGenerator {
 	public static double activeRatio = 0.2;
 	public static double exchangeRatio = 0.2;
-	public static int totalTenant = 1000;
+	public static int totalTenant = 3000;
 	public static int timePerInterval = 5; //min
 	public static int totalInterval = 6; // 30 min
-	public static int HRan = -40;
-	public static int MRan = -100;
-	public static int LRan = -120;
+	public static int HRan = 3;
+	public static int MRan = -15;
+	public static int LRan = -35;
 	public static int dRan = 5;
 	public static boolean[][] activePattern = new boolean[totalTenant][totalInterval];
 	public static boolean[] isBursty = new boolean[totalInterval];
@@ -49,7 +49,7 @@ public class WorkLoadGenerator {
 				if (isActive) {
 					load[tenantId] = ran.nextInt(QT) + 1;
 					if(isBursty[intervalId]){
-						load[tenantId] = (load[tenantId]+HRan < 0)?20:(load[tenantId]+HRan);
+						load[tenantId] = (load[tenantId]+HRan > QT)? QT :(load[tenantId]+HRan);
 					}else{
 						boolean tmp = ran.nextBoolean();
 						if (tmp) {

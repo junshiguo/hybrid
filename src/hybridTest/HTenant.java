@@ -47,7 +47,7 @@ public class HTenant extends Thread {
 
 	public void run(){
 //		connection.start();
-		connection.connectDB();
+//		connection.connectDB();
 		
 		while(true){
 			synchronized(this){
@@ -61,26 +61,28 @@ public class HTenant extends Thread {
 				break;
 			}
 			while(this.checkDoSQLNow(0) > 0){
-				for(int i = 0; i < base; i++){
+				int tmp = this.checkBase(0, false);
+				int tmp2 = this.checkBonus(0, false);
+				if(tmp2 > 0){
+					this.checkBonus(-1, false);
+				}
+				for(int i = 0; i < tmp; i++){
 					int sqlId = sequence.nextSequence();
 					driver.initiatePara(sqlId);
-//					connection.setPara(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
-//					connection.doSQLNow ++;
 					connection.doSQL(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
 				}
-				if(this.bonus > 0){
+				if(tmp2 > 0){
 					int sqlId = sequence.nextSequence();
 					driver.initiatePara(sqlId);
-//					connection.setPara(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
-//					connection.doSQLNow ++;
 					connection.doSQL(sqlId, driver.para, driver.paraType, driver.paraNumber, driver.PKNumber);
-					this.bonus --;
 				}
 				this.checkDoSQLNow(-1);
 			}
 		}
 		try {
-			connection.conn.close();
+			if(connection.conn != null){
+				connection.conn.close();
+			}
 		} catch (SQLException e) {
 		}
 	}
@@ -94,15 +96,28 @@ public class HTenant extends Thread {
 		return this.doSQLNow;
 	}
 	
+	public synchronized int checkBase(int base, boolean isSet){
+		if(isSet){
+			this.base = base;
+		}
+		return this.base;
+	}
+	
+	public synchronized int checkBonus(int bonus, boolean isSet){
+		if(isSet){
+			this.bonus = bonus;
+		}else if(bonus == -1){
+			this.bonus--;
+		}
+		return this.bonus;
+	}
+	
 	public void setQT(int newqt){
 		this.actualQT = newqt;
-		base = this.actualQT / 20;
-		bonus = this.actualQT % 20;
-//		if(writeHeavy){
-//			sequence.initSequence(HConfig.ValueWP[0]);
-//		}else{
-//			sequence.initSequence(HConfig.ValueWP[1]);
-//		}
+//		base = this.actualQT / 20;
+//		bonus = this.actualQT % 20;
+		this.checkBase(this.actualQT/20, true);
+		this.checkBonus(this.actualQT%20, true);
 	}
-
+	
 }

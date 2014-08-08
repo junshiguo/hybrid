@@ -43,7 +43,7 @@ public class Info
 		transferCostPerDataSize = 1.;
 		timeInterval = 5;
 		maxTime = 25;
-		MySQLBurstBound = 0.90;
+		MySQLBurstBound = 0.95;
 
 		HConfig.init(allTenantNum);
 
@@ -67,7 +67,7 @@ public class Info
 	// TODO
 	public static double MySQLWorkload(double writePercent)
 	{
-		return 20000.;
+		return 25000.;
 	}
 
 	// TODO

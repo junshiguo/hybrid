@@ -28,7 +28,7 @@ public class MMain {
 	public static void main(String[] args){
 		String server = "10.20.2.211";
 		String dbname = "tpccM1500";
-		totalTenant = 1500;
+		totalTenant = 3000;
 		numberOfThread = 100;
 		timeInterval = 60000; //1 min
 		intervalNumber = 2;

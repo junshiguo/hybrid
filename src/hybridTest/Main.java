@@ -3,6 +3,7 @@ package hybridTest;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import hybridConfig.HConfig;
@@ -25,7 +26,6 @@ public class Main extends Thread {
 	public static int[] throughputPerTenant; //planned throughput, set by setQT()
 	public static int[] actualThroughputPerTenant; // updated in Main per minute
 	public static ArrayList<Long> timePerQuery = new ArrayList<Long>();
-	public static double concurrency = 0.1; //set by setConcurrency
 	
 	public static int port = 8899;
 	public static String SocketServer = "10.20.2.211";
@@ -58,7 +58,7 @@ public class Main extends Thread {
 		if(args.length > 0){
 			TYPE = Integer.parseInt(args[0]);
 		}
-		totalTenantNumber = 1000;
+		totalTenantNumber = 3000;
 		if(args.length > 1){
 			totalTenantNumber = Integer.parseInt(args[1]);
 		}
@@ -92,7 +92,6 @@ public class Main extends Thread {
 		}
 		
 		System.out.println("******************hybrid test start******************");
-		Main.setConcurrency(0.1);
 		Main.isActive = true; 
 		mainThread = new Main();
 		mainThread.start();
@@ -111,7 +110,7 @@ public class Main extends Thread {
 		} catch (IOException e) {
 		}
 		System.out.println("******************hybrid test complete******************");
-		
+		System.exit(0);
 	}
 	
 	public void run(){
@@ -213,10 +212,6 @@ public class Main extends Thread {
 			actualThroughputPerTenant[i] = 0;
 		}
 	}
-
-	public static void setConcurrency(double cc){
-		concurrency = cc;
-	}
 	
 	public static void setQT(){
 		for(int i = 0; i < tenantNumber; i++){
@@ -239,8 +234,18 @@ public class Main extends Thread {
 			if(str == null) return;
 			workload = str.split(" ");
 			for(int i = 0; i < tenantNumber; i++){
+				int[] tmp = Main.throughputPerTenant.clone();
 				Main.throughputPerTenant[i] = Integer.parseInt(workload[i+Main.IDStart+1]);
 //				Main.tenants[i].setQT(Main.throughputPerTenant[i]);
+//				if(Main.throughputPerTenant[i] == 0 && tmp[i] != 0){
+//					try {
+//						Main.tenants[i].connection.conn.close();
+//					} catch (SQLException e) {
+//					}
+//				}
+				if(Main.throughputPerTenant[i] != 0 && tmp[i] == 0){
+					Main.tenants[i].connection.connectDB();
+				}
 			}
 		}catch(IOException e){
 			
