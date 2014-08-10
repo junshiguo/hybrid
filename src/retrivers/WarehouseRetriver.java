@@ -55,7 +55,7 @@ public class WarehouseRetriver extends Thread {
 		ClientResponse response = null;
 		VoltTable result = null;
 			try{
-				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM warehouse"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 0 AND is_update = 1");
+				response = voltdbConn.callProcedure("SelectWarehouse_"+volumnId, tenantId, 0, 1);
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
 					for(int i = 0; i<result.getRowCount(); i++){
@@ -72,10 +72,12 @@ public class WarehouseRetriver extends Thread {
 						statements[0].setInt(10, (int) row.get("w_id", VoltType.INTEGER));
 						statements[0].addBatch();
 					}
-					statements[0].executeBatch();
+					if(result.getRowCount() > 0) {
+						statements[0].executeBatch();
+					}
 				}
 				
-				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM warehouse"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 1");
+				response = voltdbConn.callProcedure("SelectWarehouse_"+volumnId, tenantId, 1, 0);
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
 					for(int i = 0; i<result.getRowCount(); i++){
@@ -91,7 +93,30 @@ public class WarehouseRetriver extends Thread {
 						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("w_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].addBatch();
 					}
-					statements[1].executeBatch();
+					if(result.getRowCount() > 0) {
+						statements[1].executeBatch();
+					}
+				}
+				
+				response = voltdbConn.callProcedure("SelectWarehouse_"+volumnId, tenantId, 1, 1);
+				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
+					result = response.getResults()[0];
+					for(int i = 0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[1].setInt(1, (int) row.get("w_id", VoltType.INTEGER));
+						statements[1].setString(2, row.getString("w_name"));
+						statements[1].setString(3, row.getString("w_street_1"));
+						statements[1].setString(4, row.getString("w_street_2"));
+						statements[1].setString(5, row.getString("w_city"));
+						statements[1].setString(6, row.getString("w_state"));
+						statements[1].setString(7, row.getString("w_zip"));
+						statements[1].setBigDecimal(8, row.getDecimalAsBigDecimal("w_tax").setScale(4, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("w_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].addBatch();
+					}
+					if(result.getRowCount() > 0) {
+						statements[1].executeBatch();
+					}
 				}
 				voltdbConn.callProcedure("@AdHoc", "DELETE FROM warehouse"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){

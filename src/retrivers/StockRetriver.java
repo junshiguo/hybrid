@@ -55,7 +55,7 @@ public class StockRetriver extends Thread {
 		ClientResponse response = null;
 		VoltTable result = null;
 			try{
-				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM stock"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 0 AND is_update = 1");
+				response = voltdbConn.callProcedure("SelectStock_"+volumnId, tenantId, 0, 1);
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
 					for(int i = 0; i<result.getRowCount(); i++){
@@ -81,10 +81,12 @@ public class StockRetriver extends Thread {
 						statements[0].setInt(19, (int) row.get("s_i_id", VoltType.INTEGER));
 						statements[0].addBatch();
 					}
-					statements[0].executeBatch();
+					if(result.getRowCount() > 0) {
+						statements[0].executeBatch();
+					}
 				}
 				
-				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM stock"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 1");
+				response = voltdbConn.callProcedure("SelectStock_"+volumnId, tenantId, 1, 0);
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
 					for(int i = 0; i<result.getRowCount(); i++){
@@ -108,7 +110,38 @@ public class StockRetriver extends Thread {
 						statements[1].setString(17, row.getString("s_data"));
 						statements[1].addBatch();
 					}
-					statements[1].executeBatch();
+					if(result.getRowCount() > 0) {
+						statements[1].executeBatch();
+					}
+				}
+				
+				response = voltdbConn.callProcedure("SelectStock_"+volumnId, tenantId, 1, 1);
+				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
+					result = response.getResults()[0];
+					for(int i = 0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[1].setInt(1, (int) row.get("s_i_id", VoltType.INTEGER));
+						statements[1].setInt(2, (int) row.get("s_w_id", VoltType.INTEGER));
+						statements[1].setInt(3, (int) row.get("s_quantity", VoltType.INTEGER));
+						statements[1].setString(4, row.getString("s_dist_01"));
+						statements[1].setString(5, row.getString("s_dist_02"));
+						statements[1].setString(6, row.getString("s_dist_03"));
+						statements[1].setString(7, row.getString("s_dist_04"));
+						statements[1].setString(8, row.getString("s_dist_05"));
+						statements[1].setString(9, row.getString("s_dist_06"));
+						statements[1].setString(10, row.getString("s_dist_07"));
+						statements[1].setString(11, row.getString("s_dist_08"));
+						statements[1].setString(12, row.getString("s_dist_09"));
+						statements[1].setString(13, row.getString("s_dist_10"));
+						statements[1].setBigDecimal(14, row.getDecimalAsBigDecimal("s_ytd").setScale(8, BigDecimal.ROUND_HALF_DOWN));
+						statements[1].setInt(15, (int) row.get("s_order_cnt", VoltType.INTEGER));
+						statements[1].setInt(16, (int) row.get("s_remote_cnt", VoltType.INTEGER));
+						statements[1].setString(17, row.getString("s_data"));
+						statements[1].addBatch();
+					}
+					if(result.getRowCount() > 0) {
+						statements[1].executeBatch();
+					}
 				}
 				voltdbConn.callProcedure("@AdHoc", "DELETE FROM stock"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){

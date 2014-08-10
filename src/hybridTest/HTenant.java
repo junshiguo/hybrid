@@ -83,7 +83,10 @@ public class HTenant extends Thread {
 			if(connection.conn != null){
 				connection.conn.close();
 			}
-		} catch (SQLException e) {
+			if(connection.voltdbConn != null){
+				connection.voltdbConn.close();
+			}
+		} catch (SQLException | InterruptedException e) {
 		}
 	}
 	

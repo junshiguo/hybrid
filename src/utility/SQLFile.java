@@ -8,8 +8,8 @@ public class SQLFile {
 	public static void main(String[] args){
 		FileWriter fstream = null;
 		BufferedWriter out = null;
-		String path = "../voltTable2/";
-		int tenantNumber = 100;
+		String path = "voltTable2/";
+		int tenantNumber = 50;
 		try {
 			fstream = new FileWriter(path+"table2.sql", false);
 			out = new BufferedWriter(fstream);
@@ -66,7 +66,17 @@ public class SQLFile {
 				out.write("PARTITION TABLE stock"+tenantId+" ON COLUMN s_i_id;\n");
 			}
 			
-//			for(int tenantId = 0; tenantId < tenantNumber; tenantId++){
+			for(int tenantId = 0; tenantId < tenantNumber; tenantId++){
+				out.write("CREATE PROCEDURE FROM CLASS SelectCustomer_"+tenantId+";\n");
+				out.write("CREATE PROCEDURE FROM CLASS SelectDistrict_"+tenantId+";\n");
+				out.write("CREATE PROCEDURE FROM CLASS SelectHistory_"+tenantId+";\n");
+				out.write("CREATE PROCEDURE FROM CLASS SelectItem_"+tenantId+";\n");
+				out.write("CREATE PROCEDURE FROM CLASS SelectNewOrders_"+tenantId+";\n");
+				out.write("CREATE PROCEDURE FROM CLASS SelectOrderLine_"+tenantId+";\n");
+				out.write("CREATE PROCEDURE FROM CLASS SelectOrders_"+tenantId+";\n");
+				out.write("CREATE PROCEDURE FROM CLASS SelectStock_"+tenantId+";\n");
+				out.write("CREATE PROCEDURE FROM CLASS SelectWarehouse_"+tenantId+";\n");
+			}
 //				for(int id = 0; id < 35; id++){
 //					out.write("CREATE PROCEDURE FROM CLASS Procedure"+id+"_"+tenantId+";");
 //					out.newLine();

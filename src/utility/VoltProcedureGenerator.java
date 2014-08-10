@@ -4,6 +4,11 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.voltdb.SQLStmt;
+import org.voltdb.VoltProcedure;
+import org.voltdb.VoltTable;
+import org.voltdb.VoltProcedure.VoltAbortException;
+
 public class VoltProcedureGenerator {
 	
 	public static String getImport(){
@@ -34,8 +39,8 @@ public class VoltProcedureGenerator {
 	public static void main(String[] args){
 		FileWriter fstream = null;
 		BufferedWriter out = null;
-		String path = "../voltTable/procedures/";
-		int tenantNumber = 500;
+		String path = "voltTable2/procedures/";
+		int tenantNumber = 50;
 		try {
 			for(int tenantId = 0; tenantId < tenantNumber; tenantId++){
 				/*
@@ -484,7 +489,7 @@ public class VoltProcedureGenerator {
 			+ commonCode1
 			+ "\n	}\n}");
 				out.flush();out.close();
-				*/
+				
 				fstream = new FileWriter(path+"ProcedureInsertCustomer_"+tenantId+".java", false);
 				out = new BufferedWriter(fstream);
 				out.write("import org.voltdb.*;\n"
@@ -640,7 +645,82 @@ public class VoltProcedureGenerator {
 			+ "			return 0;\n"
 			+ "		return 1;\n	}\n}");
 				out.flush();out.close();
+				*/
+				String commonPart = "	public VoltTable[] run(int tenant_id, int is_insert, int is_update) throws VoltAbortException {\n" +
+						"		voltQueueSQL(sql, tenant_id, is_insert, is_update);\n" +
+						"		return voltExecuteSQL();\n" +
+						"	}\n}";
+				fstream = new FileWriter(path+"SelectCustomer_"+tenantId+".java", false);
+				out = new BufferedWriter(fstream);
+				out.write("import org.voltdb.*;\n" +
+						"public class SelectCustomer_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT * FROM customer"+tenantId+" WHERE tenant_id = ? AND is_insert = ? AND is_update = ?\");\n" +
+						commonPart);
+				out.flush(); out.close();
 				
+				fstream = new FileWriter(path+"SelectDistrict_"+tenantId+".java", false);
+				out = new BufferedWriter(fstream);
+				out.write("import org.voltdb.*;\n" +
+						"public class SelectDistrict_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT * FROM district"+tenantId+" WHERE tenant_id = ? AND is_insert = ? AND is_update = ?\");\n" +
+						commonPart);
+				out.flush(); out.close();
+				
+				fstream = new FileWriter(path+"SelectHistory_"+tenantId+".java", false);
+				out = new BufferedWriter(fstream);
+				out.write("import org.voltdb.*;\n" +
+						"public class SelectHistory_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT * FROM history"+tenantId+" WHERE tenant_id = ? AND is_insert = ? AND is_update = ?\");\n" +
+						commonPart);
+				out.flush(); out.close();
+				
+				fstream = new FileWriter(path+"SelectItem_"+tenantId+".java", false);
+				out = new BufferedWriter(fstream);
+				out.write("import org.voltdb.*;\n" +
+						"public class SelectItem_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT * FROM item"+tenantId+" WHERE tenant_id = ? AND is_insert = ? AND is_update = ?\");\n" +
+						commonPart);
+				out.flush(); out.close();
+				
+				fstream = new FileWriter(path+"SelectNewOrders_"+tenantId+".java", false);
+				out = new BufferedWriter(fstream);
+				out.write("import org.voltdb.*;\n" +
+						"public class SelectNewOrders_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT * FROM new_orders"+tenantId+" WHERE tenant_id = ? AND is_insert = ? AND is_update = ?\");\n" +
+						commonPart);
+				out.flush(); out.close();
+				
+				fstream = new FileWriter(path+"SelectOrderLine_"+tenantId+".java", false);
+				out = new BufferedWriter(fstream);
+				out.write("import org.voltdb.*;\n" +
+						"public class SelectOrderLine_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT * FROM order_line"+tenantId+" WHERE tenant_id = ? AND is_insert = ? AND is_update = ?\");\n" +
+						commonPart);
+				out.flush(); out.close();
+				
+				fstream = new FileWriter(path+"SelectOrders_"+tenantId+".java", false);
+				out = new BufferedWriter(fstream);
+				out.write("import org.voltdb.*;\n" +
+						"public class SelectOrders_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT * FROM orders"+tenantId+" WHERE tenant_id = ? AND is_insert = ? AND is_update = ?\");\n" +
+						commonPart);
+				out.flush(); out.close();
+				
+				fstream = new FileWriter(path+"SelectStock_"+tenantId+".java", false);
+				out = new BufferedWriter(fstream);
+				out.write("import org.voltdb.*;\n" +
+						"public class SelectStock_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT * FROM stock"+tenantId+" WHERE tenant_id = ? AND is_insert = ? AND is_update = ?\");\n" +
+						commonPart);
+				out.flush(); out.close();
+				
+				fstream = new FileWriter(path+"SelectWarehouse_"+tenantId+".java", false);
+				out = new BufferedWriter(fstream);
+				out.write("import org.voltdb.*;\n" +
+						"public class SelectWarehouse_"+tenantId+" extends VoltProcedure {\n" +
+						"	public final SQLStmt sql = new SQLStmt(\"SELECT * FROM warehouse"+tenantId+" WHERE tenant_id = ? AND is_insert = ? AND is_update = ?\");\n" +
+						commonPart);
+				out.flush(); out.close();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

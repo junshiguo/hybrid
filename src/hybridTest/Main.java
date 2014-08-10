@@ -3,7 +3,6 @@ package hybridTest;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 import hybridConfig.HConfig;
@@ -54,6 +53,7 @@ public class Main extends Thread {
 	public static int checkTp = 60; //check throughput every 60 seconds
 	
 	public static void main(String[] args) throws InterruptedException{
+//		SocketServer = "10.171.5.28";
 		TYPE = 0;
 		if(args.length > 0){
 			TYPE = Integer.parseInt(args[0]);

@@ -98,6 +98,7 @@ public class Driver {
 	
 	public void initiatePara(int seq) {
 			int tableId = seq % 9;
+			ran.setSeed(System.nanoTime());
 			switch (tableId) {
 			case 0: // customer
 				para[0] = c_id = Support.RandomNumber(1, Driver.CUST_PER_DIST);		paraType[0] = Driver.TYPE_INT;

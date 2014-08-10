@@ -23,6 +23,7 @@ public class MysqlWarmUp extends Thread {
 		isActive = true;
 		warmupThread = new MysqlWarmUp[threadNumber];
 		String dbname = "tpcc3000";
+		int time = 15;
 		if(args.length > 0){
 			dbname = args[0].trim();
 			if(dbname.equals("tpcc3000") || dbname.equals("tpccM3000"))	tenantPerThread = 30;
@@ -34,12 +35,16 @@ public class MysqlWarmUp extends Thread {
 				Driver.ORD_PER_DIST = 30;
 			}
 		}
+		if(args.length > 1){
+			time = Integer.parseInt(args[1]);
+		}
 		for(int i = 0; i < threadNumber; i++){
 			warmupThread[i] = new MysqlWarmUp(i, "jdbc:mysql://10.20.2.211/"+dbname, "remote", "remote");
 			warmupThread[i].start();
 		}
 		try {
-			for(int i = 0; i < 180; i++){
+			int total = 12 * time;
+			for(int i = 0; i < total; i++){
 				Thread.sleep(5*1000);
 				System.out.print(" . ");
 				if(i % 12 == 11){

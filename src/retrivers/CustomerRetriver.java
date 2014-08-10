@@ -63,7 +63,7 @@ public class CustomerRetriver extends Thread {
 		VoltTable result = null;
 		VoltTableRow row = null;
 		try {
-			response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM customer"	+ volumnId + " WHERE tenant_id = " + tenantId+ " AND is_insert = 0 AND is_update = 1");
+			response = voltdbConn.callProcedure("SelectCustomer_"+volumnId, tenantId, 0, 1);
 			if (response.getStatus() == ClientResponse.SUCCESS	&& response.getResults()[0].getRowCount() != 0) {
 				result = response.getResults()[0];
 				for (int i = 0; i < result.getRowCount(); i++) {
@@ -82,22 +82,24 @@ public class CustomerRetriver extends Thread {
 					statements[0].setString(12, row.getString("c_phone"));
 					statements[0].setTimestamp(13, row.getTimestampAsSqlTimestamp("c_since"));
 					statements[0].setString(14, row.getString("c_credit"));
-					statements[0].setInt(15, (int) row.get("c_credit_lim", VoltType.BIGINT));
+					statements[0].setLong(15, (long) row.get("c_credit_lim", VoltType.BIGINT));
 					statements[0].setBigDecimal(	16, row.getDecimalAsBigDecimal("c_discount").setScale(4, BigDecimal.ROUND_HALF_DOWN));
 					statements[0].setBigDecimal(17, row.getDecimalAsBigDecimal("c_balance").setScale(12, BigDecimal.ROUND_HALF_DOWN));
 					statements[0].setBigDecimal(18, row.getDecimalAsBigDecimal("c_ytd_payment").setScale(12, BigDecimal.ROUND_HALF_DOWN));
-					statements[0].setInt(19, (int) row.get("c_payment_cnt", VoltType.SMALLINT));
-					statements[0].setInt(20, (int) row.get("c_delivery_cnt", VoltType.SMALLINT));
+					statements[0].setShort(19, (short) row.get("c_payment_cnt", VoltType.SMALLINT));
+					statements[0].setShort(20, (short) row.get("c_delivery_cnt", VoltType.SMALLINT));
 					statements[0].setString(21, row.getString("c_data"));
 					statements[0].setInt(22, (int) row.get("c_id", VoltType.INTEGER));
-					statements[0].setInt(23, (int) row.get("c_w_id", VoltType.TINYINT));
-					statements[0].setInt(24,	(int) row.get("c_d_id", VoltType.SMALLINT));
+					statements[0].setInt(23, new Byte((byte) row.get("c_d_id", VoltType.TINYINT)).intValue());
+					statements[0].setShort(24,	(short) row.get("c_w_id", VoltType.SMALLINT));
 					statements[0].addBatch();
 				}
-				statements[0].executeBatch();
+				if(result.getRowCount() > 0) {
+					statements[0].executeBatch();
+				}
 			}
 			
-			response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM customer"	+ volumnId + " WHERE tenant_id = " + tenantId+ " AND is_insert = 1");
+			response = voltdbConn.callProcedure("SelectCustomer_"+volumnId, tenantId, 1, 0);
 			if (response.getStatus() == ClientResponse.SUCCESS	&& response.getResults()[0].getRowCount() != 0) {
 				result = response.getResults()[0];
 				for (int i = 0; i < result.getRowCount(); i++) {
@@ -116,21 +118,56 @@ public class CustomerRetriver extends Thread {
 					statements[1].setString(12, row.getString("c_phone"));
 					statements[1].setTimestamp(13, row.getTimestampAsSqlTimestamp("c_since"));
 					statements[1].setString(14, row.getString("c_credit"));
-					statements[1].setInt(15, (int) row.get("c_credit_lim", VoltType.BIGINT));
+					statements[1].setLong(15, (long) row.get("c_credit_lim", VoltType.BIGINT));
 					statements[1].setBigDecimal(	16, row.getDecimalAsBigDecimal("c_discount").setScale(4, BigDecimal.ROUND_HALF_DOWN));
 					statements[1].setBigDecimal(17, row.getDecimalAsBigDecimal("c_balance").setScale(12, BigDecimal.ROUND_HALF_DOWN));
 					statements[1].setBigDecimal(18, row.getDecimalAsBigDecimal("c_ytd_payment").setScale(12, BigDecimal.ROUND_HALF_DOWN));
-					statements[1].setInt(19, (int) row.get("c_payment_cnt", VoltType.SMALLINT));
-					statements[1].setInt(20, (int) row.get("c_delivery_cnt", VoltType.SMALLINT));
+					statements[1].setShort(19, (short) row.get("c_payment_cnt", VoltType.SMALLINT));
+					statements[1].setShort(20, (short) row.get("c_delivery_cnt", VoltType.SMALLINT));
 					statements[1].setString(21, row.getString("c_data"));
 					statements[1].addBatch();
 				}
-				statements[1].executeBatch();
+				if(result.getRowCount() > 0) {
+					statements[1].executeBatch();
+				}
+			}
+			
+			response = voltdbConn.callProcedure("SelectCustomer_"+volumnId, tenantId, 1, 1);
+			if (response.getStatus() == ClientResponse.SUCCESS	&& response.getResults()[0].getRowCount() != 0) {
+				result = response.getResults()[0];
+				for (int i = 0; i < result.getRowCount(); i++) {
+					row = result.fetchRow(i);
+					statements[1].setInt(1, (int) row.get("c_id", VoltType.INTEGER));
+					statements[1].setInt(2, new Byte((byte) row.get("c_d_id", VoltType.TINYINT)).intValue());
+					statements[1].setShort(3,	(short) row.get("c_w_id", VoltType.SMALLINT));
+					statements[1].setString(4, row.getString("c_first"));
+					statements[1].setString(5, row.getString("c_middle"));
+					statements[1].setString(6, row.getString("c_last"));
+					statements[1].setString(7, row.getString("c_street_1"));
+					statements[1].setString(8, row.getString("c_street_2"));
+					statements[1].setString(9, row.getString("c_city"));
+					statements[1].setString(10, row.getString("c_state"));
+					statements[1].setString(11, row.getString("c_zip"));
+					statements[1].setString(12, row.getString("c_phone"));
+					statements[1].setTimestamp(13, row.getTimestampAsSqlTimestamp("c_since"));
+					statements[1].setString(14, row.getString("c_credit"));
+					statements[1].setLong(15, (long) row.get("c_credit_lim", VoltType.BIGINT));
+					statements[1].setBigDecimal(	16, row.getDecimalAsBigDecimal("c_discount").setScale(4, BigDecimal.ROUND_HALF_DOWN));
+					statements[1].setBigDecimal(17, row.getDecimalAsBigDecimal("c_balance").setScale(12, BigDecimal.ROUND_HALF_DOWN));
+					statements[1].setBigDecimal(18, row.getDecimalAsBigDecimal("c_ytd_payment").setScale(12, BigDecimal.ROUND_HALF_DOWN));
+					statements[1].setShort(19, (short) row.get("c_payment_cnt", VoltType.SMALLINT));
+					statements[1].setShort(20, (short) row.get("c_delivery_cnt", VoltType.SMALLINT));
+					statements[1].setString(21, row.getString("c_data"));
+					statements[1].addBatch();
+				}
+				if(result.getRowCount() > 0) {
+					statements[1].executeBatch();
+				}
 			}
 			voltdbConn.callProcedure("@AdHoc", "DELETE FROM customer" + volumnId + " WHERE tenant_id = " + tenantId);
 		} catch (IOException | ProcCallException | SQLException e) {
 			e.printStackTrace();
-			System.out.println("************"+row.get("c_d_id", VoltType.TINYINT)+"************");
+//			System.out.println("************"+row.get("c_d_id", VoltType.TINYINT)+"************");
 		}
 //		System.out.println("\n customer: " + tenantId + " truncated...");
 		//******************************************************************************//

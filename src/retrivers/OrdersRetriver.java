@@ -54,7 +54,7 @@ public class OrdersRetriver extends Thread {
 		ClientResponse response = null;
 		VoltTable result = null;
 			try{
-				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM orders"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 0 AND is_update = 1");
+				response = voltdbConn.callProcedure("SelectOrders_"+volumnId, tenantId, 0, 1);
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
 					for(int i = 0; i<result.getRowCount(); i++){
@@ -72,10 +72,12 @@ public class OrdersRetriver extends Thread {
 						statements[0].setInt(11, (int) row.get("o_id", VoltType.INTEGER));
 						statements[0].addBatch();
 					}
-					statements[0].executeBatch();
+					if(result.getRowCount() > 0) {
+						statements[0].executeBatch();
+					}
 				}
 				
-				response = voltdbConn.callProcedure("@AdHoc", "SELECT * FROM orders"+volumnId+" WHERE tenant_id = "+tenantId+" AND is_insert = 1");
+				response = voltdbConn.callProcedure("SelectOrders_"+volumnId, tenantId, 1, 0);
 				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
 					result = response.getResults()[0];
 					for(int i = 0; i<result.getRowCount(); i++){
@@ -90,7 +92,29 @@ public class OrdersRetriver extends Thread {
 						statements[1].setInt(8, (int) row.get("o_all_local", VoltType.INTEGER));
 						statements[1].addBatch();
 					}
-					statements[1].executeBatch();
+					if(result.getRowCount() > 0) {
+						statements[1].executeBatch();
+					}
+				}
+				
+				response = voltdbConn.callProcedure("SelectOrders_"+volumnId, tenantId, 1, 1);
+				if(response.getStatus() == ClientResponse.SUCCESS && response.getResults()[0].getRowCount() != 0){
+					result = response.getResults()[0];
+					for(int i = 0; i<result.getRowCount(); i++){
+						VoltTableRow row = result.fetchRow(i);
+						statements[1].setInt(1, (int) row.get("o_id", VoltType.INTEGER));
+						statements[1].setInt(2, (int) row.get("o_d_id", VoltType.INTEGER));
+						statements[1].setInt(3, (int) row.get("o_w_id", VoltType.INTEGER));
+						statements[1].setInt(4, (int) row.get("o_c_id", VoltType.INTEGER));
+						statements[1].setTimestamp(5, row.getTimestampAsSqlTimestamp("o_entry_d"));
+						statements[1].setInt(6, (int) row.get("o_carrier_id", VoltType.INTEGER));
+						statements[1].setInt(7, (int) row.get("o_ol_cnt", VoltType.INTEGER));
+						statements[1].setInt(8, (int) row.get("o_all_local", VoltType.INTEGER));
+						statements[1].addBatch();
+					}
+					if(result.getRowCount() > 0) {
+						statements[1].executeBatch();
+					}
 				}
 				voltdbConn.callProcedure("@AdHoc", "DELETE FROM orders"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){
