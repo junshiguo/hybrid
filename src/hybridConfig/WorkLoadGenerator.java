@@ -13,8 +13,8 @@ public class WorkLoadGenerator {
 	public static int totalTenant = 3000;
 	public static int timePerInterval = 5; //min
 	public static int totalInterval = 6; // 30 min
-	public static int HRan = 90;
-	public static int MRan = 0;
+	public static int HRan = 100;
+	public static int MRan = 2;
 	public static int LRan = -5;
 	public static int LRan2 = -40;
 	public static int dRan = 5;
@@ -57,7 +57,7 @@ public class WorkLoadGenerator {
 						if(QT == 200)
 							load[tenantId] = (load[tenantId]+HRan > QT)? QT :(load[tenantId]+HRan);
 						else
-							load[tenantId] = (load[tenantId] + MRan < 0) ? 10: load[tenantId] + MRan;
+							load[tenantId] = (load[tenantId] + MRan > QT) ? QT: load[tenantId] + MRan;
 					}else{
 						if(QT == 200){
 							load[tenantId] = (load[tenantId] + LRan2 < 0) ? 20: load[tenantId] + LRan2;

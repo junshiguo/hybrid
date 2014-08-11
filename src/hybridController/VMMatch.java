@@ -8,9 +8,9 @@ public class VMMatch {
 	
 	public static void init(){
 		maxTenantPerVolumn = 2;
-		vmMatch = new int[100][maxTenantPerVolumn];
+		vmMatch = new int[50][maxTenantPerVolumn];
 		tenantPerVolumn = new int[100];
-		for(int i = 0; i < 100; i++){
+		for(int i = 0; i < 50; i++){
 			tenantPerVolumn[i] = 0;
 			for(int j = 0; j < maxTenantPerVolumn; j++){
 				vmMatch[i][j] = -1;
@@ -21,7 +21,7 @@ public class VMMatch {
 	
 	public static int findTenant(int tenantId){
 		for(int j = 0; j < maxTenantPerVolumn; j++){
-			for(int i = 0; i < 100; i++){
+			for(int i = 0; i < 50; i++){
 				if(vmMatch[i][j] == tenantId)
 					return i;
 			}
@@ -34,7 +34,7 @@ public class VMMatch {
 			init();
 		}
 		for(int j = 0; j < maxTenantPerVolumn; j++){
-			for(int i = 0; i < 100; i++){
+			for(int i = 0; i < 50; i++){
 				if(vmMatch[i][j] == -1)
 					return i;
 			}
