@@ -41,6 +41,7 @@ public class HistoryRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
+			conn.setAutoCommit(false);
 			statements = new PreparedStatement[2];
 			statements[0] = conn.prepareStatement("UPDATE history"+tenantId+" SET h_c_id = ?, h_c_d_id = ?, h_c_w_id = ?,h_d_id = ?,h_w_id = ?,h_date = ?,h_amount = ?,h_data = ? WHERE h_c_id = ? AND h_c_d_id = ? AND h_c_w_id = ?");
 			statements[1] = conn.prepareStatement("INSERT INTO history"+tenantId+" VALUES (?,?,?,?,?,?,?,?)");
@@ -75,6 +76,7 @@ public class HistoryRetriver extends Thread {
 					}
 					if(result.getRowCount() > 0) {
 						statements[0].executeBatch();
+						conn.commit();
 					}
 				}
 				
@@ -91,11 +93,15 @@ public class HistoryRetriver extends Thread {
 						statements[1].setTimestamp(6, row.getTimestampAsSqlTimestamp("h_date"));
 						statements[1].setBigDecimal(7, row.getDecimalAsBigDecimal("h_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setString(8, row.getString("h_data"));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				
 				response = voltdbConn.callProcedure("SelectHistory_"+volumnId, tenantId, 1, 1);
@@ -111,11 +117,15 @@ public class HistoryRetriver extends Thread {
 						statements[1].setTimestamp(6, row.getTimestampAsSqlTimestamp("h_date"));
 						statements[1].setBigDecimal(7, row.getDecimalAsBigDecimal("h_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setString(8, row.getString("h_data"));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				voltdbConn.callProcedure("@AdHoc", "DELETE FROM history"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){

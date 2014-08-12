@@ -41,6 +41,7 @@ public class OrderLineRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
+			conn.setAutoCommit(false);
 			statements = new PreparedStatement[2];
 			statements[0] = conn.prepareStatement("UPDATE order_line"+tenantId+" SET ol_o_id = ?, ol_d_id = ?,ol_w_id = ?,ol_number = ?,ol_i_id = ?, ol_supply_w_id = ?,ol_delivery_d = ?, ol_quantity = ?, ol_amount = ?, ol_dist_info = ? WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ? AND ol_number = ?");
 			statements[1] = conn.prepareStatement("INSERT INTO order_line"+tenantId+" VALUES (?,?,?,?,?,?,?,?,?,?)");
@@ -78,6 +79,7 @@ public class OrderLineRetriver extends Thread {
 					}
 					if(result.getRowCount() > 0) {
 						statements[0].executeBatch();
+						conn.commit();
 					}
 				}
 				
@@ -96,11 +98,15 @@ public class OrderLineRetriver extends Thread {
 						statements[1].setInt(8, (int) row.get("ol_quantity", VoltType.INTEGER));
 						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("ol_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setString(10, row.getString("ol_dist_info"));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				
 				response = voltdbConn.callProcedure("SelectOrderLine_"+volumnId, tenantId, 1, 1);
@@ -118,11 +124,15 @@ public class OrderLineRetriver extends Thread {
 						statements[1].setInt(8, (int) row.get("ol_quantity", VoltType.INTEGER));
 						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("ol_amount").setScale(6, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setString(10, row.getString("ol_dist_info"));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				voltdbConn.callProcedure("@AdHoc", "DELETE FROM order_line"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){

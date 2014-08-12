@@ -14,13 +14,17 @@ import utility.DBManager;
 
 public class BulkDataMover {
 	public static String voltdbServer = "127.0.0.1";
-	public static String dbUrl = "jdbc:mysql://127.0.0.1/test";
+	public static String dbUrl = "jdbc:mysql://127.0.0.1/tpcc3000";
 	public static String dbUsername = "remote";
 	public static String dbPassword = "remote";
 	
 	public static void main(String[] args) throws SQLException, IOException, InterruptedException, ProcCallException{
+		int tenantId = 1222;
+		if(args.length > 0){
+			tenantId = Integer.parseInt(args[0]);
+		}
 		long start = System.nanoTime();
-		new BulkDataMover().Mysql2Voltdb(0, 0);
+		new BulkDataMover().Mysql2Voltdb(tenantId, 0);
 		long end = System.nanoTime();
 		System.out.println("MySQL ---> VoltDB time: "+(end-start)/1000000000.0+" seconds!");
 	}
@@ -62,16 +66,18 @@ public class BulkDataMover {
 			stmt.execute(sql[i]);
 			client.callProcedure("@AdHoc", "delete from "+tables[i]+volumnId+" where tenant_id = "+tenantId);
 			pr[i] = Runtime.getRuntime().exec(getLoader(tables[i], tenantId, volumnId));
-		}
-		for(int i = 0; i < 9; i++){
 			pr[i].waitFor();
+			System.out.println(tables[i]+" offloadding finished");
 		}
+//		for(int i = 0; i < 9; i++){
+//			pr[i].waitFor();
+//		}
 		stmt.close();
 		conn.close();
 	}
 	
 	public String[] getLoader(String table, int tid, int vid){
-		String[] ret = {"/bin/sh", "-c", "/usr/voltdb/bin/csvloader "+table+vid+" < /tmp/hybrid/"+table+tid+".csv"};
+		String[] ret = {"/bin/sh", "-c", "/usr/voltdb/bin/csvloader "+table+vid+" -f /tmp/hybrid/"+table+tid+".csv -r /tmp/hybrid/tmp"};
 		return ret;
 	}
 

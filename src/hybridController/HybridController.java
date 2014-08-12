@@ -58,63 +58,64 @@ public class HybridController extends Thread {
 				}
 				tenantInVoltdb.add(tmp);
 			}
+			ArrayList<Integer> toLoad = new ArrayList<Integer>();
+			ArrayList<Integer> row = tenantInVoltdb.get(2);
+			ArrayList<Integer> nextRow = tenantInVoltdb.get(3);
+			for(int i = 1; i < row.size(); i++){
+				toLoad.add(row.get(i));
+			}
+			for(int i = 1; i < nextRow.size(); i++){
+				if(toLoad.contains(nextRow.get(i)) == false){
+					toLoad.add(nextRow.get(i));
+				}
+			}
+			LoaderThread.setToLoad(toLoad);
+			LoaderThread loader1 = new LoaderThread();
+			LoaderThread loader2 = new LoaderThread();
 			synchronized(this){
 				this.wait();
 			}
-			for(int i = 0; i < tenantInVoltdb.size(); i++){
-				ArrayList<Integer> row = tenantInVoltdb.get(i);
-				
-				if(i == 0){
-					for(int j = 1; j < row.size(); j++){
-						new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, row.get(j), true).start();
-					}
-				}
-				HybridController.sleep(30*1000);
-				if(i != 0){
-					ArrayList<Integer> lastRow = tenantInVoltdb.get(i -1);
-					for(int j = 1; j < lastRow.size(); j++){
-						if(row.contains(lastRow.get(j)) == false){
-							new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, lastRow.get(j), false).start();
-						}
-					}
-				}
-				HybridController.sleep(4*60*1000);
-				if(i != (tenantInVoltdb.size() -1)){
-					ArrayList<Integer> nextRow = tenantInVoltdb.get(i + 1);
-					for(int j = 1; j < nextRow.size(); j++){
-						if(row.contains(nextRow.get(j)) == false){
-							new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, nextRow.get(j), true).start();
-						}
-					}
-				}
-//				HybridController.sleep(4*60*1000);
-				HybridController.sleep(30*1000);
-				if(i == tenantInVoltdb.size() -1){
-					for(int j = 1; j < row.size(); j++){
-						new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, row.get(j), false).start();
-					}
-				}
-				
+			HybridController.sleep(5*60*1000);
+			loader1.start(); loader2.start();
+			HybridController.sleep(16*60*1000);
+			for(int i = 0; i < toLoad.size(); i++){
+				new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i), false).start();
+			}
+			HybridController.sleep(9*60*1000);
+//			for(int i = 0; i < tenantInVoltdb.size(); i++){
+//				ArrayList<Integer> row = tenantInVoltdb.get(i);
+//				
 //				if(i == 0){
-//					if(row.size() > 1){
-//						for(int j = 1; j < row.size(); j++){
-//							new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, row.get(j), true).start();
-//						}
-//					}
-//				}else{
-//					ArrayList<Integer> lastRow = tenantInVoltdb.get(i-1);
-//					for (int j = 1; j < row.size(); j++) {
-//						if (lastRow.contains(row.get(j)) == false)
-//							new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, row.get(j), true).start();
-//					}
-//					HybridController.sleep(30000);
-//					for (int j = 1; j < lastRow.size(); j++) {
-//						if (row.contains(lastRow.get(j)) == false)
-//							new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, lastRow.get(j), false).start();
+//					for(int j = 1; j < row.size(); j++){
+//						new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, row.get(j), true).start();
 //					}
 //				}
-//				HybridController.sleep(5*60*1000 - 30000);
-			}
+//				HybridController.sleep(30*1000);
+//				if(i != 0){
+//					ArrayList<Integer> lastRow = tenantInVoltdb.get(i -1);
+//					for(int j = 1; j < lastRow.size(); j++){
+//						if(row.contains(lastRow.get(j)) == false){
+//							new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, lastRow.get(j), false).start();
+//						}
+//					}
+//				}
+////				HybridController.sleep(4*60*1000);
+//				if(i != (tenantInVoltdb.size() -1)){
+//					ArrayList<Integer> nextRow = tenantInVoltdb.get(i + 1);
+//					for(int j = 1; j < nextRow.size(); j++){
+//						if(row.contains(nextRow.get(j)) == false){
+//							new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, nextRow.get(j), true).start();
+//						}
+//					}
+//				}
+//				HybridController.sleep(4*60*1000);
+//				HybridController.sleep(30*1000);
+//				if(i == tenantInVoltdb.size() -1){
+//					for(int j = 1; j < row.size(); j++){
+//						new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, row.get(j), false).start();
+//					}
+//				}
+//			}
 			FileWriter fstream = null;
 			try {
 				fstream = new FileWriter("violation.txt", false);

@@ -41,6 +41,7 @@ public class WarehouseRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
+			conn.setAutoCommit(false);
 			statements = new PreparedStatement[2];
 			statements[0] = conn.prepareStatement("UPDATE warehouse"+tenantId+" SET w_id = ?,	w_name = ?,w_street_1 = ?,w_street_2 = ?,w_city = ?,w_state = ?,w_zip = ?,w_tax = ?,	w_ytd = ? WHERE w_id = ?");
 			statements[1] = conn.prepareStatement("INSERT INTO warehouse"+tenantId+" VALUES (?,?,?,?,?,?,?,?,?)");
@@ -74,6 +75,7 @@ public class WarehouseRetriver extends Thread {
 					}
 					if(result.getRowCount() > 0) {
 						statements[0].executeBatch();
+						conn.commit();
 					}
 				}
 				
@@ -91,11 +93,15 @@ public class WarehouseRetriver extends Thread {
 						statements[1].setString(7, row.getString("w_zip"));
 						statements[1].setBigDecimal(8, row.getDecimalAsBigDecimal("w_tax").setScale(4, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("w_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				
 				response = voltdbConn.callProcedure("SelectWarehouse_"+volumnId, tenantId, 1, 1);
@@ -112,11 +118,15 @@ public class WarehouseRetriver extends Thread {
 						statements[1].setString(7, row.getString("w_zip"));
 						statements[1].setBigDecimal(8, row.getDecimalAsBigDecimal("w_tax").setScale(4, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("w_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				voltdbConn.callProcedure("@AdHoc", "DELETE FROM warehouse"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){

@@ -41,6 +41,7 @@ public class DistrictRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
+			conn.setAutoCommit(false);
 			statements = new PreparedStatement[2];
 			statements[0] = conn.prepareStatement("UPDATE district"+tenantId+" SET d_id = ?, d_w_id = ?, d_name = ?, d_street_1 = ?, d_street_2 = ?, d_city = ?, d_state = ?, d_zip = ?, d_tax = ?, d_ytd = ?, d_next_o_id = ? WHERE d_w_id = ? AND d_id = ?");
 			statements[1] = conn.prepareStatement("INSERT INTO district"+tenantId+" VALUES (?,?,?,?,?,?,?,?,?,?,?)");
@@ -77,6 +78,7 @@ public class DistrictRetriver extends Thread {
 					}
 					if(result.getRowCount() > 0) {
 						statements[0].executeBatch();
+						conn.commit();
 					}
 				}
 				
@@ -96,11 +98,15 @@ public class DistrictRetriver extends Thread {
 						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("d_tax").setScale(4, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setBigDecimal(10, row.getDecimalAsBigDecimal("d_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setInt(11, (int) row.get("d_next_o_id", VoltType.INTEGER));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				
 				response = voltdbConn.callProcedure("SelectDistrict_"+volumnId, tenantId, 1, 1);
@@ -119,11 +125,15 @@ public class DistrictRetriver extends Thread {
 						statements[1].setBigDecimal(9, row.getDecimalAsBigDecimal("d_tax").setScale(4, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setBigDecimal(10, row.getDecimalAsBigDecimal("d_ytd").setScale(12, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setInt(11, (int) row.get("d_next_o_id", VoltType.INTEGER));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				voltdbConn.callProcedure("@AdHoc", "DELETE FROM district"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){

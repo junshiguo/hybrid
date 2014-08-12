@@ -113,8 +113,20 @@ public class HConnection extends Thread {
 		int[] state = new int[2];
 
 		if(Main.onlyMysql == true || (this.isUsingVoltdb() == false && this.isPartiallUsingVoltdb() == false)){ //only mysql, for mysql test
-			paratmpNumber = setActualPara(queryId, true, para, paraType, paraNumber, PKNumber, 0, 0);
-			success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType, false);
+			if(queryId == 3){
+				paratmpNumber = setActualPara(0, true, para, paraType, paraNumber, PKNumber, 0, 0);
+				success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paratmpType, true);
+				if(success){
+					paratmpNumber = setActualPara(1, true, para, paraType, paraNumber, PKNumber, 0, 0);
+					success = doSQLInMysql(tableId, 1, paratmpNumber, paratmp, paratmpType, false);
+				}else{
+					paratmpNumber = setActualPara(queryId, true, para, paraType, paraNumber, PKNumber, 0, 0);
+					success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType, false);
+				}
+			}else{
+				paratmpNumber = setActualPara(queryId, true, para, paraType, paraNumber, PKNumber, 0, 0);
+				success = doSQLInMysql(tableId, queryId, paratmpNumber, paratmp, paratmpType, false);
+			}
 		}else if(this.isPartiallUsingVoltdb() == true){ // this tenant partially uses voltdb
 			if(queryId == 0 || queryId == 1 || queryId == 3){
 				paratmpNumber = setActualPara(0, false, para, paraType, paraNumber, PKNumber, 0, 0);
@@ -128,26 +140,15 @@ public class HConnection extends Thread {
 					paratmpNumber = setActualPara(0, true, para, paraType, paraNumber, PKNumber, 0, 0);
 					if(queryId == 0){
 						success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paraType, false);
-					}else{
-						if(queryId == 1){
-							paratmpNumber = setActualPara(3, false, para, paraType, paraNumber, PKNumber, 0, 1);
-							success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
-						}else if(queryId == 3){
+					}else if (queryId == 3){
+						success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paraType, true);
+						if(success == false){
 							paratmpNumber = setActualPara(3, false, para, paraType, paraNumber, PKNumber, 1, 0);
 							success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
 						}
-//						success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paraType, true);
-//						if(success){
-//							paratmpNumber = setActualPara(3, false, para, paraType, paraNumber, PKNumber, 0, 1);
-//							success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
-//						}else{
-//							if(queryId == 3){
-//								paratmpNumber = setActualPara(3, false, para, paraType, paraNumber, PKNumber, 1, 0);
-//								success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
-//							}else{
-//								success = true;
-//							}
-//						}
+					}else if(queryId == 1){
+							paratmpNumber = setActualPara(3, false, para, paraType, paraNumber, PKNumber, 0, 1);
+							success = doSQLInVoltdb(tableId, 3, paratmpNumber, paratmp, false, state);
 					}
 				}
 			}else{// delete

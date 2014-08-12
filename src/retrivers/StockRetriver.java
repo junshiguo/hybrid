@@ -41,6 +41,7 @@ public class StockRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
+			conn.setAutoCommit(false);
 			statements = new PreparedStatement[2];
 			statements[0] = conn.prepareStatement("UPDATE stock"+tenantId+" SET s_i_id = ?, s_w_id = ?, s_quantity = ?, s_dist_01 = ?, s_dist_02 = ?,s_dist_03 = ?,s_dist_04 = ?, s_dist_05 = ?, s_dist_06 = ?, s_dist_07 = ?, s_dist_08 = ?, s_dist_09 = ?, s_dist_10 = ?, s_ytd = ?, s_order_cnt = ?, s_remote_cnt = ?,s_data = ? WHERE s_w_id = ? AND s_i_id = ?");
 			statements[1] = conn.prepareStatement("INSERT INTO stock"+tenantId+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
@@ -83,6 +84,7 @@ public class StockRetriver extends Thread {
 					}
 					if(result.getRowCount() > 0) {
 						statements[0].executeBatch();
+						conn.commit();
 					}
 				}
 				
@@ -108,11 +110,15 @@ public class StockRetriver extends Thread {
 						statements[1].setInt(15, (int) row.get("s_order_cnt", VoltType.INTEGER));
 						statements[1].setInt(16, (int) row.get("s_remote_cnt", VoltType.INTEGER));
 						statements[1].setString(17, row.getString("s_data"));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				
 				response = voltdbConn.callProcedure("SelectStock_"+volumnId, tenantId, 1, 1);
@@ -137,11 +143,15 @@ public class StockRetriver extends Thread {
 						statements[1].setInt(15, (int) row.get("s_order_cnt", VoltType.INTEGER));
 						statements[1].setInt(16, (int) row.get("s_remote_cnt", VoltType.INTEGER));
 						statements[1].setString(17, row.getString("s_data"));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				voltdbConn.callProcedure("@AdHoc", "DELETE FROM stock"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){

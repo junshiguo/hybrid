@@ -56,7 +56,6 @@ public class DataMover extends Thread {
 //				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 1, emptyVolumn);
 				long start = System.nanoTime();
 				VMMatch.addMatch(emptyVolumn, tenantId);
-//					this.Mysql2Voltdb(tenantId, emptyVolumn);
 				try {
 					this.Mysql2VoltdbBulk(tenantId, emptyVolumn);
 				} catch (SQLException | IOException | InterruptedException
@@ -119,6 +118,7 @@ public class DataMover extends Thread {
 			stmt.execute(sql[i]);
 			client.callProcedure("@AdHoc", "delete from "+tables[i]+volumnId+" where tenant_id = "+tenantId);
 			pr[i] = Runtime.getRuntime().exec(getLoader(tables[i], tenantId, volumnId));
+//			pr[i].waitFor();
 		}
 		for(int i = 0; i < 9; i++){
 			pr[i].waitFor();
@@ -128,7 +128,7 @@ public class DataMover extends Thread {
 	}
 	
 	public String[] getLoader(String table, int tid, int vid){
-		String[] ret = {"/bin/sh", "-c", "/usr/voltdb/bin/csvloader "+table+vid+" < /tmp/hybrid/"+table+tid+".csv"};
+		String[] ret = {"/bin/sh", "-c", "/usr/voltdb/bin/csvloader "+table+vid+" -f /tmp/hybrid/"+table+tid+".csv -r /tmp/hybrid/tmp"};
 		return ret;
 	}
 

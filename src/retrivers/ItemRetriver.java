@@ -41,6 +41,7 @@ public class ItemRetriver extends Thread {
 		try {
 			conn = DBManager.connectDB(url, username, password);
 			stmt = conn.createStatement();
+			conn.setAutoCommit(false);
 			statements = new PreparedStatement[2];
 			statements[0] = conn.prepareStatement("UPDATE item"+tenantId+" SET i_id = ?, i_im_id = ?, i_name = ?, i_price = ?, i_data = ? WHERE i_id = ?");
 			statements[1] = conn.prepareStatement("INSERT INTO item"+tenantId+" VALUES (?,?,?,?,?)");
@@ -70,6 +71,7 @@ public class ItemRetriver extends Thread {
 					}
 					if(result.getRowCount() > 0) {
 						statements[0].executeBatch();
+						conn.commit();
 					}
 				}
 				
@@ -83,11 +85,15 @@ public class ItemRetriver extends Thread {
 						statements[1].setString(3, row.getString("i_name"));
 						statements[1].setBigDecimal(4, row.getDecimalAsBigDecimal("i_price").setScale(5, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setString(5, row.getString("i_data"));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				
 				response = voltdbConn.callProcedure("SelectItem_"+volumnId, tenantId, 1, 0);
@@ -100,11 +106,15 @@ public class ItemRetriver extends Thread {
 						statements[1].setString(3, row.getString("i_name"));
 						statements[1].setBigDecimal(4, row.getDecimalAsBigDecimal("i_price").setScale(5, BigDecimal.ROUND_HALF_DOWN));
 						statements[1].setString(5, row.getString("i_data"));
-						statements[1].addBatch();
+//						statements[1].addBatch();
+						try{
+							statements[1].execute();
+							conn.commit();
+						}catch(Exception e){}
 					}
-					if(result.getRowCount() > 0) {
-						statements[1].executeBatch();
-					}
+//					if(result.getRowCount() > 0) {
+//						statements[1].executeBatch();
+//					}
 				}
 				voltdbConn.callProcedure("@AdHoc", "DELETE FROM item"+volumnId+" WHERE tenant_id = "+tenantId);
 			}catch(IOException | ProcCallException | SQLException e){
