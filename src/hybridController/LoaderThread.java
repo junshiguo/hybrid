@@ -51,19 +51,7 @@ public class LoaderThread extends Thread {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-//				try {
-//					LoaderThread.sleep(3500);
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
 		}
-//		for(int i = 0; i < mover.size(); i++){
-//			try {
-//				mover.get(i).join();
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-//		}
 		System.out.println("********end offloading********");
 		long end = System.nanoTime();
 		System.out.println("total time: "+(end-start)/1000000000.0);

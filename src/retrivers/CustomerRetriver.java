@@ -91,8 +91,8 @@ public class CustomerRetriver extends Thread {
 					statements[0].setShort(20, (short) row.get("c_delivery_cnt", VoltType.SMALLINT));
 					statements[0].setString(21, row.getString("c_data"));
 					statements[0].setInt(22, (int) row.get("c_id", VoltType.INTEGER));
-					statements[0].setInt(23, new Byte((byte) row.get("c_d_id", VoltType.TINYINT)).intValue());
-					statements[0].setShort(24,	(short) row.get("c_w_id", VoltType.SMALLINT));
+					statements[0].setInt(23, new Byte((byte) row.get("c_w_id", VoltType.TINYINT)).intValue());
+					statements[0].setShort(24,	(short) row.get("c_d_id", VoltType.SMALLINT));
 					statements[0].addBatch();
 				}
 				if(result.getRowCount() > 0) {

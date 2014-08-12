@@ -46,6 +46,8 @@ public class HybridController extends Thread {
 	}
 	
 	public ArrayList<ArrayList<Integer>> tenantInVoltdb = new ArrayList<ArrayList<Integer>>();
+	public static int retriveConcurrence = 10;
+	public static int loadConcurrence = 3;
 	public void run(){
 		try{
 			BufferedReader burstReader = new BufferedReader(new FileReader("data/burst.txt"));
@@ -70,17 +72,29 @@ public class HybridController extends Thread {
 				}
 			}
 			LoaderThread.setToLoad(toLoad);
-			LoaderThread loader1 = new LoaderThread();
-			LoaderThread loader2 = new LoaderThread();
+			LoaderThread[] loader = new LoaderThread[HybridController.loadConcurrence];
+			for(int i = 0; i < HybridController.loadConcurrence; i++){
+				loader[i] = new LoaderThread();
+			}
+			RetriveThread.setToRetrive(toLoad);
+			RetriveThread[] retriver = new RetriveThread[HybridController.retriveConcurrence];
+			for(int i = 0; i < HybridController.retriveConcurrence; i++){
+				retriver[i] = new RetriveThread();
+			}
 			synchronized(this){
 				this.wait();
 			}
 			HybridController.sleep(5*60*1000);
-			loader1.start(); loader2.start();
-			HybridController.sleep(16*60*1000);
-			for(int i = 0; i < toLoad.size(); i++){
-				new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i), false).start();
+			for(int i = 0; i < HybridController.loadConcurrence; i++){
+				loader[i].start();
 			}
+			HybridController.sleep((15*60+30)*1000);
+			for(int i = 0; i < HybridController.retriveConcurrence; i++){
+				retriver[i].start();
+			}
+//			for(int i = 0; i < toLoad.size(); i++){
+//				new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i), false).start();
+//			}
 			HybridController.sleep(9*60*1000);
 //			for(int i = 0; i < tenantInVoltdb.size(); i++){
 //				ArrayList<Integer> row = tenantInVoltdb.get(i);
