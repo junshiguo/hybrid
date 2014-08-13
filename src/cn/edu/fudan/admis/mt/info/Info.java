@@ -37,13 +37,13 @@ public class Info
 	{
 		allTenantNum = 3000;
 		activeTenantNum = 600;
-		loadPath = "load.txt";
+		loadPath = "data4/load.txt";
 
 		VoltDBMemory = 1024;
 		transferCostPerDataSize = 1.;
 		timeInterval = 5;
 		maxTime = 25;
-		MySQLBurstBound = 0.99; 
+		MySQLBurstBound = 0.95; 
 
 		HConfig.init(allTenantNum);
 
@@ -67,7 +67,7 @@ public class Info
 	// TODO
 	public static double MySQLWorkload(double writePercent)
 	{
-		return 25000.;
+		return 30000.;
 	}
 
 	// TODO

@@ -47,7 +47,7 @@ public class HybridController extends Thread {
 	
 	public ArrayList<ArrayList<Integer>> tenantInVoltdb = new ArrayList<ArrayList<Integer>>();
 	public static int retriveConcurrence = 10;
-	public static int loadConcurrence = 3;
+	public static int loadConcurrence = 2;
 	public void run(){
 		try{
 			BufferedReader burstReader = new BufferedReader(new FileReader("data/burst.txt"));

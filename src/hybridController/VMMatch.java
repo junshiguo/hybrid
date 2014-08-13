@@ -7,7 +7,7 @@ public class VMMatch {
 	public static boolean isInitiated = false;
 	
 	public static void init(){
-		maxTenantPerVolumn = 2;
+		maxTenantPerVolumn = 4;
 		vmMatch = new int[50][maxTenantPerVolumn];
 		tenantPerVolumn = new int[100];
 		for(int i = 0; i < 50; i++){

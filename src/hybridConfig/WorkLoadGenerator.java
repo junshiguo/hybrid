@@ -13,10 +13,11 @@ public class WorkLoadGenerator {
 	public static int totalTenant = 3000;
 	public static int timePerInterval = 5; //min
 	public static int totalInterval = 6; // 30 min
-	public static int HRan = 90;
-	public static int MRan = 2;
+	public static int HRan = 80;
+	public static int MRan = 20;
+	public static int MRan2 = 10;
 	public static int LRan = -5;
-	public static int LRan2 = -40;
+	public static int LRan2 = -50;
 	public static int dRan = 5;
 	public static boolean[][] activePattern = new boolean[totalTenant][totalInterval];
 	public static boolean[] isBursty = new boolean[totalInterval];
@@ -56,8 +57,10 @@ public class WorkLoadGenerator {
 					if(isBursty[intervalId]){
 						if(QT == 200)
 							load[tenantId] = (load[tenantId]+HRan > QT)? QT :(load[tenantId]+HRan);
-						else
+						else if(QT == 60)
 							load[tenantId] = (load[tenantId] + MRan > QT) ? QT: load[tenantId] + MRan;
+						else
+							load[tenantId] = (load[tenantId] + MRan2 > QT) ? QT: load[tenantId] + MRan2;
 					}else{
 						if(QT == 200){
 							load[tenantId] = (load[tenantId] + LRan2 < 0) ? 20: load[tenantId] + LRan2;

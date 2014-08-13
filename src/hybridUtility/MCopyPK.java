@@ -12,21 +12,34 @@ public class MCopyPK {
 	
 	public static void main(String[] args){
 		int tenantNumber = 1500;
+		int startId = 0;
+		String server = "127.0.0.1";
+		String db = "tpcc3000";
 		if(args.length > 0){
-			tenantNumber = Integer.parseInt(args[0]);
+			server = args[0];
 		}
-		CopyTables(tenantNumber);
+		if(args.length > 1){
+			db = args[1];
+		}
+		if(args.length > 2){
+			startId = Integer.parseInt(args[2]);
+		}
+		if(args.length > 3){
+			tenantNumber = Integer.parseInt(args[3]);
+		}
+		CopyTables(server, db, startId, tenantNumber);
 	}
 	
-	public static void CopyTables(int tenantNumber){
+	public static void CopyTables(String server, String db, int startId, int tenantNumber){
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://10.20.2.211/tpcc3000", "remote", "remote");
+			conn = DriverManager.getConnection("jdbc:mysql://"+server+"/"+db, "remote", "remote");
 			System.out.println("db connected~");
 		} catch (ClassNotFoundException | SQLException e1) {
 			e1.printStackTrace();
 		}		
-		for(int id = 2400; id <3000; id++)
+		int endId = startId + tenantNumber;
+		for(int id = startId; id <endId; id++)
 			copyTables(id);
 		
 		try {
