@@ -13,10 +13,10 @@ public class WorkLoadGenerator {
 	public static int totalTenant = 3000;
 	public static int timePerInterval = 5; //min
 	public static int totalInterval = 6; // 30 min
-	public static int HRan = 80;
+	public static int HRan = 70;
 	public static int MRan = 20;
 	public static int MRan2 = 10;
-	public static int LRan = -5;
+	public static int LRan = -3;
 	public static int LRan2 = -50;
 	public static int dRan = 5;
 	public static boolean[][] activePattern = new boolean[totalTenant][totalInterval];
