@@ -3,8 +3,6 @@ package hybridController;
 import hybridConfig.HConfig;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -86,15 +84,7 @@ public class DataMover extends Thread {
 		Client client = DBManager.connectVoltdb(voltdbServer);
 		Connection conn = DBManager.connectDB(dbURL, dbUsername, dbPassword);
 		Statement stmt = conn.createStatement();
-		String[] fileName = {"customer"+tenantId+".csv", "district"+tenantId+".csv", "history"+tenantId+".csv", "item"+tenantId+".csv", "new_orders"+tenantId+".csv",
-				"order_line"+tenantId+".csv", "orders"+tenantId+".csv", "stock"+tenantId+".csv", "warehouse"+tenantId+".csv"
-		};
 		String[] tables = {"customer", "district", "history", "item", "new_orders", "order_line", "orders", "stock", "warehouse"};
-		for(int i = 0; i < 9; i++){
-			try{
-				Files.delete(Paths.get(csvPath+"/"+fileName[i]));
-			}catch(Exception e){}
-		}
 		String[] sql = new String[9];
 		sql[0] = "select concat(c_id, ',', c_d_id, ',',c_w_id, ',', c_first, ',', c_middle, ',', c_last, ',', c_street_1, ',', c_street_2, ',',c_city, ',',c_state, ',',c_zip, ',', c_phone, ',',c_since, ',', c_credit, ',', c_credit_lim , ',', c_discount, ',', c_balance, ',', c_ytd_payment, ',',c_payment_cnt, ',', c_delivery_cnt, ',', c_data, ',','"+tenantId+"', ',', '0', ',', '0')"
 				+ " from customer"+tenantId+" into outfile '"+csvPath+"/customer"+tenantId+".csv'";
@@ -126,11 +116,6 @@ public class DataMover extends Thread {
 		}
 		stmt.close();
 		conn.close();
-		for(int i = 0; i < 9; i++){
-			try{
-				Files.delete(Paths.get(csvPath+"/"+fileName[i]));
-			}catch(Exception e){}
-		}
 	}
 	
 	public String[] getLoader(String table, int tid, int vid){
