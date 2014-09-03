@@ -2,6 +2,7 @@ package hybridController;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -50,6 +51,17 @@ public class HybridController extends Thread {
 	public static int loadConcurrence = 2;
 	public void run(){
 		try{
+			synchronized(this){
+				this.wait();
+			}
+			HybridController.sleep((5*60 + 10)*1000);
+			HybridController.writeViolation();
+		}catch(InterruptedException | NumberFormatException e){
+			
+		}
+	}
+	public void run2(){
+		try{
 			BufferedReader burstReader = new BufferedReader(new FileReader("data/burst.txt"));
 			String str;
 			while((str = burstReader.readLine()) != null){
@@ -60,6 +72,7 @@ public class HybridController extends Thread {
 				}
 				tenantInVoltdb.add(tmp);
 			}
+			burstReader.close();
 			ArrayList<Integer> toLoad = new ArrayList<Integer>();
 			ArrayList<Integer> row = tenantInVoltdb.get(2);
 			ArrayList<Integer> nextRow = tenantInVoltdb.get(3);
@@ -92,44 +105,8 @@ public class HybridController extends Thread {
 			for(int i = 0; i < HybridController.retriveConcurrence; i++){
 				retriver[i].start();
 			}
-//			for(int i = 0; i < toLoad.size(); i++){
-//				new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i), false).start();
-//			}
 			HybridController.sleep(9*60*1000);
-//			for(int i = 0; i < tenantInVoltdb.size(); i++){
-//				ArrayList<Integer> row = tenantInVoltdb.get(i);
-//				
-//				if(i == 0){
-//					for(int j = 1; j < row.size(); j++){
-//						new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, row.get(j), true).start();
-//					}
-//				}
-//				HybridController.sleep(30*1000);
-//				if(i != 0){
-//					ArrayList<Integer> lastRow = tenantInVoltdb.get(i -1);
-//					for(int j = 1; j < lastRow.size(); j++){
-//						if(row.contains(lastRow.get(j)) == false){
-//							new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, lastRow.get(j), false).start();
-//						}
-//					}
-//				}
-////				HybridController.sleep(4*60*1000);
-//				if(i != (tenantInVoltdb.size() -1)){
-//					ArrayList<Integer> nextRow = tenantInVoltdb.get(i + 1);
-//					for(int j = 1; j < nextRow.size(); j++){
-//						if(row.contains(nextRow.get(j)) == false){
-//							new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, nextRow.get(j), true).start();
-//						}
-//					}
-//				}
-//				HybridController.sleep(4*60*1000);
-//				HybridController.sleep(30*1000);
-//				if(i == tenantInVoltdb.size() -1){
-//					for(int j = 1; j < row.size(); j++){
-//						new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, row.get(j), false).start();
-//					}
-//				}
-//			}
+			
 			FileWriter fstream = null;
 			try {
 				fstream = new FileWriter("violation.txt", false);
@@ -145,6 +122,66 @@ public class HybridController extends Thread {
 			}
 		}catch (IOException | InterruptedException | NumberFormatException e) {
 				e.printStackTrace();
+		}
+	}
+	
+	public static ArrayList<Integer> getToLoad() throws NumberFormatException, IOException{
+		ArrayList<ArrayList<Integer>> tenantInVoltdb = new ArrayList<ArrayList<Integer>>();
+		BufferedReader burstReader = new BufferedReader(new FileReader("data/burst.txt"));
+		String str;
+		while((str = burstReader.readLine()) != null){
+			String[] offloadingIds = str.split(" ");
+			ArrayList<Integer> tmp = new ArrayList<Integer>();
+			for(int i = 0; i < offloadingIds.length; i++){
+				tmp.add(Integer.parseInt(offloadingIds[i].trim()));
+			}
+			tenantInVoltdb.add(tmp);
+		}
+		burstReader.close();
+		ArrayList<Integer> toLoad = new ArrayList<Integer>();
+		ArrayList<Integer> row = tenantInVoltdb.get(0);
+		for(int i = 1; i < row.size(); i++){
+			toLoad.add(row.get(i));
+		}
+		for(int rowId = 1; rowId < 5; rowId++){
+			ArrayList<Integer> nextRow = tenantInVoltdb.get(rowId);
+			for(int i = 1; i < nextRow.size(); i++){
+				if(toLoad.contains(nextRow.get(i)) == false){
+					toLoad.add(nextRow.get(i));
+				}
+			}
+		}
+		return toLoad;
+	}
+	public static void offloadData(){
+		try{
+			ArrayList<Integer> toLoad = getToLoad();
+			System.out.println(toLoad.size());
+			LoaderThread.setToLoad(toLoad);
+			LoaderThread[] loader = new LoaderThread[HybridController.loadConcurrence];
+			for(int i = 0; i < HybridController.loadConcurrence; i++){
+				loader[i] = new LoaderThread();
+			}
+			for(int i = 0; i < HybridController.loadConcurrence; i++){
+				loader[i].start();
+			}
+		}catch (IOException | NumberFormatException e) {
+				e.printStackTrace();
+		}
+	}
+	public static void writeViolation(){
+		FileWriter fstream = null;
+		try {
+			fstream = new FileWriter("violation.txt", false);
+			BufferedWriter out = new BufferedWriter(fstream);
+			for(int i = 0; i < HybridController.totalTime; i++){
+				out.write(i+" "+HybridController.lateTenant[i]+" "+HybridController.lateQuery[i]);
+				out.newLine();
+			}
+			out.flush();
+			out.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 	}
 	
@@ -164,6 +201,19 @@ public class HybridController extends Thread {
 				flag = false;
 		}
 		if(flag){
+			ArrayList<Integer> toLoad;
+			try {
+				toLoad = getToLoad();
+				System.out.println(toLoad.size());
+				for(int i = 0; i < toLoad.size(); i++){
+					int tenantId = toLoad.get(i);
+					int volumnId = i%50;
+					HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 0, volumnId);
+					Thread.sleep(300);
+				}
+			} catch (NumberFormatException | IOException | InterruptedException e) {
+				e.printStackTrace();
+			}
 			for(int i = 0; i < typeNumber; i++){
 				sendTask[i].sendInfo("all in position");
 			}

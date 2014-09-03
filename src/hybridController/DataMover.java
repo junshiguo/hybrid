@@ -25,6 +25,7 @@ public class DataMover extends Thread {
 	public int tenantId;
 	public boolean isM2V;
 	public String csvPath = "/tmp/hybrid";
+	public int volumnId;
 	
 	public static void main(String[] args){
 		boolean M2V = true;
@@ -33,7 +34,7 @@ public class DataMover extends Thread {
 			if(tmp == 0) M2V = false;
 			else M2V = true;
 		}
-		new DataMover("jdbc:mysql://127.0.0.1/test", "remote", "remote", "127.0.0.1", 0, M2V).start();
+		new DataMover("jdbc:mysql://127.0.0.1/test", "remote", "remote", "127.0.0.1", 0, M2V, 1).start();
 	}
 
 	public DataMover(){}
@@ -47,11 +48,23 @@ public class DataMover extends Thread {
 		conn = DBManager.connectDB(url, username, password);
 		voltdbConn = DBManager.connectVoltdb(voltdbServer);
 	}
+	public DataMover(String url, String username, String password, String voltdbServer, int tenantId, boolean isM2V, int volumnId){
+		this.dbURL = url;
+		this.dbUsername = username;
+		this.dbPassword = password;
+		this.voltdbServer = voltdbServer;
+		this.tenantId = tenantId;
+		this.isM2V = isM2V;
+		conn = DBManager.connectDB(url, username, password);
+		voltdbConn = DBManager.connectVoltdb(voltdbServer);
+		this.volumnId = volumnId;
+	}
 	
 	public void run(){
 		if(isM2V){
 			int emptyVolumn = VMMatch.findVolumn();
 //			emptyVolumn = 1;
+			emptyVolumn = volumnId;
 			if(emptyVolumn != -1){
 				long start = System.nanoTime();
 				VMMatch.addMatch(emptyVolumn, tenantId);
@@ -63,7 +76,7 @@ public class DataMover extends Thread {
 				}
 				long end = System.nanoTime();
 				System.out.println("Tenant "+tenantId+" MySQL ---> VoltDB! Time spent: "+(end-start)/1000000000.0+" seconds!");
-				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 0, emptyVolumn);
+//				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 0, emptyVolumn);
 			}
 		}else{
 			int volumnId = VMMatch.findTenant(tenantId);
@@ -75,7 +88,7 @@ public class DataMover extends Thread {
 				VMMatch.deleteMatch(volumnId, tenantId);
 				long end = System.nanoTime();
 				System.out.println("Tenant "+tenantId+" VoltDB ---> MySQL! Time spent: "+(end-start)/1000000000.0+" seconds!");
-				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 0, 0, -1);
+//				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 0, 0, -1);
 			}
 		}
 	}

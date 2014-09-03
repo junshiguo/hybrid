@@ -41,8 +41,8 @@ public class Info
 
 		VoltDBMemory = 1024;
 		transferCostPerDataSize = 1.;
-		timeInterval = 5;
-		maxTime = 25;
+		timeInterval = 1;
+		maxTime = 4;
 		MySQLBurstBound = 1.0; 
 
 		HConfig.init(allTenantNum);
