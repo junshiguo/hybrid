@@ -9,11 +9,16 @@ public class LoaderThread extends Thread {
 	public static void setToLoad(ArrayList<Integer> to){
 		toLoad = new ArrayList<Integer>(to);
 	}
+	public static int next = 0;
 	public static synchronized int nextToLoad(){
 		int ret = -1;
-		if(toLoad.isEmpty() == false){
-			ret = toLoad.get(0);
-			toLoad.remove(0);
+//		if(toLoad.isEmpty() == false){
+//			ret = toLoad.get(0);
+//			toLoad.remove(0);
+//		}
+		if(next < toLoad.size()){
+			ret = toLoad.get(next);
+			next++;
 		}
 		return ret;
 	}
@@ -21,7 +26,8 @@ public class LoaderThread extends Thread {
 	public void run(){
 		int next;
 		while((next = LoaderThread.nextToLoad()) != -1){
-			DataMover m = new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, next, true);
+			int volumnId = LoaderThread.toLoad.indexOf(new Integer(next)) % 50;
+			DataMover m = new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, next, true, volumnId);
 			m.start();
 			try {
 				m.join();
@@ -31,30 +37,30 @@ public class LoaderThread extends Thread {
 		}
 	}
 	
-	public ArrayList<DataMover> mover = new ArrayList<DataMover>();
-	public void oldrun(){
-		System.out.println("********start offloading********");
-		long start = System.nanoTime();
-		for(int i = 0; i < toLoad.size(); i++){
-			DataMover m = new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i), true);
-			m.start();
-			mover.add(m);
-			DataMover m2 = new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i+1), true);
-			m2.start();
-			mover.add(m2);
-			DataMover m3 = new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i+2), true);
-			m3.start();
-			mover.add(m3);
-			i++;
-			try {
-				m.join();m2.join();m3.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		System.out.println("********end offloading********");
-		long end = System.nanoTime();
-		System.out.println("total time: "+(end-start)/1000000000.0);
-	}
+//	public ArrayList<DataMover> mover = new ArrayList<DataMover>();
+//	public void oldrun(){
+//		System.out.println("********start offloading********");
+//		long start = System.nanoTime();
+//		for(int i = 0; i < toLoad.size(); i++){
+//			DataMover m = new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i), true);
+//			m.start();
+//			mover.add(m);
+//			DataMover m2 = new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i+1), true);
+//			m2.start();
+//			mover.add(m2);
+//			DataMover m3 = new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i+2), true);
+//			m3.start();
+//			mover.add(m3);
+//			i++;
+//			try {
+//				m.join();m2.join();m3.join();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		System.out.println("********end offloading********");
+//		long end = System.nanoTime();
+//		System.out.println("total time: "+(end-start)/1000000000.0);
+//	}
 
 }

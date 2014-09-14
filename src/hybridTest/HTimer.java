@@ -26,12 +26,13 @@ public class HTimer extends Thread {
 					for(int i = 0; i < 20; i++){
 						Main.checkDoSQL(1);
 						if(i == 0){
+							Main.checkSetQT(1);
 							Main.checkResetActualQT(+1);
 						}
-						if(count < intervalId){
-							Main.checkSetQT(1);
-							count++;
-						}
+//						if(count < intervalId){
+//							Main.checkSetQT(1);
+//							count++;
+//						}
 						synchronized(Main.mainThread){
 							Main.mainThread.notify();
 						}

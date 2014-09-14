@@ -11,8 +11,8 @@ public class WorkLoadGenerator {
 	public static double activeRatio = 0.2;
 	public static double exchangeRatio = 0.1;
 	public static int totalTenant = 3000;
-	public static int timePerInterval = 5; //min
-	public static int totalInterval = 6; // 30 min
+	public static int timePerInterval = 1; //min
+	public static int totalInterval = 5; // 30 min
 	public static int HRan = 70;
 	public static int MRan = 20;
 	public static int MRan2 = 10;
@@ -46,21 +46,31 @@ public class WorkLoadGenerator {
 		fstream = new FileWriter("load.txt", false);
 		BufferedWriter out = new BufferedWriter(fstream);
 		
+		int[] load2 = new int[totalTenant];
 		for(int intervalId = 0; intervalId < totalInterval; intervalId++){
+//			int[] load = new int[totalTenant];
 			int[] load = new int[totalTenant];
 			Random ran = new Random(System.nanoTime());
 			for (int tenantId = 0; tenantId < totalTenant; tenantId++) {
 				int QT = HConfig.getQT(tenantId, false);
-				boolean isActive = activePattern[tenantId][intervalId];
+//				boolean isActive = activePattern[tenantId][intervalId];
+				boolean isActive = true;
 				if (isActive) {
-					load[tenantId] = ran.nextInt(QT) + 1;
-					if(isBursty[intervalId]){
+					if(intervalId == 0){
+						load2[tenantId] = ran.nextInt(QT) + 1;
+						load[tenantId] = load2[tenantId];
+					}else{
+						load[tenantId] = load2[tenantId];
+					}
+//					if(isBursty[intervalId]){
+					if(isBursty[3]){
+						int ddRan = ran.nextInt()%5;
 						if(QT == 200)
-							load[tenantId] = (load[tenantId]+HRan > QT)? QT :(load[tenantId]+HRan);
+							load[tenantId] = (load[tenantId]+HRan + ddRan > QT)? QT :(load[tenantId]+HRan + ddRan);
 						else if(QT == 60)
-							load[tenantId] = (load[tenantId] + MRan > QT) ? QT: load[tenantId] + MRan;
+							load[tenantId] = (load[tenantId] + MRan + ddRan > QT) ? QT: load[tenantId] + MRan + ddRan;
 						else
-							load[tenantId] = (load[tenantId] + MRan2 > QT) ? QT: load[tenantId] + MRan2;
+							load[tenantId] = (load[tenantId] + MRan2 + ddRan > QT) ? QT: load[tenantId] + MRan2 + ddRan;
 					}else{
 						if(QT == 200){
 							load[tenantId] = (load[tenantId] + LRan2 < 0) ? 20: load[tenantId] + LRan2;

@@ -67,8 +67,8 @@ public class Main extends Thread {
 			if(Integer.parseInt(args[2]) == 1)	onlyMysql = true;
 			else onlyMysql = false;
 		}
-		testTime = 1800000;
-		intervalTime = 300000;
+		testTime = 300000;
+		intervalTime = 60000;
 		HConfig.init(totalTenantNumber);
 		init();
 		
@@ -286,6 +286,7 @@ public class Main extends Thread {
 //			}
 //		}
 		Main.tenants[index].idInVoltdb = volumnId;
+		System.out.println("state set: "+tenantId+" "+usingV+" "+usingPV+" "+volumnId);
 	}
 	
 }
