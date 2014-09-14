@@ -228,7 +228,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         jButton2.setText("MySQL");
 
-        jButton3.setText("Hybrid");
+        jButton3.setText("ACM-SODA");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
