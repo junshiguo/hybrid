@@ -84,17 +84,15 @@ public class HybridController extends Thread {
 			synchronized(this){
 				this.wait();
 			}
-			HybridController.sleep(5*60*1000);
+//			HybridController.sleep(5*60*1000);
 			for(int i = 0; i < HybridController.loadConcurrence; i++){
 				loader[i].start();
 			}
+			HybridController.sleep(5*60*1000);
 			HybridController.sleep((15*60+30)*1000);
 			for(int i = 0; i < HybridController.retriveConcurrence; i++){
 				retriver[i].start();
 			}
-//			for(int i = 0; i < toLoad.size(); i++){
-//				new DataMover("jdbc:mysql://"+server+"/tpcc3000", "remote", "remote", server, toLoad.get(i), false).start();
-//			}
 			HybridController.sleep(9*60*1000);
 //			for(int i = 0; i < tenantInVoltdb.size(); i++){
 //				ArrayList<Integer> row = tenantInVoltdb.get(i);

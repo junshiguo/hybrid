@@ -8,17 +8,17 @@ import java.util.Random;
 import utility.Support;
 
 public class WorkLoadGenerator {
-	public static double activeRatio = 0.2;
+	public static double activeRatio = 0.25;
 	public static double exchangeRatio = 0.1;
 	public static int totalTenant = 3000;
 	public static int timePerInterval = 5; //min
 	public static int totalInterval = 6; // 30 min
-	public static int HRan = 70;
-	public static int MRan = 20;
+	public static int HRan = 120;
+	public static int MRan = 10;
 	public static int MRan2 = 10;
-	public static int LRan = -3;
+	public static int LRan = 0;
 	public static int LRan2 = -50;
-	public static int dRan = 5;
+	public static int dRan = 0;
 	public static boolean[][] activePattern = new boolean[totalTenant][totalInterval];
 	public static boolean[] isBursty = new boolean[totalInterval];
 	
