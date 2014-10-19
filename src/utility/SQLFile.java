@@ -5,6 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class SQLFile {
+	public static String[] table = {"customer", "district", "item", "new_orders", "order_line", "orders", "stock", "warehouse", "history"};
+	public static String[] Table = {"Customer", "District", "Item", "NewOrders", "OrderLine", "Orders", "Stock", "Warehouse", "History"};
+	
 	public static void main(String[] args){
 		FileWriter fstream = null;
 		BufferedWriter out = null;
@@ -76,6 +79,11 @@ public class SQLFile {
 				out.write("CREATE PROCEDURE FROM CLASS SelectOrders_"+tenantId+";\n");
 				out.write("CREATE PROCEDURE FROM CLASS SelectStock_"+tenantId+";\n");
 				out.write("CREATE PROCEDURE FROM CLASS SelectWarehouse_"+tenantId+";\n");
+			}
+			for(int volumnId = 0; volumnId < tenantNumber; volumnId++){
+				for(int tableId = 0; tableId < 9; tableId++){
+					out.write("CREATE PROCEDURE FROM CLASS Offload"+Table[tableId]+"_"+volumnId+";\n");
+				}
 			}
 //				for(int id = 0; id < 35; id++){
 //					out.write("CREATE PROCEDURE FROM CLASS Procedure"+id+"_"+tenantId+";");

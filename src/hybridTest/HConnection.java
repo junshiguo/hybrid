@@ -73,16 +73,16 @@ public class HConnection extends Thread {
 	}
 
 	public void run(){
-		conn = DBManager.connectDB(mysqlURL, mysqlUsername, mysqlPassword);
-		if(conn == null){
-			System.out.println("Tenant "+tenantId+" connecting mysql failed...");
-		}
-		try {
-			sqlPrepare();
-			conn.setAutoCommit(false);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+//		conn = DBManager.connectDB(mysqlURL, mysqlUsername, mysqlPassword);
+//		if(conn == null){
+//			System.out.println("Tenant "+tenantId+" connecting mysql failed...");
+//		}
+//		try {
+//			sqlPrepare();
+//			conn.setAutoCommit(false);
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
 		while(true){
 			synchronized(this){
 				try {
@@ -92,6 +92,9 @@ public class HConnection extends Thread {
 				}
 			}
 			if(waitList.isEmpty() == false){
+				if(conn == null){
+					connectDB();
+				}
 				WaitList tmp = waitList.firstElement();
 				waitList.remove(0);
 				doSQL(tmp.sqlId, tmp.para, tmp.paraType, tmp.paraNumber, tmp.PKNumber);
@@ -112,7 +115,7 @@ public class HConnection extends Thread {
 		int queryId = sqlId / 9;
 		int[] state = new int[2];
 
-		if(Main.onlyMysql == true || (this.isUsingVoltdb() == false && this.isPartiallUsingVoltdb() == false)){ //only mysql, for mysql test
+		if((this.isUsingVoltdb() == false && this.isPartiallUsingVoltdb() == false)){ //only mysql, for mysql test
 			if(queryId == 3){
 				paratmpNumber = setActualPara(0, true, para, paraType, paraNumber, PKNumber, 0, 0);
 				success = doSQLInMysql(tableId, 0, paratmpNumber, paratmp, paratmpType, true);

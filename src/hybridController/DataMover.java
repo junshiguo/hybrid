@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import offloaders.Offloader;
+
 import org.voltdb.client.Client;
 import org.voltdb.client.NoConnectionsException;
 import org.voltdb.client.ProcCallException;
@@ -56,9 +58,8 @@ public class DataMover extends Thread {
 				long start = System.nanoTime();
 				VMMatch.addMatch(emptyVolumn, tenantId);
 				try {
-					this.Mysql2VoltdbBulk(tenantId, emptyVolumn);
-				} catch (SQLException | IOException | InterruptedException
-						| ProcCallException e) {
+					this.Mysql2VoltdbBulkPro(tenantId, emptyVolumn);
+				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 				long end = System.nanoTime();
@@ -77,6 +78,17 @@ public class DataMover extends Thread {
 				System.out.println("Tenant "+tenantId+" VoltDB ---> MySQL! Time spent: "+(end-start)/1000000000.0+" seconds!");
 				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 0, 0, -1);
 			}
+		}
+	}
+	
+	public void Mysql2VoltdbBulkPro(int tenantId, int volumnId) throws InterruptedException{
+		Offloader[] loaders = new Offloader[9];
+		for(int i = 0; i < 9; i++){
+			loaders[i] = new Offloader(tenantId, volumnId, i);
+			loaders[i].start();
+		}
+		for(int i = 0; i < 9; i++){
+			loaders[i].join();
 		}
 	}
 	

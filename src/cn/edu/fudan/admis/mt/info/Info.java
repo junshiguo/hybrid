@@ -36,10 +36,10 @@ public class Info
 	public static void init()
 	{
 		allTenantNum = 3000;
-		activeTenantNum = 600;
+//		activeTenantNum = 450;
 		loadPath = "load.txt";
 
-		VoltDBMemory = 1024;
+		VoltDBMemory = 2048;
 		transferCostPerDataSize = 1.;
 		timeInterval = 5;
 		maxTime = 25;
@@ -67,7 +67,7 @@ public class Info
 	// TODO
 	public static double MySQLWorkload(double writePercent)
 	{
-		return 28000.;
+		return 29000.;
 	}
 
 	// TODO

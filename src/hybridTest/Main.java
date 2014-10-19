@@ -5,12 +5,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import pooling.PController;
 import hybridConfig.HConfig;
 
 public class Main extends Thread {
 	public static int totalTenantNumber;
 	public static int tenantNumber;
-	public static HTenant[] tenants;
+	public static HTenant[] tenants;  //tenant type
 	public static int IDStart;
 	public static int TYPE = 0;
 	public static int QTMax;
@@ -33,10 +34,6 @@ public class Main extends Thread {
 	public static PerformanceMonitor performanceMonitor;
 	public static int MAXRETRY = 2;
 	
-//	public static boolean sendRequest = false;
-//	public static boolean startCount = false;
-//	public static double writePercent = 0.0; //set in performanceMonitor
-	public static boolean onlyMysql = true;
 	public static long testTime = 1800000; //30 mins
 	public static long intervalTime = 300000; //5 min, must be integer mins
 	public static long intervalNumber = 3;
@@ -61,11 +58,6 @@ public class Main extends Thread {
 		totalTenantNumber = 3000;
 		if(args.length > 1){
 			totalTenantNumber = Integer.parseInt(args[1]);
-		}
-		onlyMysql = false;
-		if(args.length > 2){
-			if(Integer.parseInt(args[2]) == 1)	onlyMysql = true;
-			else onlyMysql = false;
 		}
 		testTime = 1800000;
 		intervalTime = 300000;
@@ -93,6 +85,7 @@ public class Main extends Thread {
 		
 		System.out.println("******************hybrid test start******************");
 		Main.isActive = true; 
+		PController.init();
 		mainThread = new Main();
 		mainThread.start();
 		performanceMonitor = new PerformanceMonitor(tenantNumber);
@@ -109,6 +102,7 @@ public class Main extends Thread {
 			Main.socketReceiver.socket.close();
 		} catch (IOException e) {
 		}
+		PController.stop();
 		System.out.println("******************hybrid test complete******************");
 		System.exit(0);
 	}
@@ -234,18 +228,10 @@ public class Main extends Thread {
 			if(str == null) return;
 			workload = str.split(" ");
 			for(int i = 0; i < tenantNumber; i++){
-				int[] tmp = Main.throughputPerTenant.clone();
 				Main.throughputPerTenant[i] = Integer.parseInt(workload[i+Main.IDStart+1]);
-//				Main.tenants[i].setQT(Main.throughputPerTenant[i]);
-//				if(Main.throughputPerTenant[i] == 0 && tmp[i] != 0){
-//					try {
-//						Main.tenants[i].connection.conn.close();
-//					} catch (SQLException e) {
-//					}
+//				if(Main.throughputPerTenant[i] != 0 && tmp[i] == 0){
+//					Main.tenants[i].connection.connectDB();
 //				}
-				if(Main.throughputPerTenant[i] != 0 && tmp[i] == 0){
-					Main.tenants[i].connection.connectDB();
-				}
 			}
 		}catch(IOException e){
 			
