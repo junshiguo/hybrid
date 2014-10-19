@@ -11,7 +11,7 @@ import hybridConfig.HConfig;
 public class Main extends Thread {
 	public static int totalTenantNumber;
 	public static int tenantNumber;
-	public static PTenant[] tenants;  //tenant type
+	public static HTenant[] tenants;  //tenant type
 	public static int IDStart;
 	public static int TYPE = 0;
 	public static int QTMax;
@@ -193,13 +193,13 @@ public class Main extends Thread {
 			IDStart = 0;
 		}
 		Main.QTMax = HConfig.QTMatrix[TYPE];
-		tenants = new PTenant[tenantNumber];
+		tenants = new HTenant[tenantNumber];
 		usingVoltdb = new boolean[tenantNumber];
 		partiallyUsingVoltdb = new boolean[tenantNumber];
 		throughputPerTenant = new int[tenantNumber];
 		actualThroughputPerTenant = new int[tenantNumber];
 		for(int i = 0; i < tenantNumber; i++){
-			tenants[i] = new PTenant(i+IDStart, HConfig.DSMatrix[TYPE], HConfig.QTMatrix[TYPE], HConfig.WHMatrix[TYPE], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
+			tenants[i] = new HTenant(i+IDStart, HConfig.DSMatrix[TYPE], HConfig.QTMatrix[TYPE], HConfig.WHMatrix[TYPE], Main.dbURL, Main.dbUsername, Main.dbPassword, Main.voltdbServer);
 			usingVoltdb[i] = false;
 			partiallyUsingVoltdb[i] = false;
 			throughputPerTenant[i] = 0;

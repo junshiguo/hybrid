@@ -28,8 +28,9 @@ public class PController {
 		checkState(true);
 	}
 	
-	public static void addToList(int tenantId, int sqlId, Object[] para, int[] paraType, int paraNumber, int PKNumber){
-		new PRequest(tenantId, sqlId, para, paraType, paraNumber, PKNumber, System.nanoTime());
+	public synchronized static void addToList(int tenantId, int sqlId, Object[] para, int[] paraType, int paraNumber, int PKNumber){
+		PRequest t = new PRequest(tenantId, sqlId, para, paraType, paraNumber, PKNumber, System.nanoTime());
+		PRequest.gsRequest(false, t);
 	}
 	
 }

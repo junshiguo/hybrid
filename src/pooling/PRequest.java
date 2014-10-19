@@ -36,7 +36,6 @@ public class PRequest {
 		this.paraNumber = paraNumber;
 		this.PKNumber = PKNumber;
 		this.timeStart = start;
-		PRequest.gsRequest(false, this);
 	}
 //	
 //	public PRequest(int tenantId){

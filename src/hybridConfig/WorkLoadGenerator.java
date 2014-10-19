@@ -8,7 +8,7 @@ import java.util.Random;
 import utility.Support;
 
 public class WorkLoadGenerator {
-	public static double activeRatio = 0.25;
+	public static double activeRatio = 0.21;
 	public static double exchangeRatio = 0.1;
 	public static int totalTenant = 3000;
 	public static int timePerInterval = 5; //min

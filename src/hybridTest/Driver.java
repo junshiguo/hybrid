@@ -113,7 +113,8 @@ public class Driver {
 				para[9] = c_state = Support.MakeAlphaString(2, 2);					paraType[9] = Driver.TYPE_STRING;
 				para[10] = c_zip = Support.MakeNumberString(9, 9);					paraType[10] = Driver.TYPE_STRING;
 				para[11] = c_phone = Support.MakeNumberString(16, 16);		paraType[11] = Driver.TYPE_STRING;
-				para[12] = c_since = Support.getTimeStamp();									paraType[12] = Driver.TYPE_STRING;
+				para[12] = c_since = Support.getTimeStamp();		
+				para[12] = c_since.substring(0, c_since.lastIndexOf(".")); paraType[12] = Driver.TYPE_STRING;
 				para[13] = c_credit = "C0";															paraType[13] = Driver.TYPE_STRING;
 				para[14] = c_credit_lim = 50000;												paraType[14] = Driver.TYPE_INT;
 				para[15] = c_discount = ran.nextInt(50) / 100.0;	paraType[15] = Driver.TYPE_DOUBLE;
@@ -198,6 +199,7 @@ public class Driver {
 				para[4] = ol_i_id = Support.RandomNumber(1, Driver.MAXITEMS);
 				para[5] = ol_supply_w_id = Support.RandomNumber(min_ware, max_ware);
 				para[6] = ol_delivery_d = Support.getTimeStamp();
+				para[6] = ol_delivery_d.substring(0, ol_delivery_d.lastIndexOf("."));
 				para[7] = ol_quantity = 5;
 				para[8] = ol_amount = 0.0;
 				para[9] = ol_dist_info = Support.MakeAlphaString(24, 24);
@@ -228,6 +230,7 @@ public class Driver {
 				para[2] = o_w_id = Support.RandomNumber(min_ware, max_ware);
 				para[3] = o_c_id = Support.RandomNumber(1, Driver.ORD_PER_DIST);
 				para[4] = o_entry_d = Support.getTimeStamp();
+				para[4] = o_entry_d.substring(0, o_entry_d.lastIndexOf("."));
 				para[5] = o_carrier_id = Support.RandomNumber(1, 10);
 				para[6] = o_ol_cnt = Support.RandomNumber(5, 15);
 				para[7] = o_all_local = ran.nextInt(100) == 1 ? 0 : 1;
@@ -321,6 +324,7 @@ public class Driver {
 				para[3] = h_d_id = h_c_d_id;
 				para[4] = h_w_id = h_c_w_id;
 				para[5] = h_date = Support.getTimeStamp();
+				para[5] = h_date.substring(0, h_date.lastIndexOf("."));
 				para[6] = h_amount = 10.0;
 				para[7] = h_data = Support.MakeAlphaString(12,24);
 				para[8] = h_c_id;

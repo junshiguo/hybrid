@@ -36,7 +36,7 @@ public class Info
 	public static void init()
 	{
 		allTenantNum = 3000;
-		activeTenantNum = 750;
+//		activeTenantNum = 450;
 		loadPath = "load.txt";
 
 		VoltDBMemory = 2048;
@@ -67,7 +67,7 @@ public class Info
 	// TODO
 	public static double MySQLWorkload(double writePercent)
 	{
-		return 30000.;
+		return 29000.;
 	}
 
 	// TODO

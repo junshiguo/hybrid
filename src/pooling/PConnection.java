@@ -75,7 +75,8 @@ public class PConnection extends Thread {
 			if(PController.checkState(false) == false){
 				break;
 			}
-			if((this.request = PRequest.gsRequest(true, null)) != null){
+			this.request = PRequest.gsRequest(true, null);
+			if(this.request != null){
 				doSQL();
 			}else{
 				try {
@@ -249,8 +250,8 @@ public class PConnection extends Thread {
 	public boolean doSQLInMysql(int tableId, int queryId, int paraNumber, Object[] para, int[] paraType, boolean careResult) {
 		int sqlId = tableId + queryId * 9;
 		int id = request.tenantId;
+		String sql = "";
 		try {
-			String sql = "";
 			switch(sqlId){
 			case 0:
 				sql = "SELECT * FROM customer"+id+" WHERE c_id = "+para[0]+" AND c_w_id = "+para[1]+" AND c_d_id = "+para[2];
@@ -280,33 +281,33 @@ public class PConnection extends Thread {
 				sql = "SELECT * FROM history"+id+" WHERE h_c_id = "+para[0]+" AND h_c_d_id = "+para[1]+" AND h_c_w_id = "+para[2]+"";
 				break;
 			case 9:
-				sql = "UPDATE customer"+id+" SET c_id = "+para[0]+", c_d_id = "+para[1]+",c_w_id = "+para[2]+", c_first = "+para[3]+", c_middle = "+para[4]+", c_last = "+para[5]+", c_street_1 = "+para[6]+", c_street_2 = "+para[7]+",c_city = "+para[8]+","
-						+ "c_state = "+para[9]+",c_zip = "+para[10]+", c_phone = "+para[11]+",c_since = "+para[12]+", c_credit = "+para[13]+", c_credit_lim = "+para[14]+", c_discount = "+para[15]+", c_balance = "+para[16]+", c_ytd_payment = "+para[17]+",c_payment_cnt = "+para[18]+", c_delivery_cnt = "+para[19]+", c_data = "+para[20]+" "
+				sql = "UPDATE customer"+id+" SET c_id = "+para[0]+", c_d_id = "+para[1]+",c_w_id = "+para[2]+", c_first = '"+para[3]+"', c_middle = '"+para[4]+"', c_last = '"+para[5]+"', c_street_1 = '"+para[6]+"', c_street_2 = '"+para[7]+"',c_city = '"+para[8]+"',"
+						+ "c_state = '"+para[9]+"',c_zip = '"+para[10]+"', c_phone = '"+para[11]+"',c_since = '"+para[12]+"', c_credit = '"+para[13]+"', c_credit_lim = "+para[14]+", c_discount = "+para[15]+", c_balance = "+para[16]+", c_ytd_payment = "+para[17]+",c_payment_cnt = "+para[18]+", c_delivery_cnt = "+para[19]+", c_data = '"+para[20]+"' "
 						+ "WHERE c_id = "+para[21]+" AND c_w_id = "+para[22]+" AND c_d_id = "+para[23]+"";
 				break;
 			case 10:
-				sql = "UPDATE district"+id+" SET d_id = "+para[0]+", d_w_id = "+para[1]+", d_name = "+para[2]+", d_street_1 = "+para[3]+", d_street_2 = "+para[4]+", d_city = "+para[5]+", d_state = "+para[6]+", d_zip = "+para[7]+", d_tax = "+para[8]+", d_ytd = "+para[9]+", d_next_o_id = "+para[10]+" WHERE d_w_id = "+para[11]+" AND d_id = "+para[12]+"";
+				sql = "UPDATE district"+id+" SET d_id = "+para[0]+", d_w_id = "+para[1]+", d_name = '"+para[2]+"', d_street_1 = '"+para[3]+"', d_street_2 = '"+para[4]+"', d_city = '"+para[5]+"', d_state = '"+para[6]+"', d_zip = '"+para[7]+"', d_tax = "+para[8]+", d_ytd = "+para[9]+", d_next_o_id = "+para[10]+" WHERE d_w_id = "+para[11]+" AND d_id = "+para[12]+"";
 				break;
 			case 11:
-				sql = "UPDATE item"+id+" SET i_id = "+para[0]+", i_im_id = "+para[1]+", i_name = "+para[2]+", i_price = "+para[3]+", i_data = "+para[4]+" WHERE i_id = "+para[5]+"";
+				sql = "UPDATE item"+id+" SET i_id = "+para[0]+", i_im_id = "+para[1]+", i_name = '"+para[2]+"', i_price = "+para[3]+", i_data = '"+para[4]+"' WHERE i_id = "+para[5]+"";
 				break;
 			case 12:
 				sql = "UPDATE new_orders"+id+" SET no_o_id = "+para[0]+",no_d_id = "+para[1]+",no_w_id = "+para[2]+" WHERE no_w_id = "+para[3]+" AND no_d_id = "+para[4]+" AND no_o_id = "+para[5]+"";
 				break;
 			case 13:
-				sql = "UPDATE order_line"+id+" SET ol_o_id = "+para[0]+", ol_d_id = "+para[1]+",ol_w_id = "+para[2]+",ol_number = "+para[3]+",ol_i_id = "+para[4]+", ol_supply_w_id = "+para[5]+",ol_delivery_d = "+para[6]+", ol_quantity = "+para[7]+", ol_amount = "+para[8]+", ol_dist_info = "+para[9]+" WHERE ol_w_id = "+para[10]+" AND ol_d_id = "+para[11]+" AND ol_o_id = "+para[12]+" AND ol_number = "+para[13]+"";
+				sql = "UPDATE order_line"+id+" SET ol_o_id = "+para[0]+", ol_d_id = "+para[1]+",ol_w_id = "+para[2]+",ol_number = "+para[3]+",ol_i_id = "+para[4]+", ol_supply_w_id = "+para[5]+",ol_delivery_d = '"+para[6]+"', ol_quantity = "+para[7]+", ol_amount = "+para[8]+", ol_dist_info = '"+para[9]+"' WHERE ol_w_id = "+para[10]+" AND ol_d_id = "+para[11]+" AND ol_o_id = "+para[12]+" AND ol_number = "+para[13]+"";
 				break;
 			case 14:
-				sql = "UPDATE orders"+id+" SET o_id = "+para[0]+", o_d_id = "+para[1]+", o_w_id = "+para[2]+",o_c_id = "+para[3]+",o_entry_d = "+para[4]+",o_carrier_id = "+para[5]+",o_ol_cnt = "+para[6]+", o_all_local = "+para[7]+" WHERE o_w_id = "+para[8]+" AND o_d_id = "+para[9]+" AND o_id = "+para[10]+"";
+				sql = "UPDATE orders"+id+" SET o_id = "+para[0]+", o_d_id = "+para[1]+", o_w_id = "+para[2]+",o_c_id = "+para[3]+",o_entry_d = '"+para[4]+"',o_carrier_id = "+para[5]+",o_ol_cnt = "+para[6]+", o_all_local = "+para[7]+" WHERE o_w_id = "+para[8]+" AND o_d_id = "+para[9]+" AND o_id = "+para[10]+"";
 				break;
 			case 15:
-				sql = "UPDATE stock"+id+" SET s_i_id = "+para[0]+", s_w_id = "+para[1]+", s_quantity = "+para[2]+", s_dist_01 = "+para[3]+", s_dist_02 = "+para[4]+",s_dist_03 = "+para[5]+",s_dist_04 = "+para[6]+", s_dist_05 = "+para[7]+", s_dist_06 = "+para[8]+", s_dist_07 = "+para[9]+", s_dist_08 = "+para[10]+", s_dist_09 = "+para[11]+", s_dist_10 = "+para[12]+", s_ytd = "+para[13]+", s_order_cnt = "+para[14]+", s_remote_cnt = "+para[15]+",s_data = "+para[16]+" WHERE s_w_id = "+para[17]+" AND s_i_id = "+para[18]+"";
+				sql = "UPDATE stock"+id+" SET s_i_id = "+para[0]+", s_w_id = "+para[1]+", s_quantity = "+para[2]+", s_dist_01 = '"+para[3]+"', s_dist_02 = '"+para[4]+"',s_dist_03 = '"+para[5]+"',s_dist_04 = '"+para[6]+"', s_dist_05 = '"+para[7]+"', s_dist_06 = '"+para[8]+"', s_dist_07 = '"+para[9]+"', s_dist_08 = '"+para[10]+"', s_dist_09 = '"+para[11]+"', s_dist_10 = '"+para[12]+"', s_ytd = "+para[13]+", s_order_cnt = "+para[14]+", s_remote_cnt = "+para[15]+",s_data = '"+para[16]+"' WHERE s_w_id = "+para[17]+" AND s_i_id = "+para[18]+"";
 				break;
 			case 16:
-				sql = "UPDATE warehouse"+id+" SET w_id = "+para[0]+",	w_name = "+para[1]+",w_street_1 = "+para[2]+",w_street_2 = "+para[3]+",w_city = "+para[4]+",w_state = "+para[5]+",w_zip = "+para[6]+",w_tax = "+para[7]+",	w_ytd = "+para[8]+" WHERE w_id = "+para[9]+"";
+				sql = "UPDATE warehouse"+id+" SET w_id = "+para[0]+",	w_name = '"+para[1]+"',w_street_1 = '"+para[2]+"',w_street_2 = '"+para[3]+"',w_city = '"+para[4]+"',w_state = '"+para[5]+"',w_zip = '"+para[6]+"',w_tax = "+para[7]+",	w_ytd = "+para[8]+" WHERE w_id = "+para[9]+"";
 				break;
 			case 17:
-				sql = "UPDATE history"+id+" SET h_c_id = "+para[0]+", h_c_d_id = "+para[1]+", h_c_w_id = "+para[2]+",h_d_id = "+para[3]+",h_w_id = "+para[4]+",h_date = "+para[5]+",h_amount = "+para[6]+",h_data = "+para[7]+" WHERE h_c_id = "+para[8]+" AND h_c_d_id = "+para[9]+" AND h_c_w_id = "+para[10]+"";
+				sql = "UPDATE history"+id+" SET h_c_id = "+para[0]+", h_c_d_id = "+para[1]+", h_c_w_id = "+para[2]+",h_d_id = "+para[3]+",h_w_id = "+para[4]+",h_date = '"+para[5]+"',h_amount = "+para[6]+",h_data = '"+para[7]+"' WHERE h_c_id = "+para[8]+" AND h_c_d_id = "+para[9]+" AND h_c_w_id = "+para[10]+"";
 				break;
 			case 18:
 				sql = "DELETE FROM customer"+id+" WHERE c_id = "+para[0]+" AND c_w_id = "+para[1]+" AND c_d_id = "+para[2]+"";
@@ -336,31 +337,31 @@ public class PConnection extends Thread {
 				sql = "DELETE FROM history"+id+" WHERE h_c_id = "+para[0]+" AND h_c_d_id = "+para[1]+" AND h_c_w_id = "+para[2]+"";
 				break;
 			case 27:
-				sql = "INSERT INTO customer"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+","+para[5]+","+para[6]+","+para[7]+","+para[8]+","+para[9]+","+para[10]+","+para[11]+","+para[12]+","+para[13]+","+para[14]+","+para[15]+","+para[16]+","+para[17]+","+para[18]+","+para[19]+","+para[20]+")"; //21
+				sql = "INSERT INTO customer"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+",'"+para[3]+"','"+para[4]+"','"+para[5]+"','"+para[6]+"','"+para[7]+"','"+para[8]+"','"+para[9]+"','"+para[10]+"','"+para[11]+"','"+para[12]+"','"+para[13]+"',"+para[14]+","+para[15]+","+para[16]+","+para[17]+","+para[18]+","+para[19]+",'"+para[20]+"')"; //21
 				break;
 			case 28:
-				sql = "INSERT INTO district"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+","+para[5]+","+para[6]+","+para[7]+","+para[8]+","+para[9]+","+para[10]+")"; //11
+				sql = "INSERT INTO district"+id+" VALUES ("+para[0]+","+para[1]+",'"+para[2]+"','"+para[3]+"','"+para[4]+"','"+para[5]+"','"+para[6]+"','"+para[7]+"',"+para[8]+","+para[9]+","+para[10]+")"; //11
 				break;
 			case 29:
-				sql = "INSERT INTO item"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+")"; //5
+				sql = "INSERT INTO item"+id+" VALUES ("+para[0]+","+para[1]+",'"+para[2]+"',"+para[3]+",'"+para[4]+"')"; //5
 				break;
 			case 30:
 				sql = "INSERT INTO new_orders"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+")"; //3
 				break;
 			case 31:
-				sql = "INSERT INTO order_line"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+","+para[5]+","+para[6]+","+para[7]+","+para[8]+","+para[9]+")"; //10
+				sql = "INSERT INTO order_line"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+","+para[5]+",'"+para[6]+"',"+para[7]+","+para[8]+",'"+para[9]+"')"; //10
 				break;
 			case 32:
-				sql = "INSERT INTO orders"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+","+para[5]+","+para[6]+","+para[7]+")"; //8
+				sql = "INSERT INTO orders"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+",'"+para[4]+"',"+para[5]+","+para[6]+","+para[7]+")"; //8
 				break;
 			case 33:
-				sql = "INSERT INTO stock"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+","+para[5]+","+para[6]+","+para[7]+","+para[8]+","+para[9]+","+para[10]+","+para[11]+","+para[12]+","+para[13]+","+para[14]+","+para[15]+","+para[16]+")"; //17
+				sql = "INSERT INTO stock"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+",'"+para[3]+"','"+para[4]+"','"+para[5]+"','"+para[6]+"','"+para[7]+"','"+para[8]+"','"+para[9]+"','"+para[10]+"','"+para[11]+"','"+para[12]+"',"+para[13]+","+para[14]+","+para[15]+",'"+para[16]+"')"; //17
 				break;
 			case 34:
-				sql = "INSERT INTO warehouse"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+","+para[5]+","+para[6]+","+para[7]+","+para[8]+")"; //9
+				sql = "INSERT INTO warehouse"+id+" VALUES ("+para[0]+",'"+para[1]+"','"+para[2]+"','"+para[3]+"','"+para[4]+"','"+para[5]+"','"+para[6]+"',"+para[7]+","+para[8]+")"; //9
 				break;
 			case 35:
-				sql = "INSERT INTO history"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+","+para[5]+","+para[6]+","+para[7]+")"; //8
+				sql = "INSERT INTO history"+id+" VALUES ("+para[0]+","+para[1]+","+para[2]+","+para[3]+","+para[4]+",'"+para[5]+"',"+para[6]+",'"+para[7]+"')"; //8
 				break;
 				default:
 			}
@@ -372,7 +373,10 @@ public class PConnection extends Thread {
 			}
 			return true;
 		} catch (Exception e) {
+			System.out.println(sql);
+			System.out.println(this.request.paraNumber+" "+this.request.PKNumber+" "+this.request.sqlId+" "+this.request.para.toString());
 			e.printStackTrace();
+			System.exit(0);
 			return false;
 		}
 	}
