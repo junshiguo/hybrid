@@ -151,7 +151,7 @@ public class Driver {
 					para[19] = c_delivery_cnt;
 					para[20] = c_data;
 					para[21] = c_id;
-					para[22] = c_w_id;
+					para[22] = c_w_id;                                                                                                                                                                                                                                                                                                 
 					para[23] = c_d_id;
 					if(queryId == 1) paraNumber = 24;
 					else paraNumber = 21;

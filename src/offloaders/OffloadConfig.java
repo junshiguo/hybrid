@@ -1,7 +1,7 @@
 package offloaders;
 
 public class OffloadConfig {
-	public static String url = "jdbc:mysql://127.0.0.1:3306/tpcc3000";
+	public static String url = "jdbc:mysql://127.0.0.1:3306/test";
 	public static String username = "remote", password = "remote";
 	public static String voltdbServer = "127.0.0.1";
 	public static String csvPath = "/tmp/hybrid";

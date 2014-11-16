@@ -2,7 +2,7 @@ package hybridConfig;
 
 public class HConfig {
 	public static int[] ValueQT = { 20, 60, 200 };  // per minute
-	public static double[] ValueDS = {6.9, 16.3, 23.5 };  // MB
+	public static double[] ValueDS = {6.9, 16.3, 35.2 };  // MB
 	public static double[] ValueWP = { 0.6, 0.2 };  //
 	public static double[] PercentQT = { 0.3, 0.5, 0.2 };
 	public static double[] PercentDS = { 0.5, 0.3, 0.2 };

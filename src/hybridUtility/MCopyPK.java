@@ -11,10 +11,10 @@ public class MCopyPK {
 	public static PreparedStatement st;
 	
 	public static void main(String[] args){
-		int tenantNumber = 1500;
+		int tenantNumber = 1;
 		int startId = 0;
 		String server = "127.0.0.1";
-		String db = "tpcc3000";
+		String db = "test";
 		if(args.length > 0){
 			server = args[0];
 		}
