@@ -53,7 +53,7 @@ public class DataMover extends Thread {
 	public void run(){
 		if(isM2V){
 			int emptyVolumn = VMMatch.findVolumn();
-			emptyVolumn = 1;
+//			emptyVolumn = 1;
 			if(emptyVolumn != -1){
 				long start = System.nanoTime();
 				VMMatch.addMatch(emptyVolumn, tenantId);
@@ -76,7 +76,7 @@ public class DataMover extends Thread {
 				VMMatch.deleteMatch(volumnId, tenantId);
 				long end = System.nanoTime();
 				System.out.println("Tenant "+tenantId+" VoltDB ---> MySQL! Time spent: "+(end-start)/1000000000.0+" seconds!");
-				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 0, 0, -1);
+//				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 0, 0, -1);
 			}
 		}
 	}

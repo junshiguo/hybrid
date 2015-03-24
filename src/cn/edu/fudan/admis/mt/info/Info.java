@@ -67,7 +67,7 @@ public class Info
 	// TODO
 	public static double MySQLWorkload(double writePercent)
 	{
-		return 29000.;
+		return 28000.;
 	}
 
 	// TODO

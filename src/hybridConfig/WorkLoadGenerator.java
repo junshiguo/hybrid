@@ -8,8 +8,8 @@ import java.util.Random;
 import utility.Support;
 
 public class WorkLoadGenerator {
-	public static double activeRatio = 0.21;
-	public static double exchangeRatio = 0.1;
+	public static double activeRatio = 0.30;
+	public static double exchangeRatio = 0.;
 	public static int totalTenant = 3000;
 	public static int timePerInterval = 5; //min
 	public static int totalInterval = 6; // 30 min
@@ -30,13 +30,101 @@ public class WorkLoadGenerator {
 	public static int[] at0, at1, at2;
 	public static int[] inat0, inat1, inat2;
 	
+	public static boolean FULL_WORKLOAD = false;
+	public static int actualTenant = 1000;
+	public static double bias = 0.2;
+	
 	public static void main(String[] args) throws IOException{
 		totalTenant = 3000;
 		activeNumber = (int) (activeRatio * totalTenant);
 		activeTenant = new int[activeNumber];
 		inactiveTenant = new int[totalTenant - activeNumber];
+		if(args.length > 0){
+			actualTenant = Integer.parseInt(args[0].trim());
+		}
+		if(args.length > 1){
+			bias = Double.parseDouble(args[1]);
+			if(bias < 0 || bias > 1){
+				bias = 0.2;
+				System.out.println("bias illegal. using the default bias = 0.2");
+			}
+		}
+		if(args.length > 2){
+			int flag = Integer.parseInt(args[1]);
+			if(flag == 1) FULL_WORKLOAD = true;
+			else FULL_WORKLOAD = false;
+		}
 		HConfig.init(totalTenant);
-		generateLoad();
+		generateLoad1();
+	}
+	
+	public static void generateLoad1() throws IOException{
+		setBursty();
+		setActivePattern1(percentActive);
+		FileWriter fstream = null;
+		fstream = new FileWriter("load.txt", false);
+		BufferedWriter out = new BufferedWriter(fstream);
+		
+		for(int intervalId = 0; intervalId < totalInterval; intervalId++){
+			out.write(""+(int)(intervalId+1));
+			for(int i = 0; i < totalTenant; i++){
+				if(activePattern[i][intervalId] == true){
+					out.write(" "+i);
+				}
+			}
+			out.write("\n");
+		}
+//		out.write("\n");
+		
+		for(int intervalId = 0; intervalId < totalInterval; intervalId++){
+			
+			int[] load = new int[totalTenant];
+			Random ran = new Random(System.nanoTime());
+			for (int tenantId = 0; tenantId < totalTenant; tenantId++) {
+				int QT = HConfig.getQT(tenantId, false);
+				boolean isActive = activePattern[tenantId][intervalId];
+				if (isActive) {
+					if(FULL_WORKLOAD == true){
+						load[tenantId] = QT;
+					}else{
+						if(isBursty[intervalId]){
+							if(ran.nextBoolean()){
+								load[tenantId] = (int) (PossionDistribution.getRandomNumber((QT)) * (1+bias));
+							}else{
+								load[tenantId] = (int) (PossionDistribution.getRandomNumber((QT)) * (1-bias));
+							}
+						}else{
+							load[tenantId] = PossionDistribution.getRandomNumber(QT/5);
+						}
+					}
+				} else {
+					load[tenantId] = 0;
+				}
+			}
+//			for (int time = 0; time < timePerInterval; time++) {
+//				out.write("" + (intervalId * timePerInterval + time));
+//				int dd = ran.nextInt() % dRan;
+			for(int min = 0; min < timePerInterval; min++){
+			out.write(""+(intervalId*timePerInterval + min+1));
+				int dd = 0;
+				int totalLoad = 0;
+				for (int tenantId = 0; tenantId < totalTenant; tenantId++) {
+					int QT = HConfig.getQT(tenantId, false);
+					boolean isActive = activePattern[tenantId][intervalId];
+					int tmpload = 0;
+					if (isActive) {
+						tmpload = load[tenantId] + dd;
+//						tmpload = (tmpload > QT) ? QT : tmpload;
+					}
+					out.write(" " + tmpload);
+					totalLoad += tmpload;
+				}
+				out.write(" " + totalLoad);
+				out.newLine();out.flush();
+			}
+		}
+//		}
+		out.close();
 	}
 	
 	public static void generateLoad() throws IOException{
@@ -47,27 +135,44 @@ public class WorkLoadGenerator {
 		BufferedWriter out = new BufferedWriter(fstream);
 		
 		for(int intervalId = 0; intervalId < totalInterval; intervalId++){
+			out.write(""+(int)(intervalId+1));
+			for(int i = 0; i < totalTenant; i++){
+				if(activePattern[i][intervalId] == true){
+					out.write(" "+i);
+				}
+			}
+			out.write("\n");
+		}
+//		out.write("\n");
+		
+		for(int intervalId = 0; intervalId < totalInterval; intervalId++){
+			for(int min = 0; min < timePerInterval; min++){
 			int[] load = new int[totalTenant];
 			Random ran = new Random(System.nanoTime());
 			for (int tenantId = 0; tenantId < totalTenant; tenantId++) {
 				int QT = HConfig.getQT(tenantId, false);
 				boolean isActive = activePattern[tenantId][intervalId];
 				if (isActive) {
-					load[tenantId] = ran.nextInt(QT) + 1;
 					if(isBursty[intervalId]){
-						if(QT == 200)
-							load[tenantId] = (load[tenantId]+HRan > QT)? QT :(load[tenantId]+HRan);
-						else if(QT == 60)
-							load[tenantId] = (load[tenantId] + MRan > QT) ? QT: load[tenantId] + MRan;
-						else
-							load[tenantId] = (load[tenantId] + MRan2 > QT) ? QT: load[tenantId] + MRan2;
+						load[tenantId] = PossionDistribution.getRandomNumber(QT);
 					}else{
-						if(QT == 200){
-							load[tenantId] = (load[tenantId] + LRan2 < 0) ? 20: load[tenantId] + LRan2;
-						}else{
-							load[tenantId] = (load[tenantId] + LRan < 0) ? 10: load[tenantId] + LRan;
-						}
+						load[tenantId] = PossionDistribution.getRandomNumber(QT/4);
 					}
+//					load[tenantId] = ran.nextInt(QT) + 1;
+//					if(isBursty[intervalId]){
+//						if(QT == 200)
+//							load[tenantId] = (load[tenantId]+HRan > QT)? QT :(load[tenantId]+HRan);
+//						else if(QT == 60)
+//							load[tenantId] = (load[tenantId] + MRan > QT) ? QT: load[tenantId] + MRan;
+//						else
+//							load[tenantId] = (load[tenantId] + MRan2 > QT) ? QT: load[tenantId] + MRan2;
+//					}else{
+//						if(QT == 200){
+//							load[tenantId] = (load[tenantId] + LRan2 < 0) ? 20: load[tenantId] + LRan2;
+//						}else{
+//							load[tenantId] = (load[tenantId] + LRan < 0) ? 10: load[tenantId] + LRan;
+//						}
+//					}
 				} else {
 					load[tenantId] = 0;
 				}
@@ -75,7 +180,7 @@ public class WorkLoadGenerator {
 //			for (int time = 0; time < timePerInterval; time++) {
 //				out.write("" + (intervalId * timePerInterval + time));
 //				int dd = ran.nextInt() % dRan;
-			out.write(""+(intervalId*timePerInterval));
+			out.write(""+(intervalId*timePerInterval + min+1));
 				int dd = 0;
 				int totalLoad = 0;
 				for (int tenantId = 0; tenantId < totalTenant; tenantId++) {
@@ -84,7 +189,7 @@ public class WorkLoadGenerator {
 					int tmpload = 0;
 					if (isActive) {
 						tmpload = load[tenantId] + dd;
-						tmpload = (tmpload > QT) ? QT : tmpload;
+//						tmpload = (tmpload > QT) ? QT : tmpload;
 					}
 					out.write(" " + tmpload);
 					totalLoad += tmpload;
@@ -92,6 +197,7 @@ public class WorkLoadGenerator {
 				out.write(" " + totalLoad);
 				out.newLine();out.flush();
 			}
+		}
 //		}
 		out.close();
 	}
@@ -144,6 +250,32 @@ public class WorkLoadGenerator {
 			tmp = activeTenant[exa[i]];
 			activeTenant[exa[i]] = inactiveTenant[exin[i]];
 			inactiveTenant[exin[i]] = tmp;
+		}
+	}
+	
+	public static void setActivePattern1(double[] percent){
+		activePattern = new boolean[totalTenant][totalInterval];
+		for(int i=0;i<totalTenant;i++){
+			for(int j=0;j<totalInterval;j++){
+				activePattern[i][j] = false;
+			}
+		}
+//		actualTenant
+		int[] actualTenantPerType = new int[18];
+		int sumTmp = 0;
+		for(int i = 0; i < 18; i++){
+			if(i == 17){
+				actualTenantPerType[17] = actualTenant - sumTmp;
+			}else{
+				actualTenantPerType[i] = (int) Math.round((actualTenant * HConfig.PercentTenantSplits[i]));
+			}
+			sumTmp += actualTenantPerType[i];
+			int startId = HConfig.getStartId(i);
+			for(int j = 0; j < actualTenantPerType[i]; j++){
+				for(int intervalId = 0; intervalId < totalInterval; intervalId++){
+					activePattern[startId+j][intervalId] = true;
+				}
+			}
 		}
 	}
 	
