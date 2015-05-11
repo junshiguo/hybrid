@@ -27,24 +27,25 @@ public class DataAnalyzer {
 	public static boolean extraInterval = true;
 	
 	public static int[] CHECK_INTERVAL = {10};
-	public static String[] PATH={"/host/result/100_150_200/a30"};
+	public static String[] PATH={"/host/result/5_50_500/a40"};
 //	public static String[] PATH2 = {"a30"};
 	public static String[] PATH3 = {"1", "2", "3", "4", "5"};
-	public static String[] FOLDER={"result_mysql", "result_hybrid_2000M"}; //"result_hybrid_500M", "result_hybrid_1000M", "result_hybrid_1500M", "result_hybrid_2000M-2"};
-	public static String[] FIX = {"m", "h2000"}; // "h500", "h1000", "h1500", "h2000-2"};	
+	public static String[] FOLDER={"result_mysql", "result_hybrid_2000M"};//"result_hybrid_500M", "result_hybrid_1000M", "result_hybrid_1500M", "result_hybrid_2000M-2"};
+	public static String[] FIX = {"m", "h2000"};// "h500", "h1000", "h1500", "h2000-2"};	
 	public static boolean doConverge = true;
 	
 	public static void main(String[] args){
 		if(doConverge){
 			
-		String path = "/host/result/100_150_200/a30";
-		String folder[] = {"1", "2", "3", "4", "5"};
+		String path = "/host/result/5_50_500/a30";
+		String folder[] = {"6", "7", "3", "4", "5"};
 		String target[] = {"_Latency"};
-		String fix[] =  {"m", "h2000"}; // "h2000-2", "h500", "h1000", "h1500"};
+		String fix[] =  {"m", "h2000-2", "h500", "h1000", "h1500"};
 		int interval = 10;
+		String convergeFile = "allLatency-a";
 		try {
 			Converge(path, folder, target, fix, interval);
-			ConvergeAllLatency(path, folder, fix);
+			ConvergeAllLatency(path, folder, fix, convergeFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -74,9 +75,9 @@ public class DataAnalyzer {
 		}
 	}
 	
-	public static void ConvergeAllLatency(String path, String[] folder, String[] fix) throws IOException{
+	public static void ConvergeAllLatency(String path, String[] folder, String[] fix, String file) throws IOException{
 		for(String fi : fix){
-			String fileName = "allLatency."+fi+".10s";
+			String fileName = file+"."+fi+".10s";
 			BufferedReader readers[] = new BufferedReader[folder.length];
 			long totalCount = 0;
 			Vector<Double> _allLatency = new Vector<Double>();

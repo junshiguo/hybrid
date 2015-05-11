@@ -25,10 +25,10 @@ public class CopyOfDataAnalyzer2 {
 	
 	public static int[] CHECK_INTERVAL = {10};
 	public static String[] PATH={"/host/result/5_50_500"};
-	public static String[] PATH2 = {"a35", "a40"};
-	public static String[] PATH3 = {/*"6", "7", "8", "9", "10"};//*/"1", "2", "3", "4", "5"};
-	public static String[] FOLDER={"result_mysql", "result_hybrid_2000M"}; //, "result_hybrid_500M", "result_hybrid_1000M", "result_hybrid_1500M", "result_hybrid_2000M-2"};
-	public static String[] FIX = {"m", "h2000"}; //"h500", "h1000", "h1500", "h2000-2"};	
+	public static String[] PATH2 = {"a30"};
+	public static String[] PATH3 = {/*"6", "7", "8", "9", "10"};//*/"6", "7", "3", "4", "5"};
+	public static String[] FOLDER={"result_mysql", "result_hybrid_500M", "result_hybrid_1000M", "result_hybrid_1500M", "result_hybrid_2000M-2"};
+	public static String[] FIX = {"m", "h500", "h1000", "h1500", "h2000-2"};	
 	
 	public static void main(String[] args){
 		for(String path : PATH)

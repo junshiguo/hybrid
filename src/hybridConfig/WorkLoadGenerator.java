@@ -32,7 +32,7 @@ public class WorkLoadGenerator {
 	
 	public static boolean FULL_WORKLOAD = false;
 	public static int actualTenant = 1000;
-	public static double bias = 0.2;
+	public static double bias = 0.;
 	
 	public static void main(String[] args) throws IOException{
 		totalTenant = 3000;
