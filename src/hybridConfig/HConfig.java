@@ -1,9 +1,16 @@
 package hybridConfig;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class HConfig {
-	public static int[] ValueQT = { 20, 60, 200 };  // per minute
-	public static double[] ValueDS = {6.9, 16.3, 23.5 };  // MB
-	public static double[] ValueWP = { 0.6, 0.2 };  //
+	public static int VoltdbVolumn = 1024;
+	public static int totalTenant = 3000;
+	
+	public static int[] ValueQT = { 5, 50, 500 };  // per minute
+	public static double[] ValueDS = {7, 16, 35 };  // MB
+	public static double[] ValueWP = { 0.6, 0.4 };  //
 	public static double[] PercentQT = { 0.3, 0.5, 0.2 };
 	public static double[] PercentDS = { 0.5, 0.3, 0.2 };
 	public static double[] PercentWH = { 0.4, 0.6 };  // 0.4 for write heavy and 0.6 for read heavy
@@ -25,9 +32,9 @@ public class HConfig {
 		,0.024	//QT: 20, DS: 18.3, write heavy
 		,0.036	//QT: 20, DS: 18.3, read heavy
 		,0.04	//QT: 60, DS: 18.3, write heavy
-		,0.06	//QT: 60, DS: 18.3, write heavy
+		,0.06	//QT: 60, DS: 18.3, read heavy
 		,0.016	//QT: 100, DS: 18.3, write heavy
-		,0.024	//QT: 100, DS: 18.3, write heavy
+		,0.024	//QT: 100, DS: 18.3, read heavy
 	};
 	public static double[] PercentTenantSplitsSum;
 	public static int[] TenantIdRange;
@@ -39,8 +46,6 @@ public class HConfig {
 		ValueDS[2],ValueDS[2],ValueDS[2],ValueDS[2],ValueDS[2],ValueDS[2]};
 	public static boolean WHMatrix[] = {true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false};
 	
-	public static int totalTenant = 1000;
-	
 	public static void init(int n){
 		totalTenant = n;
 		TenantIdRange = new int[18];
@@ -50,6 +55,38 @@ public class HConfig {
 			else	PercentTenantSplitsSum[i] = PercentTenantSplitsSum[i-1]+PercentTenantSplits[i];
 			TenantIdRange[i] = (int) (totalTenant*PercentTenantSplitsSum[i]);
 		}
+	}
+	public static void main(String[] args){
+		init(3000);
+		try {
+			writeInfo();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeInfo() throws IOException{
+		FileWriter fstream = null;
+		fstream = new FileWriter("tenants_info", false);
+		BufferedWriter out = new BufferedWriter(fstream);
+		for(int t = 0; t < 18; t++){
+			String str = "";
+			if(t%6 == 0 || t%6 == 1)	str += " 20";
+			else if(t%6 == 2 || t%6 == 3) str += " 60";
+			else str += " 200";
+			if(t/6 == 0) str += " 7";
+			else if(t/6 == 1) str += " 16";
+			else str += " 35";
+			if(t%2 == 0) str += " 60";
+			else str += " 40";
+			int n = (int) (PercentTenantSplits[t]*totalTenant);
+			int start = getStartId(t);
+			for(int j = 0; j < n; j++){
+				out.write((start+1+j)+str+"\n");
+			}
+		}
+		out.close();
 	}
 	/**
 	 * 	TYPE info according PercentTenantSplits

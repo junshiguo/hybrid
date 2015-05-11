@@ -10,6 +10,11 @@ import org.voltdb.client.Client;
 import org.voltdb.client.ClientFactory;
 
 public class DBManager {
+	
+	public static void main(String[] args){
+		connectDB("jdbc:mysql://10.171.5.62:3306", "kevin", "123456");
+	}
+	
 	public static Connection connectDB(String url, String username, String password){
 		try {
 			Class.forName("com.mysql.jdbc.Driver");

@@ -64,7 +64,7 @@ public class DataMover extends Thread {
 				}
 				long end = System.nanoTime();
 				System.out.println("Tenant "+tenantId+" MySQL ---> VoltDB! Time spent: "+(end-start)/1000000000.0+" seconds!");
-				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 0, emptyVolumn);
+//				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 1, 0, emptyVolumn);
 			}
 		}else{
 			int volumnId = VMMatch.findTenant(tenantId);
@@ -76,7 +76,7 @@ public class DataMover extends Thread {
 				VMMatch.deleteMatch(volumnId, tenantId);
 				long end = System.nanoTime();
 				System.out.println("Tenant "+tenantId+" VoltDB ---> MySQL! Time spent: "+(end-start)/1000000000.0+" seconds!");
-				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 0, 0, -1);
+//				HybridController.sendTask[HConfig.getType(tenantId)].sendInfo(tenantId, 0, 0, -1);
 			}
 		}
 	}

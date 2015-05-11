@@ -8,7 +8,7 @@ public class Driver {
 	public static boolean IsActive = true;
 
 	public static int min_ware = 1;
-	public static int max_ware = 1;
+	public static int max_ware = 10;
 	public static int num_ware = 1;
 	public static int num_node = 0;
 	public static int arg_offset = 0;
