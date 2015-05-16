@@ -6,15 +6,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import utility.DBManager;
+import utility.IdMatch;
 import utility.Sequence;
 
 
 public class Tenant extends Thread {
-	public static PreparedStatement[][] statements;
+//	public static PreparedStatement[][] statements;
 //	public static Statement[] stmt;
 	public static Tenant[] tenants;
 	public static void init(int numberOfConnection, String dbURL, String dbUserName, String dbPassword, boolean copyTable){
-		Tenant.statements = new PreparedStatement[numberOfConnection][35];
+//		Tenant.statements = new PreparedStatement[numberOfConnection][35];
 		tenants = new Tenant[numberOfConnection];
 		Connection conn = DBManager.connectDB(MMain.dbURL, MMain.dbUserName, MMain.dbPassword);
 		for(int i=0; i<numberOfConnection; i++){
@@ -32,6 +33,7 @@ public class Tenant extends Thread {
 	}
 	
 	public int id;
+	public int tableIndex;
 	public String dbURL;
 	public String dbUserName;
 	public String dbPassword;
@@ -40,6 +42,7 @@ public class Tenant extends Thread {
 	public Sequence sequence;
 	public Tenant(int id, String dbURL, String dbUserName, String dbPassword, boolean copyTable, Connection conn){
 		this.id = id;
+		this.tableIndex = IdMatch.id2TableIndex(id);
 		this.dbURL = dbURL;
 		this.dbUserName = dbUserName;
 		this.dbPassword = dbPassword;
@@ -100,6 +103,10 @@ public class Tenant extends Thread {
 		}
 	}
 	
+	/**
+	 * This function is not used any more and it is not compatible with other codes. Note we use tableIndex instead of id.
+	 * @throws SQLException
+	 *//*
 	public void sqlPrepare0() throws SQLException{
 		statements[id][0] = conn.prepareStatement("SELECT d_next_o_id, d_tax FROM district"+id+" WHERE d_id = ? AND d_w_id = ?");
 		statements[id][1] = conn.prepareStatement("SELECT i_price, i_name, i_data FROM item"+id+" WHERE i_id = ?");
@@ -141,5 +148,5 @@ public class Tenant extends Thread {
 		statements[id][33] = conn.prepareStatement("UPDATE customer"+id+" SET c_balance = c_balance + ? , c_delivery_cnt = c_delivery_cnt + 1 WHERE c_id = ? AND c_d_id = ? AND c_w_id = ?");
 		
 		statements[id][34] = conn.prepareStatement("DELETE FROM new_orders"+id+" WHERE no_o_id = ? AND no_d_id = ? AND no_w_id = ?");
-	}
+	}*/
 }

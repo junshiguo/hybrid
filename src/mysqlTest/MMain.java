@@ -24,16 +24,18 @@ public class MMain {
 	public static long queryThisInterval = 0;
 	public static long retryThisInterval = 0;
 	public static int tenantPerThread = 30;
+	
+	public static int ReturnData = 100; // default return 100% data. non-100 value means only select.
 
 	public static void main(String[] args){
-		String server = "10.20.2.211";
-		String dbname = "tpccM1500";
+		String server = "10.20.2.28";
+		String dbname = "tpcc10";
 		totalTenant = 3000;
-		numberOfThread = 100;
+		numberOfThread = 1000;
 		timeInterval = 60000; //1 min
 		intervalNumber = 2;
-		double base = 0.34;
-		double step = 0.02 ;
+		double base = 0.2;
+		double step = 0.0 ;
 		boolean copyTable = false;
 //		MCopyData.CopyTables(numberOfThread);
 		//*******************init para from args*****************//
@@ -42,8 +44,6 @@ public class MMain {
 		}
 		if(args.length > 1){
 			dbname = args[1].trim();
-			if(dbname.equals("tpccM1500"))	totalTenant = 1500;
-			else if(dbname.equals("tpccM3000")) totalTenant = 3000;
 		}
 		if(args.length > 2){
 			intervalNumber = Integer.parseInt(args[2]);
@@ -52,7 +52,12 @@ public class MMain {
 			base = Double.parseDouble(args[3]);
 		}
 		if(args.length > 4){
-			step = Double.parseDouble(args[4]);
+//			step = Double.parseDouble(args[4]);
+			ReturnData = Integer.parseInt(args[4]);
+			if(ReturnData != 25 && ReturnData != 50 && ReturnData != 75 && ReturnData != 100){
+				ReturnData = 100;
+				System.out.println("Wrong value for return data percentage. Using default 100% instead...");
+			}
 		}
 		tenantPerThread = totalTenant / numberOfThread;
 		initDBPara("jdbc:mysql://"+server+"/"+dbname, "remote", "remote");
@@ -81,16 +86,15 @@ public class MMain {
 		System.out.println("***************mysql test start now***************");
 		for(int i=0; i<intervalNumber; i++){
 			try {
-				for(int j=0; j<numberOfThread; j++){
-					Tenant.tenants[j].setSequence(i*step+base);
-				}
+//				for(int j=0; j<numberOfThread; j++){
+//					Tenant.tenants[j].setSequence(i*step+base);
+//				}
 //				tmpList = new ArrayList<Long>();
 				queryThisInterval = 0;
 				retryThisInterval = 0;
 				currentInterval = i;
 				Thread.sleep(timeInterval);
 				long throughput = queryThisInterval * 60000/ timeInterval;
-//				throughput /= intervalNumber;
 				out.write(""+(i*step+base)+" "+throughput+" "+retryThisInterval*60000/timeInterval);
 				out.newLine();out.flush();
 				System.out.println("Interval "+i+" finished! Throughput: "+throughput+". Write percent: "+(i*step+base)+".  (Total: "+intervalNumber+" intervals...)");
@@ -113,7 +117,7 @@ public class MMain {
 		} catch (InterruptedException | SQLException e1) {
 			e1.printStackTrace();
 		}
-//		System.exit(0);
+		System.exit(0);
 	}
 	
 	public static void initDBPara(String url, String user, String pwd){

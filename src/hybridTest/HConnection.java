@@ -111,8 +111,8 @@ public class HConnection extends Thread {
 		boolean success = true;
 		
 		long start = System.nanoTime();
-		int tableId = sqlId % 9;
-		int queryId = sqlId / 9;
+		int tableId = sqlId / 4;
+		int queryId = sqlId % 4;
 		int[] state = new int[2];
 
 		if((this.isUsingVoltdb() == false && this.isPartiallUsingVoltdb() == false)){ //only mysql, for mysql test
