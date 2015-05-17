@@ -25,15 +25,16 @@ public class MMain {
 	public static long retryThisInterval = 0;
 	public static int tenantPerThread = 30;
 	
-	public static int ReturnData = 100; // default return 100% data. non-100 value means only select.
+	public static int ReturnData = 100; // default return 100% data. 
+	public static boolean OnlySelect = true;
 
 	public static void main(String[] args){
 		String server = "10.20.2.28";
 		String dbname = "tpcc10";
 		totalTenant = 3000;
-		numberOfThread = 1000;
+		numberOfThread = 100;
 		timeInterval = 60000; //1 min
-		intervalNumber = 2;
+		intervalNumber = 5;
 		double base = 0.2;
 		double step = 0.0 ;
 		boolean copyTable = false;
@@ -58,6 +59,7 @@ public class MMain {
 				ReturnData = 100;
 				System.out.println("Wrong value for return data percentage. Using default 100% instead...");
 			}
+			OnlySelect = true;
 		}
 		tenantPerThread = totalTenant / numberOfThread;
 		initDBPara("jdbc:mysql://"+server+"/"+dbname, "remote", "remote");
@@ -78,7 +80,11 @@ public class MMain {
 		FileWriter fstream = null;
 		BufferedWriter out = null;
 		try {
-			fstream = new FileWriter("test"+numberOfThread+".txt", true);
+			if(OnlySelect == false){
+				fstream = new FileWriter("test"+numberOfThread+".txt", true);
+			}else{
+				fstream = new FileWriter("STest"+numberOfThread+"."+ReturnData+".txt", true);
+			}
 			out = new BufferedWriter(fstream);
 		} catch (IOException e1) {
 			e1.printStackTrace();

@@ -11,9 +11,9 @@ public class MCopyPK {
 	public static PreparedStatement st;
 
 	public static String server = "10.20.2.28";
-	public static String db = "tpcc10";
+	public static String db = "tpcc3000";
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws SQLException {
 		int tenantNumber = 1;
 		int startId = 2;
 		if (args.length > 0) {
@@ -29,6 +29,7 @@ public class MCopyPK {
 			tenantNumber = Integer.parseInt(args[3]);
 		}
 		CopyTables(server, db, startId, tenantNumber);
+		conn.close();
 //		extendTable();
 	}
 
@@ -46,15 +47,15 @@ public class MCopyPK {
 //			copyTables(id);
 //		}
 		copyTables2(0);
-		for(int id = 3; id < 3000; id++){
+		for(int id = 3; id < 1500; id++){
 			copyTables(id);
 		}
 		copyTables2(1);
-		for(int id = 3000; id < 5000; id++){
+		for(int id = 1500; id < 2400; id++){
 			copyTables(id);
 		}
 		copyTables2(2);
-		for(int id = 5000; id < 7000; id++){
+		for(int id = 2400; id < 3000; id++){
 			copyTables(id);
 		}
 		copyTables2(0);
@@ -150,6 +151,10 @@ public class MCopyPK {
 		}
 	}
 	
+	/**
+	 * currently not used.
+	 * @param id
+	 */
 	public static void copyTables_extend(int id) {
 		try {
 			checkConn();

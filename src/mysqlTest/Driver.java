@@ -134,7 +134,7 @@ public class Driver {
 		// int[] paraType = new int[30];
 		while (Driver.IsActive) { // initiate parameter
 			int seq = 0, tableId = 0, queryId = 0;
-			if(MMain.ReturnData == 100){
+			if(MMain.OnlySelect == false){
 				seq = Tenant.tenants[Id].sequence.nextSequence();
 				tableId = seq / 4;
 				queryId = seq % 4;
