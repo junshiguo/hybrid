@@ -11,10 +11,10 @@ public class Sequence {
 	public void shuffle(){
 		Random rand = new Random();
 		for(int i=0; i<read; i++){
-			Sequence[i] = rand.nextInt(9);
+			Sequence[i] = rand.nextInt(9) * 4;
 		}
 		for(int i=0; i<write; i++){
-			Sequence[i+read] = rand.nextInt(27) + 9;
+			Sequence[i+read] = rand.nextInt(3) + 1 + rand.nextInt(9) * 4;
 		}
 		rand = new Random();
 		int randIndex = 0;

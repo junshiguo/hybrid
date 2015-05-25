@@ -11,11 +11,11 @@ public class MCopyPK {
 	public static PreparedStatement st;
 
 	public static String server = "10.20.2.28";
-	public static String db = "tpcc3000";
+	public static String db = "tpcc_m";
 
 	public static void main(String[] args) throws SQLException {
-		int tenantNumber = 1;
-		int startId = 2;
+		int tenantNumber = 500;
+		int startId = 500;
 		if (args.length > 0) {
 			server = args[0];
 		}
@@ -43,25 +43,25 @@ public class MCopyPK {
 		} catch (ClassNotFoundException | SQLException e1) {
 			e1.printStackTrace();
 		}
-//		for (int id = startId; id < startId+tenantNumber; id++) {
+		for (int id = startId; id < startId+tenantNumber; id++) {
+			copyTables(id);
+		}
+//		copyTables2(0);
+//		for(int id = 3; id < 1500; id++){
 //			copyTables(id);
 //		}
-		copyTables2(0);
-		for(int id = 3; id < 1500; id++){
-			copyTables(id);
-		}
-		copyTables2(1);
-		for(int id = 1500; id < 2400; id++){
-			copyTables(id);
-		}
-		copyTables2(2);
-		for(int id = 2400; id < 3000; id++){
-			copyTables(id);
-		}
-		copyTables2(0);
-		for(int id = 1; id < 3; id++){
-			copyTables(id);
-		}
+//		copyTables2(1);
+//		for(int id = 1500; id < 2400; id++){
+//			copyTables(id);
+//		}
+//		copyTables2(2);
+//		for(int id = 2400; id < 3000; id++){
+//			copyTables(id);
+//		}
+//		copyTables2(0);
+//		for(int id = 1; id < 3; id++){
+//			copyTables(id);
+//		}
 		
 		try {
 			conn.close();
@@ -130,14 +130,14 @@ public class MCopyPK {
 			"ol_o_id int not null, ol_d_id tinyint not null,ol_w_id smallint not null,ol_number tinyint not null,ol_i_id int, ol_supply_w_id smallint,ol_delivery_d datetime, ol_quantity tinyint, ol_amount decimal(6,2), ol_dist_info char(24), is_insert tinyint, is_update tinyint, is_delete tinyint, CONSTRAINT ol PRIMARY KEY (ol_w_id, ol_d_id, ol_o_id, ol_number)",
 			"s_i_id int not null, s_w_id smallint not null, s_quantity smallint, s_dist_01 char(24), s_dist_02 char(24),s_dist_03 char(24),s_dist_04 char(24), s_dist_05 char(24), s_dist_06 char(24), s_dist_07 char(24), s_dist_08 char(24), s_dist_09 char(24), s_dist_10 char(24), s_ytd decimal(8,0), s_order_cnt smallint, s_remote_cnt smallint,s_data varchar(50), is_insert tinyint, is_update tinyint, is_delete tinyint, CONSTRAINT s PRIMARY KEY (s_w_id, s_i_id)",
 			"w_id smallint not null,w_name varchar(10), w_street_1 varchar(20), w_street_2 varchar(20), w_city varchar(20), w_state char(2), w_zip char(9), w_tax decimal(4,2), w_ytd decimal(12,2), is_insert tinyint, is_update tinyint, is_delete tinyint, CONSTRAINT w PRIMARY KEY (w_id)" };
-
+	public static int[] mtest = {7};
 	public static void copyTables(int id) {
 		try {
 			checkConn();
 			Statement stmt = conn.createStatement();
 			Long start = System.currentTimeMillis();
-			for(int i=0; i<9; i++){
-//			int i = 4;
+//			for(int i=0; i<9; i++){
+			for(int i : mtest){
 				stmt.execute("DROP TABLE IF EXISTS " + tables[i] + id);
 				stmt.execute("CREATE TABLE " + tables[i] + id + " (" + columns[i]
 						+ " )Engine=InnoDB;");

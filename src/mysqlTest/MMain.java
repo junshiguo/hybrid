@@ -27,14 +27,20 @@ public class MMain {
 	
 	public static int ReturnData = 100; // default return 100% data. 
 	public static boolean OnlySelect = true;
+	public static boolean DSTest = true;
+	public static int Longer = 1;
+	public static long READ = 0;
+	public static long WRITE = 0;
+	public static int tenantPerThread1 = 500/Longer;
+	public static int tenantPerThread2 = 500/(100-Longer); 
 
 	public static void main(String[] args){
 		String server = "10.20.2.28";
-		String dbname = "tpcc10";
-		totalTenant = 3000;
+		String dbname = "tpcc_m";
+		totalTenant = 500;
 		numberOfThread = 100;
-		timeInterval = 60000; //1 min
-		intervalNumber = 5;
+		timeInterval = 1*60*1000; //1 min
+		intervalNumber = 4;
 		double base = 0.2;
 		double step = 0.0 ;
 		boolean copyTable = false;
@@ -80,7 +86,9 @@ public class MMain {
 		FileWriter fstream = null;
 		BufferedWriter out = null;
 		try {
-			if(OnlySelect == false){
+			if(DSTest == true){
+				fstream = new FileWriter("DSTest"+numberOfThread+"."+Longer+"txt", true);
+			}else if(OnlySelect == false){
 				fstream = new FileWriter("test"+numberOfThread+".txt", true);
 			}else{
 				fstream = new FileWriter("STest"+numberOfThread+"."+ReturnData+".txt", true);
@@ -92,18 +100,28 @@ public class MMain {
 		System.out.println("***************mysql test start now***************");
 		for(int i=0; i<intervalNumber; i++){
 			try {
-//				for(int j=0; j<numberOfThread; j++){
-//					Tenant.tenants[j].setSequence(i*step+base);
-//				}
+				for(int j=0; j<numberOfThread; j++){
+					Tenant.tenants[j].setSequence(i*step+base);
+					Tenant.tenants[j].queryThisInterval = 0;
+				}
 //				tmpList = new ArrayList<Long>();
 				queryThisInterval = 0;
 				retryThisInterval = 0;
 				currentInterval = i;
+				READ = 0;
+				WRITE = 0;
 				Thread.sleep(timeInterval);
 				long throughput = queryThisInterval * 60000/ timeInterval;
-				out.write(""+(i*step+base)+" "+throughput+" "+retryThisInterval*60000/timeInterval);
+				long tp2 = 0;
+				for(int j = 0; j < numberOfThread; j++){
+					tp2 += Tenant.tenants[j].queryThisInterval;
+				}
+				tp2 = tp2 * 60000/ timeInterval;
+				out.write(""+(i)+" "+tp2+" "+retryThisInterval*60000/timeInterval+" "+(i*step+base));
 				out.newLine();out.flush();
-				System.out.println("Interval "+i+" finished! Throughput: "+throughput+". Write percent: "+(i*step+base)+".  (Total: "+intervalNumber+" intervals...)");
+				System.out.println("Interval "+(i+1)+" finished! Throughput: "+throughput+". Write percent: "+(i*step+base)+".  (Total: "+intervalNumber+" intervals...)");
+				System.out.println("Interval "+(i+1)+" finished! Throughput: "+tp2);
+				System.out.println("READ: "+READ+". WRITE: "+WRITE+". write percent: "+(WRITE*1.0/(READ+WRITE)));
 			} catch (InterruptedException | IOException e) {
 				e.printStackTrace();
 			}
@@ -122,6 +140,11 @@ public class MMain {
 			}
 		} catch (InterruptedException | SQLException e1) {
 			e1.printStackTrace();
+		}
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 		System.exit(0);
 	}

@@ -3,7 +3,6 @@ package mysqlTest;
 import java.sql.SQLException;
 import java.util.Random;
 
-import utility.IdMatch;
 import utility.Support;
 
 public class Driver {
@@ -14,10 +13,10 @@ public class Driver {
 	public static int num_ware = 1;
 	public static int num_node = 0;
 	public static int arg_offset = 0;
-	public static int MAXITEMS = 5000;
-	public static int CUST_PER_DIST = 50;
-	public static int DIST_PER_WARE = 5;
-	public static int ORD_PER_DIST = 50;
+	public static int MAXITEMS = 10000;
+	public static int CUST_PER_DIST = 500;
+	public static int DIST_PER_WARE = 50;
+	public static int ORD_PER_DIST = 500;
 	public static int MAX_NUM_ITEM = 15;
 	public static int MAX_ITEM_LEN = 24;
 	public static int TYPE_INT = 0;
@@ -134,7 +133,15 @@ public class Driver {
 		// int[] paraType = new int[30];
 		while (Driver.IsActive) { // initiate parameter
 			int seq = 0, tableId = 0, queryId = 0;
-			if(MMain.OnlySelect == false){
+			if(MMain.DSTest == true){
+				if(Id < MMain.Longer){
+					seq = tableId = queryId = 0;
+				}else{
+					seq = 24;
+					tableId = 6;
+					queryId = 0;
+				}
+			}else if(MMain.OnlySelect == false){
 				seq = Tenant.tenants[Id].sequence.nextSequence();
 				tableId = seq / 4;
 				queryId = seq % 4;
@@ -144,7 +151,7 @@ public class Driver {
 				}
 			}else{
 				queryId = 0;
-				if(MMain.ReturnData == 25){
+				if(MMain.ReturnData == 50 || MMain.ReturnData == 75){
 					tableId = Support.RandomNumber(1, 8);
 				}else{
 					tableId = Support.RandomNumber(0, 8);
@@ -484,36 +491,43 @@ public class Driver {
 
 	public void doSQL(int threadId, int sqlId, int paraNumber, Object[] para) {
 		boolean success = true;
-		int tenantId = ran.nextInt(MMain.tenantPerThread) + threadId*MMain.tenantPerThread;
+//		int tenantId = ran.nextInt(MMain.tenantPerThread) + threadId*MMain.tenantPerThread;
+//		if(threadId >= MMain.Longer){
+//			tenantId = ran.nextInt(MMain.tenantPerThread2) + threadId*MMain.tenantPerThread2;
+//		}
+		int tenantId = ran.nextInt(MMain.totalTenant);
 		for(int i=0; i<MMain.MaxTry; i++){
 			switch(MMain.ReturnData){
 			case 25: 
-				success = doSQLOnce_25(threadId, IdMatch.id2TableIndex(tenantId), sqlId, para, paraNumber);
+				success = doSQLOnce_25(threadId, tenantId, sqlId, para, paraNumber);
 				break;
 			case 50:
-				success = doSQLOnce_50(threadId, IdMatch.id2TableIndex(tenantId), sqlId, para, paraNumber);
+				success = doSQLOnce_50(threadId, tenantId, sqlId, para, paraNumber);
 				break;
 			case 75:
-				success = doSQLOnce_75(threadId, IdMatch.id2TableIndex(tenantId), sqlId, para, paraNumber);
+				success = doSQLOnce_75(threadId, tenantId, sqlId, para, paraNumber);
 				break;
 			case 100:
-				success = doSQLOnce(threadId, IdMatch.id2TableIndex(tenantId), sqlId, para, paraNumber);
+				success = doSQLOnce(threadId, tenantId, sqlId, para, paraNumber);
 				break;
 				default:
 			}
 			
 			if(success){
+				Tenant.tenants[threadId].queryThisInterval ++;
 				MMain.queryThisInterval ++;
+				if(sqlId%4 == 0){
+					MMain.READ ++;
+				}else{
+					MMain.WRITE ++;
+				}
 				break;
 			}else {
 				MMain.retryThisInterval ++;
-//				System.out.println("sql failure! tenant id: "+threadId+", table id: "+tenantId+", sql id: "+sqlId+". retrying...");
+				System.out.println("sql failure! tenant id: "+threadId+", table id: "+tenantId+", sql id: "+sqlId+". retrying...");
 				System.out.print(".");
 				if(MMain.retryThisInterval % 100 == 0)
 					System.out.println();
-				if(sqlId % 4 == 3){
-					sqlId -= 2;
-				}
 //				System.exit(0);
 			}
 		}
@@ -632,7 +646,7 @@ public class Driver {
 			}
 			return success;
 		}catch(SQLException e){
-//			e.printStackTrace();
+			e.printStackTrace();
 //			System.out.println("sql failure! tenant id: "+threadId+", table id: "+tableIndex+", sql id: "+sqlId+".");
 			return false;
 		}

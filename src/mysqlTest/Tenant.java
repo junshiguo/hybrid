@@ -33,16 +33,17 @@ public class Tenant extends Thread {
 	}
 	
 	public int id;
-	public int tableIndex;
+//	public int tableIndex;
 	public String dbURL;
 	public String dbUserName;
 	public String dbPassword;
 	public Connection conn;
 	public Statement stmt;
 	public Sequence sequence;
+	public long queryThisInterval;
 	public Tenant(int id, String dbURL, String dbUserName, String dbPassword, boolean copyTable, Connection conn){
 		this.id = id;
-		this.tableIndex = IdMatch.id2TableIndex(id);
+//		this.tableIndex = IdMatch.id2TableIndex(id);
 		this.dbURL = dbURL;
 		this.dbUserName = dbUserName;
 		this.dbPassword = dbPassword;
