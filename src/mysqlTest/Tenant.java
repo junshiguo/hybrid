@@ -40,7 +40,16 @@ public class Tenant extends Thread {
 	public Connection conn;
 	public Statement stmt;
 	public Sequence sequence;
-	public long queryThisInterval;
+	private long queryThisInterval;
+	public synchronized long queryNumber(long n){
+		if(n < 0){
+			queryThisInterval = 0;
+		}else{
+			queryThisInterval += n;
+		}
+		return queryThisInterval;
+	}
+	
 	public Tenant(int id, String dbURL, String dbUserName, String dbPassword, boolean copyTable, Connection conn){
 		this.id = id;
 //		this.tableIndex = IdMatch.id2TableIndex(id);
@@ -48,7 +57,7 @@ public class Tenant extends Thread {
 		this.dbUserName = dbUserName;
 		this.dbPassword = dbPassword;
 		sequence = new Sequence();
-		sequence.initSequence(100, 0);
+		sequence.initSequence(80, 20);
 		if(copyTable)
 			DBManager.copyTables(id, conn);
 	}

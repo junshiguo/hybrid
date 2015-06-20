@@ -123,6 +123,20 @@ public class HConfig {
 		return DSMatrix[type];
 	}
 	
+	public static int getDSType(int tenantId, boolean isType){
+		int type = tenantId;
+		if(isType == false){
+			type = getType(tenantId);
+		}
+		if(type < 6){
+			return 0;
+		}else if(type < 12){
+			return 1;
+		}else{
+			return 2;
+		}
+	}
+	
 	public static boolean isWriteHeavy(int tenantId, boolean isType){
 		int type = tenantId;
 		if(isType == false){

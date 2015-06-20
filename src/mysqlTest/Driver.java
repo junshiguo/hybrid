@@ -1,5 +1,7 @@
 package mysqlTest;
 
+import hybridConfig.HConfig;
+
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -13,10 +15,10 @@ public class Driver {
 	public static int num_ware = 1;
 	public static int num_node = 0;
 	public static int arg_offset = 0;
-	public static int MAXITEMS = 10000;
-	public static int CUST_PER_DIST = 500;
-	public static int DIST_PER_WARE = 50;
-	public static int ORD_PER_DIST = 500;
+	public static int MAXITEMS[] = {1000, 3000, 5000};
+	public static int CUST_PER_DIST[] = {30, 50, 50};
+	public static int DIST_PER_WARE[] = {3, 5, 5};
+	public static int ORD_PER_DIST[] = {30, 50, 50};
 	public static int MAX_NUM_ITEM = 15;
 	public static int MAX_ITEM_LEN = 24;
 	public static int TYPE_INT = 0;
@@ -128,10 +130,14 @@ public class Driver {
 	Object[] paratmp = new Object[30];
 	Object[] PK = new Object[5];
 	int paraNumber, paratmpNumber, PKNumber;
+	public int tenantId;
 	
 	public Driver(int Id) {
 		// int[] paraType = new int[30];
 		while (Driver.IsActive) { // initiate parameter
+//			tenantId = 100 + ran.nextInt(MMain.tenantPerThread) + Id*MMain.tenantPerThread;
+			tenantId = Id;
+			int dsIndex = HConfig.getDSType(tenantId, false);
 			int seq = 0, tableId = 0, queryId = 0;
 			if(MMain.DSTest == true){
 				if(Id < MMain.Longer){
@@ -160,8 +166,8 @@ public class Driver {
 			}
 			switch (tableId) {
 			case 0: // customer
-				c_id = Support.RandomNumber(1, Driver.CUST_PER_DIST);
-				c_d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE);
+				c_id = Support.RandomNumber(1, Driver.CUST_PER_DIST[dsIndex]);
+				c_d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE[dsIndex]);
 				c_w_id = Support.RandomNumber(min_ware, max_ware);
 				c_first = Support.MakeAlphaString(8, 16);
 				c_middle = "OE";
@@ -216,7 +222,7 @@ public class Driver {
 				}
 				break;
 			case 1:// district
-				d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE);
+				d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE[dsIndex]);
 				d_w_id = Support.RandomNumber(min_ware, max_ware);
 				d_name = Support.MakeAlphaString(6, 10);
 				d_street_1 = Support.MakeAlphaString(10, 20);
@@ -253,7 +259,7 @@ public class Driver {
 				}
 				break;
 			case 2:// item
-				i_id = Support.RandomNumber(1, MAXITEMS);
+				i_id = Support.RandomNumber(1, MAXITEMS[dsIndex]);
 				i_im_id = ran.nextInt(9999) + 1;
 				i_name = Support.MakeAlphaString(14, 24);
 				i_price = (ran.nextInt(9900) + 100) / 100.0;
@@ -276,8 +282,8 @@ public class Driver {
 				}
 				break;
 			case 3:// new_orders
-				no_o_id = Support.RandomNumber(1, Driver.ORD_PER_DIST);
-				no_d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE);
+				no_o_id = Support.RandomNumber(1, Driver.ORD_PER_DIST[dsIndex]);
+				no_d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE[dsIndex]);
 				no_w_id = Support.RandomNumber(min_ware, max_ware);
 				if (queryId == 0 || queryId == 2) {
 					para[0] = no_w_id;
@@ -299,11 +305,11 @@ public class Driver {
 				}
 				break;
 			case 4:// order_line
-				ol_o_id = Support.RandomNumber(1, Driver.ORD_PER_DIST);
-				ol_d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE);
+				ol_o_id = Support.RandomNumber(1, Driver.ORD_PER_DIST[dsIndex]);
+				ol_d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE[dsIndex]);
 				ol_w_id = Support.RandomNumber(min_ware, max_ware);
 				ol_number = Support.RandomNumber(1, 15);
-				ol_i_id = Support.RandomNumber(1, Driver.MAXITEMS);
+				ol_i_id = Support.RandomNumber(1, Driver.MAXITEMS[dsIndex]);
 				ol_supply_w_id = Support.RandomNumber(min_ware, max_ware);
 				ol_delivery_d = Support.getTimeStamp();
 				ol_quantity = 5;
@@ -338,10 +344,10 @@ public class Driver {
 				}
 				break;
 			case 5:// orders
-				o_id = Support.RandomNumber(1, Driver.ORD_PER_DIST);
-				o_d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE);
+				o_id = Support.RandomNumber(1, Driver.ORD_PER_DIST[dsIndex]);
+				o_d_id = Support.RandomNumber(1, Driver.DIST_PER_WARE[dsIndex]);
 				o_w_id = Support.RandomNumber(min_ware, max_ware);
-				o_c_id = Support.RandomNumber(1, Driver.ORD_PER_DIST);
+				o_c_id = Support.RandomNumber(1, Driver.ORD_PER_DIST[dsIndex]);
 				o_entry_d = Support.getTimeStamp();
 				o_carrier_id = Support.RandomNumber(1, 10);
 				o_ol_cnt = Support.RandomNumber(5, 15);
@@ -371,7 +377,7 @@ public class Driver {
 				}
 				break;
 			case 6:// stock
-				s_i_id = Support.RandomNumber(1, MAXITEMS);
+				s_i_id = Support.RandomNumber(1, MAXITEMS[dsIndex]);
 				s_w_id = Support.RandomNumber(min_ware, max_ware);
 				s_quantity = Support.RandomNumber(10, 100);
 				s_dist_01 = Support.MakeAlphaString(24, 24);
@@ -451,8 +457,8 @@ public class Driver {
 				}
 				break;
 			case 8: //history
-				h_c_id = Support.RandomNumber(1,Driver.CUST_PER_DIST);
-				h_c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE);
+				h_c_id = Support.RandomNumber(1,Driver.CUST_PER_DIST[dsIndex]);
+				h_c_d_id = Support.RandomNumber(1,Driver.DIST_PER_WARE[dsIndex]);
 				h_c_w_id = Support.RandomNumber(min_ware,max_ware);
 				h_d_id = h_c_d_id;
 				h_w_id = h_c_w_id;
@@ -491,11 +497,11 @@ public class Driver {
 
 	public void doSQL(int threadId, int sqlId, int paraNumber, Object[] para) {
 		boolean success = true;
-//		int tenantId = ran.nextInt(MMain.tenantPerThread) + threadId*MMain.tenantPerThread;
+		
 //		if(threadId >= MMain.Longer){
 //			tenantId = ran.nextInt(MMain.tenantPerThread2) + threadId*MMain.tenantPerThread2;
 //		}
-		int tenantId = ran.nextInt(MMain.totalTenant);
+//		int tenantId = ran.nextInt(MMain.totalTenant);
 		for(int i=0; i<MMain.MaxTry; i++){
 			switch(MMain.ReturnData){
 			case 25: 
@@ -514,7 +520,7 @@ public class Driver {
 			}
 			
 			if(success){
-				Tenant.tenants[threadId].queryThisInterval ++;
+				Tenant.tenants[threadId].queryNumber(1);
 				MMain.queryThisInterval ++;
 				if(sqlId%4 == 0){
 					MMain.READ ++;

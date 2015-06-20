@@ -3,16 +3,17 @@ package hybridConfig;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Random;
 
 import utility.Support;
 
 public class WorkLoadGenerator {
 	public static double activeRatio = 0.30;
-	public static double exchangeRatio = 0.;
+	public static double exchangeRatio = 0.1;
 	public static int totalTenant = 3000;
 	public static int timePerInterval = 5; //min
-	public static int totalInterval = 6; // 30 min
+	public static int totalInterval = 7; // 30 min
 	public static int HRan = 120;
 	public static int MRan = 10;
 	public static int MRan2 = 10;
@@ -36,40 +37,40 @@ public class WorkLoadGenerator {
 	
 	public static void main(String[] args) throws IOException{
 		totalTenant = 3000;
+		activeRatio = 0.20;
+		exchangeRatio = 0.1;
+		if(args.length > 0){
+			activeRatio = Double.parseDouble(args[0]);
+		}
+		if(args.length > 1){
+			exchangeRatio = Double.parseDouble(args[1]);
+		}
 		activeNumber = (int) (activeRatio * totalTenant);
 		activeTenant = new int[activeNumber];
 		inactiveTenant = new int[totalTenant - activeNumber];
-		if(args.length > 0){
-			actualTenant = Integer.parseInt(args[0].trim());
-		}
-		if(args.length > 1){
-			bias = Double.parseDouble(args[1]);
-			if(bias < 0 || bias > 1){
-				bias = 0.2;
-				System.out.println("bias illegal. using the default bias = 0.2");
-			}
-		}
-		if(args.length > 2){
-			int flag = Integer.parseInt(args[1]);
-			if(flag == 1) FULL_WORKLOAD = true;
-			else FULL_WORKLOAD = false;
-		}
 		HConfig.init(totalTenant);
 		generateLoad1();
 	}
 	
+	/**
+	 * each minute is a line of workload
+	 * @throws IOException
+	 */
 	public static void generateLoad1() throws IOException{
 		setBursty();
-		setActivePattern1(percentActive);
+		setActivePattern(percentActive);
 		FileWriter fstream = null;
 		fstream = new FileWriter("load.txt", false);
 		BufferedWriter out = new BufferedWriter(fstream);
+		DecimalFormat df = new DecimalFormat("0.00");
+		out.write(""+totalInterval+" "+df.format(activeRatio)+" "+df.format(exchangeRatio));
+		out.newLine(); out.flush();
 		
 		for(int intervalId = 0; intervalId < totalInterval; intervalId++){
 			out.write(""+(int)(intervalId+1));
 			for(int i = 0; i < totalTenant; i++){
 				if(activePattern[i][intervalId] == true){
-					out.write(" "+i);
+					out.write(" "+(i+1));
 				}
 			}
 			out.write("\n");
@@ -127,6 +128,10 @@ public class WorkLoadGenerator {
 		out.close();
 	}
 	
+	/**
+	 * each interval is a line of workload
+	 * @throws IOException
+	 */
 	public static void generateLoad() throws IOException{
 		setBursty();
 		setActivePattern(percentActive);
@@ -207,7 +212,7 @@ public class WorkLoadGenerator {
 		for(int i = 0; i < totalInterval; i++){
 			isBursty[i] = false;
 		}
-		isBursty[2] = isBursty[3] = true;
+		isBursty[2] = isBursty[3] = isBursty[5] = true;
 	}
 	
 	public static void setActivePattern(){
@@ -252,7 +257,10 @@ public class WorkLoadGenerator {
 			inactiveTenant[exin[i]] = tmp;
 		}
 	}
-	
+	/**
+	 * set the firsts of each type to be active, no exhcange 
+	 * @param percent
+	 */
 	public static void setActivePattern1(double[] percent){
 		activePattern = new boolean[totalTenant][totalInterval];
 		for(int i=0;i<totalTenant;i++){
@@ -279,6 +287,10 @@ public class WorkLoadGenerator {
 		}
 	}
 	
+	/**
+	 * with exchange
+	 * @param percent
+	 */
 	public static void setActivePattern(double[] percent){
 		activePattern = new boolean[totalTenant][totalInterval];
 		for(int i=0;i<totalTenant;i++){

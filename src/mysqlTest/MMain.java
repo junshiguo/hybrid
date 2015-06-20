@@ -1,9 +1,13 @@
 package mysqlTest;
 
+import hybridConfig.HConfig;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
+
+import newhybrid.HQueryResult;
 
 
 /**
@@ -26,8 +30,8 @@ public class MMain {
 	public static int tenantPerThread = 30;
 	
 	public static int ReturnData = 100; // default return 100% data. 
-	public static boolean OnlySelect = true;
-	public static boolean DSTest = true;
+	public static boolean OnlySelect = false;
+	public static boolean DSTest = false;
 	public static int Longer = 1;
 	public static long READ = 0;
 	public static long WRITE = 0;
@@ -35,12 +39,13 @@ public class MMain {
 	public static int tenantPerThread2 = 500/(100-Longer); 
 
 	public static void main(String[] args){
+		HConfig.init(3000);
 		String server = "10.20.2.28";
-		String dbname = "tpcc_m";
-		totalTenant = 500;
-		numberOfThread = 100;
+		String dbname = "tpcc3000";
+		totalTenant = 50;
+		numberOfThread = 50;
 		timeInterval = 1*60*1000; //1 min
-		intervalNumber = 4;
+		intervalNumber = 5;
 		double base = 0.2;
 		double step = 0.0 ;
 		boolean copyTable = false;
@@ -102,7 +107,7 @@ public class MMain {
 			try {
 				for(int j=0; j<numberOfThread; j++){
 					Tenant.tenants[j].setSequence(i*step+base);
-					Tenant.tenants[j].queryThisInterval = 0;
+					Tenant.tenants[j].queryNumber(-1);
 				}
 //				tmpList = new ArrayList<Long>();
 				queryThisInterval = 0;
@@ -114,7 +119,7 @@ public class MMain {
 				long throughput = queryThisInterval * 60000/ timeInterval;
 				long tp2 = 0;
 				for(int j = 0; j < numberOfThread; j++){
-					tp2 += Tenant.tenants[j].queryThisInterval;
+					tp2 += Tenant.tenants[j].queryNumber(0);
 				}
 				tp2 = tp2 * 60000/ timeInterval;
 				out.write(""+(i)+" "+tp2+" "+retryThisInterval*60000/timeInterval+" "+(i*step+base));
