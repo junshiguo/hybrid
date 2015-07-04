@@ -9,9 +9,10 @@ public class HConfig {
 	public static int totalTenant = 3000;
 	
 	public static int[] ValueQT = { 5, 50, 500 };  // per minute
-	public static double[] ValueDS = {7, 16, 35 };  // MB
+	public static int[] ValueDS = {7, 16, 35 };  // MB
 	public static double[] ValueWP = { 0.6, 0.4 };  //
 	public static double[] PercentQT = { 0.3, 0.5, 0.2 };
+	public static int[] QTPer1000 = {300, 500, 200};
 	public static double[] PercentDS = { 0.5, 0.3, 0.2 };
 	public static double[] PercentWH = { 0.4, 0.6 };  // 0.4 for write heavy and 0.6 for read heavy
 	public static double[]  PercentTenantSplits  = {
@@ -36,12 +37,17 @@ public class HConfig {
 		,0.016	//QT: 100, DS: 18.3, write heavy
 		,0.024	//QT: 100, DS: 18.3, read heavy
 	};
+	public static int TenantPerType1000[] = {
+		60, 90, 100, 150, 40, 60,
+		36, 54, 60, 90, 24, 36,
+		24, 36, 40, 60, 16, 24
+	};
 	public static double[] PercentTenantSplitsSum;
 	public static int[] TenantIdRange;
 	public static int QTMatrix[] = {ValueQT[0],ValueQT[0],ValueQT[1],ValueQT[1],ValueQT[2],ValueQT[2],
 		ValueQT[0],ValueQT[0],ValueQT[1],ValueQT[1],ValueQT[2],ValueQT[2],
 		ValueQT[0],ValueQT[0],ValueQT[1],ValueQT[1],ValueQT[2],ValueQT[2]};
-	public static double DSMatrix[] = {ValueDS[0],ValueDS[0],ValueDS[0],ValueDS[0],ValueDS[0],ValueDS[0],
+	public static int DSMatrix[] = {ValueDS[0],ValueDS[0],ValueDS[0],ValueDS[0],ValueDS[0],ValueDS[0],
 		ValueDS[1],ValueDS[1],ValueDS[1],ValueDS[1],ValueDS[1],ValueDS[1],
 		ValueDS[2],ValueDS[2],ValueDS[2],ValueDS[2],ValueDS[2],ValueDS[2]};
 	public static boolean WHMatrix[] = {true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false};
@@ -115,7 +121,7 @@ public class HConfig {
 		return HConfig.QTMatrix[type];
 	}
 	
-	public static double getDS(int tenantId, boolean isType){
+	public static int getDS(int tenantId, boolean isType){
 		int type = tenantId;
 		if(isType == false){
 			type = getType(tenantId);
