@@ -34,22 +34,75 @@ public class WorkLoadGenerator {
 	public static boolean FULL_WORKLOAD = false;
 	public static int actualTenant = 1000;
 	public static double bias = 0.;
+	public static double throt = 0.8;
 	
 	public static void main(String[] args) throws IOException{
-		totalTenant = 3000;
-		activeRatio = 0.20;
+		totalTenant = 2000;
+		activeRatio = 0.25;
 		exchangeRatio = 0.1;
 		if(args.length > 0){
-			activeRatio = Double.parseDouble(args[0]);
+			String[] value = args[0].trim().split("_");
+			if(value.length < 3){
+				System.out.println("SLO vector wrong. Using 5_50_500.");
+				value = "5_50_500".split("_");
+			}
+			for(int i = 0; i < 3; i++){
+				HConfig.ValueQT[i] = Integer.parseInt(value[i]);
+			}
 		}
 		if(args.length > 1){
-			exchangeRatio = Double.parseDouble(args[1]);
+			totalTenant = Integer.parseInt(args[1]);
+		}
+		if(args.length > 2){
+			activeRatio = Double.parseDouble(args[2]);
+		}
+		if(args.length > 3){
+			exchangeRatio = Double.parseDouble(args[3]);
+		}
+		if(args.length > 4){
+			throt = Double.parseDouble(args[4]);
 		}
 		activeNumber = (int) (activeRatio * totalTenant);
 		activeTenant = new int[activeNumber];
 		inactiveTenant = new int[totalTenant - activeNumber];
 		HConfig.init(totalTenant);
 		generateLoad1();
+	}
+//	public static void main(String[] args){
+//		totalTenant = 3000;
+//		HConfig.init(totalTenant);
+//		for(int i = 0; i < 10; i++){
+//			System.out.print(HConfig.getQT(getId(i), false)+" ");
+//			if(i%50 == 0){
+//				System.out.println();
+//			}
+//		}
+//	}
+	
+	//start from 0
+	public static int getId(int tenantId){
+		if(totalTenant % 1000 == 0){
+			int multi = totalTenant / 1000;
+			int sum = 0;
+			for(int i = 0; i < 18; i++){
+				if(sum + HConfig.TenantPerType1000[i] * multi > tenantId){
+					if(i == 0)	return tenantId;
+					return HConfig.TenantIdRange[i-1]+tenantId - sum;
+				}else{
+					sum += HConfig.TenantPerType1000[i] * multi;
+				}
+			}
+		}else{
+			int sum = 0;
+			for(int i = 0; i < 18; i++){
+				if(sum + totalTenant * HConfig.PercentTenantSplits[i] > tenantId){
+					return HConfig.TenantIdRange[i]+tenantId - sum;
+				}else{
+					sum += totalTenant * HConfig.PercentTenantSplits[i];
+				}
+			}
+		}
+		return -1;
 	}
 	
 	/**
@@ -63,14 +116,18 @@ public class WorkLoadGenerator {
 		fstream = new FileWriter("load.txt", false);
 		BufferedWriter out = new BufferedWriter(fstream);
 		DecimalFormat df = new DecimalFormat("0.00");
-		out.write(""+(totalInterval+1)+" "+df.format(activeRatio)+" "+df.format(exchangeRatio));
+		out.write(""+totalTenant+" "+(totalInterval+1)+" "+df.format(activeRatio)+" "+df.format(exchangeRatio));
 		out.newLine(); out.flush();
 		for(int i = 0; i < totalTenant; i++){
-			out.write(""+HConfig.getQT(i, false)+" ");
+			out.write(""+(getId(i)+1)+" ");
 		}
 		out.newLine(); out.flush();
 		for(int i = 0; i < totalTenant; i++){
-			out.write(""+HConfig.getDS(i, false)+" ");
+			out.write(""+HConfig.getQT(getId(i), false)+" ");
+		}
+		out.newLine(); out.flush();
+		for(int i = 0; i < totalTenant; i++){
+			out.write(""+HConfig.getDS(getId(i), false)+" ");
 		}
 		out.newLine(); out.flush();
 		
@@ -78,7 +135,7 @@ public class WorkLoadGenerator {
 		out.write(""+activeNumber);
 		for(int i = 0; i < totalTenant; i++){
 			if(activePattern[i][0] == true){
-				out.write(" "+(i+1));
+				out.write(" "+(getId(i)+1));
 			}
 		}
 		out.write("\n");
@@ -86,7 +143,7 @@ public class WorkLoadGenerator {
 			out.write(""+activeNumber);
 			for(int i = 0; i < totalTenant; i++){
 				if(activePattern[i][intervalId] == true){
-					out.write(" "+(i+1));
+					out.write(" "+(getId(i)+1));
 				}
 			}
 			out.write("\n");
@@ -98,18 +155,19 @@ public class WorkLoadGenerator {
 			int[] load = new int[totalTenant];
 			Random ran = new Random(System.nanoTime());
 			for (int tenantId = 0; tenantId < totalTenant; tenantId++) {
-				int QT = HConfig.getQT(tenantId, false);
+				int QT = HConfig.getQT(getId(tenantId), false);
 				boolean isActive = activePattern[tenantId][intervalId];
 				if (isActive) {
 					if(FULL_WORKLOAD == true){
 						load[tenantId] = QT;
 					}else{
 						if(isBursty[intervalId]){
-							if(ran.nextBoolean()){
-								load[tenantId] = (int) (PossionDistribution.getRandomNumber((int) (QT*0.8)) * (1+bias));
-							}else{
-								load[tenantId] = (int) (PossionDistribution.getRandomNumber((int) (QT*0.8)) * (1-bias));
-							}
+							load[tenantId] = (int) (PossionDistribution.getRandomNumber((int) ((QT)*throt)));
+//							if(ran.nextBoolean()){
+//								load[tenantId] = (int) (PossionDistribution.getRandomNumber((int) (QT)) * (1+bias));
+//							}else{
+//								load[tenantId] = (int) (PossionDistribution.getRandomNumber((int) (QT)) * (1-bias));
+//							}
 						}else{
 							load[tenantId] = PossionDistribution.getRandomNumber(QT/10);
 						}
@@ -330,9 +388,15 @@ public class WorkLoadGenerator {
 				activePattern[i][j] = false;
 			}
 		}
-		int[] tenantPerType = HConfig.TenantPerType1000;
+		int[] tenantPerType = new int[18];
+		int multi = totalTenant / 1000;
+		double multid = totalTenant / 1000.0;
 		for(int i = 0; i < 18; i++){
-			tenantPerType[i] = tenantPerType[i] * 3;
+			if(totalTenant % 1000 == 0){
+				tenantPerType[i] = HConfig.TenantPerType1000[i] * multi;
+			}else{
+				tenantPerType[i] = (int) (HConfig.TenantPerType1000[i] * multid);
+			}
 		}
 //		int sumtmp = 0;
 //		for(int i = 0; i < 17; i++){
@@ -345,16 +409,15 @@ public class WorkLoadGenerator {
 		tenantGroup[1][0] = tenantPerType[6] + tenantPerType[7]; tenantGroup[1][1] = tenantPerType[8] + tenantPerType[9]; tenantGroup[1][2] = tenantPerType[10] + tenantPerType[11];
 		tenantGroup[2][0] = tenantPerType[12] + tenantPerType[13]; tenantGroup[2][1] = tenantPerType[14] + tenantPerType[15]; tenantGroup[2][2] = tenantPerType[16] + tenantPerType[17];
 		
-		activeNumber = activeNumber;
 		int an0 = (int) (activeNumber * percent[0]);
 		int an1 = (int) (activeNumber * percent[1]);
 		int an2 = activeNumber - an0 - an1;
 		at0 = Support.Rands(0, tenantGroup[0][0]+tenantGroup[1][0]+tenantGroup[2][0], an0);
 		at1 = Support.Rands(0, tenantGroup[0][1]+tenantGroup[1][1]+tenantGroup[2][1], an1);
 		at2 = Support.Rands(0, tenantGroup[0][2]+tenantGroup[1][2]+tenantGroup[2][2], an2);
-		setActivePattern(at0, an0, (int)(totalTenant / 1000 * HConfig.QTPer1000[0]), tenantGroup[0][0], tenantGroup[1][0], tenantGroup[2][0], 0, HConfig.TenantIdRange[5], HConfig.TenantIdRange[11]);
-		setActivePattern(at1, an1, (int)(totalTenant / 1000 * HConfig.QTPer1000[1]), tenantGroup[0][1], tenantGroup[1][1], tenantGroup[2][1], HConfig.TenantIdRange[1], HConfig.TenantIdRange[7], HConfig.TenantIdRange[13]);
-		setActivePattern(at2, an2, (int)(totalTenant / 1000 * HConfig.QTPer1000[2]), tenantGroup[0][2], tenantGroup[1][2], tenantGroup[2][2], HConfig.TenantIdRange[3], HConfig.TenantIdRange[9], HConfig.TenantIdRange[15]);
+		setActivePattern(at0, an0, (int)(totalTenant / 1000 * HConfig.QTPer1000[0]), tenantGroup[0][0], tenantGroup[1][0], tenantGroup[2][0], 0, HConfig.TenantIdRange[5]/3*multi, HConfig.TenantIdRange[11]/3*multi);
+		setActivePattern(at1, an1, (int)(totalTenant / 1000 * HConfig.QTPer1000[1]), tenantGroup[0][1], tenantGroup[1][1], tenantGroup[2][1], HConfig.TenantIdRange[1]/3*multi, HConfig.TenantIdRange[7]/3*multi, HConfig.TenantIdRange[13]/3*multi);
+		setActivePattern(at2, an2, (int)(totalTenant / 1000 * HConfig.QTPer1000[2]), tenantGroup[0][2], tenantGroup[1][2], tenantGroup[2][2], HConfig.TenantIdRange[3]/3*multi, HConfig.TenantIdRange[9]/3*multi, HConfig.TenantIdRange[15]/3*multi);
 	}
 	
 	public static void setActivePattern(int[] a, int an, int total, int g0, int g1, int g2, int start0, int start1, int start2){

@@ -43,7 +43,12 @@ public class HConfig {
 		24, 36, 40, 60, 16, 24
 	};
 	public static double[] PercentTenantSplitsSum;
-	public static int[] TenantIdRange;
+	public static int[] TenantIdRange = {
+		180, 450, 750, 1200, 1320,
+		1500, 1608, 1770, 1950, 2220, 2292,
+		2400, 2472, 2580, 2700, 2880, 2928,
+		3000
+	};
 	public static int QTMatrix[] = {ValueQT[0],ValueQT[0],ValueQT[1],ValueQT[1],ValueQT[2],ValueQT[2],
 		ValueQT[0],ValueQT[0],ValueQT[1],ValueQT[1],ValueQT[2],ValueQT[2],
 		ValueQT[0],ValueQT[0],ValueQT[1],ValueQT[1],ValueQT[2],ValueQT[2]};
@@ -54,12 +59,11 @@ public class HConfig {
 	
 	public static void init(int n){
 		totalTenant = n;
-		TenantIdRange = new int[18];
 		PercentTenantSplitsSum = new double[18];
 		for(int i = 0; i < 18; i++){
 			if(i == 0) PercentTenantSplitsSum[i] = PercentTenantSplits[0];
 			else	PercentTenantSplitsSum[i] = PercentTenantSplitsSum[i-1]+PercentTenantSplits[i];
-			TenantIdRange[i] = (int) (totalTenant*PercentTenantSplitsSum[i]);
+//			TenantIdRange[i] = (int) (totalTenant*PercentTenantSplitsSum[i]);
 		}
 	}
 	public static void main(String[] args){
