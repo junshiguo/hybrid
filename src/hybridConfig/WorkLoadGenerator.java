@@ -37,7 +37,7 @@ public class WorkLoadGenerator {
 	public static double throt = 0.8;
 	
 	public static void main(String[] args) throws IOException{
-		totalTenant = 2000;
+		totalTenant = 1667;
 		activeRatio = 0.25;
 		exchangeRatio = 0.1;
 		if(args.length > 0){
@@ -48,6 +48,12 @@ public class WorkLoadGenerator {
 			}
 			for(int i = 0; i < 3; i++){
 				HConfig.ValueQT[i] = Integer.parseInt(value[i]);
+			}
+			for(int k = 0; k < 3; k++)
+			for(int i = 0; i < 3; i++){
+				for(int j = 0; j < 2; j++){
+					HConfig.QTMatrix[k*6+i*2+j] = HConfig.ValueQT[i];
+				}
 			}
 		}
 		if(args.length > 1){
@@ -66,17 +72,13 @@ public class WorkLoadGenerator {
 		activeTenant = new int[activeNumber];
 		inactiveTenant = new int[totalTenant - activeNumber];
 		HConfig.init(totalTenant);
+		initStartId();
 		generateLoad1();
 	}
 //	public static void main(String[] args){
-//		totalTenant = 3000;
-//		HConfig.init(totalTenant);
-//		for(int i = 0; i < 10; i++){
-//			System.out.print(HConfig.getQT(getId(i), false)+" ");
-//			if(i%50 == 0){
-//				System.out.println();
-//			}
-//		}
+//		totalTenant = 1667;
+//		initStartId();
+//		System.out.println(""+(getId(1667)+1));
 //	}
 	
 	//start from 0
@@ -93,16 +95,49 @@ public class WorkLoadGenerator {
 				}
 			}
 		}else{
-			int sum = 0;
-			for(int i = 0; i < 18; i++){
-				if(sum + totalTenant * HConfig.PercentTenantSplits[i] > tenantId){
-					return HConfig.TenantIdRange[i]+tenantId - sum;
-				}else{
-					sum += totalTenant * HConfig.PercentTenantSplits[i];
+			for(int i = 0; i < 17; i++){
+				if(startId[i+1] > tenantId){
+					if(i == 0)	return tenantId;
+					return HConfig.TenantIdRange[i-1]+tenantId - startId[i];
 				}
 			}
 		}
-		return -1;
+		return tenantId - startId[17] + HConfig.TenantIdRange[16];
+	}
+	
+	public static int[] startId = new int[18];
+	public static int[] tenantPerType = new int[18];
+	public static int[][] tenantGroup = new int[3][3];
+	public static void initStartId(){
+		int multi = totalTenant / 1000;
+		double multid = totalTenant / 1000.0;
+		int sumtmp = 0;
+		for(int i = 0; i < 18; i++){
+			if(totalTenant % 1000 == 0){
+				tenantPerType[i] = HConfig.TenantPerType1000[i] * multi;
+			}else{
+				if(i == 17){
+					tenantPerType[i] = totalTenant - sumtmp;
+					break;
+				}
+				tenantPerType[i] = (int) (HConfig.TenantPerType1000[i] * multid);
+				sumtmp += tenantPerType[i];
+			}
+		}
+//		int sumtmp = 0;
+//		for(int i = 0; i < 17; i++){
+//			tenantPerType[i] = (int) (totalTenant * HConfig.PercentTenantSplits[i]);
+//			sumtmp += tenantPerType[i];
+//		}
+//		tenantPerType[17] = totalTenant - sumtmp;
+		tenantGroup[0][0] = tenantPerType[0] + tenantPerType[1]; tenantGroup[0][1] = tenantPerType[2] + tenantPerType[3]; tenantGroup[0][2] = tenantPerType[4] + tenantPerType[5];
+		tenantGroup[1][0] = tenantPerType[6] + tenantPerType[7]; tenantGroup[1][1] = tenantPerType[8] + tenantPerType[9]; tenantGroup[1][2] = tenantPerType[10] + tenantPerType[11];
+		tenantGroup[2][0] = tenantPerType[12] + tenantPerType[13]; tenantGroup[2][1] = tenantPerType[14] + tenantPerType[15]; tenantGroup[2][2] = tenantPerType[16] + tenantPerType[17];
+		
+		startId[0] = 0;
+		for(int i = 1; i < 18; i++){
+			startId[i] = startId[i-1] + tenantPerType[i-1];
+		}
 	}
 	
 	/**
@@ -383,31 +418,19 @@ public class WorkLoadGenerator {
 	 */
 	public static void setActivePattern(double[] percent){
 		activePattern = new boolean[totalTenant][totalInterval];
+		if(activeRatio == 1.0){
+			for(int i=0;i<totalTenant;i++){
+				for(int j=0;j<totalInterval;j++){
+					activePattern[i][j] = true;
+				}
+			}
+			return;
+		}
 		for(int i=0;i<totalTenant;i++){
 			for(int j=0;j<totalInterval;j++){
 				activePattern[i][j] = false;
 			}
 		}
-		int[] tenantPerType = new int[18];
-		int multi = totalTenant / 1000;
-		double multid = totalTenant / 1000.0;
-		for(int i = 0; i < 18; i++){
-			if(totalTenant % 1000 == 0){
-				tenantPerType[i] = HConfig.TenantPerType1000[i] * multi;
-			}else{
-				tenantPerType[i] = (int) (HConfig.TenantPerType1000[i] * multid);
-			}
-		}
-//		int sumtmp = 0;
-//		for(int i = 0; i < 17; i++){
-//			tenantPerType[i] = (int) (totalTenant * HConfig.PercentTenantSplits[i]);
-//			sumtmp += tenantPerType[i];
-//		}
-//		tenantPerType[17] = totalTenant - sumtmp;
-		int[][] tenantGroup = new int[3][3];
-		tenantGroup[0][0] = tenantPerType[0] + tenantPerType[1]; tenantGroup[0][1] = tenantPerType[2] + tenantPerType[3]; tenantGroup[0][2] = tenantPerType[4] + tenantPerType[5];
-		tenantGroup[1][0] = tenantPerType[6] + tenantPerType[7]; tenantGroup[1][1] = tenantPerType[8] + tenantPerType[9]; tenantGroup[1][2] = tenantPerType[10] + tenantPerType[11];
-		tenantGroup[2][0] = tenantPerType[12] + tenantPerType[13]; tenantGroup[2][1] = tenantPerType[14] + tenantPerType[15]; tenantGroup[2][2] = tenantPerType[16] + tenantPerType[17];
 		
 		int an0 = (int) (activeNumber * percent[0]);
 		int an1 = (int) (activeNumber * percent[1]);
@@ -415,9 +438,19 @@ public class WorkLoadGenerator {
 		at0 = Support.Rands(0, tenantGroup[0][0]+tenantGroup[1][0]+tenantGroup[2][0], an0);
 		at1 = Support.Rands(0, tenantGroup[0][1]+tenantGroup[1][1]+tenantGroup[2][1], an1);
 		at2 = Support.Rands(0, tenantGroup[0][2]+tenantGroup[1][2]+tenantGroup[2][2], an2);
-		setActivePattern(at0, an0, (int)(totalTenant / 1000 * HConfig.QTPer1000[0]), tenantGroup[0][0], tenantGroup[1][0], tenantGroup[2][0], 0, HConfig.TenantIdRange[5]/3*multi, HConfig.TenantIdRange[11]/3*multi);
-		setActivePattern(at1, an1, (int)(totalTenant / 1000 * HConfig.QTPer1000[1]), tenantGroup[0][1], tenantGroup[1][1], tenantGroup[2][1], HConfig.TenantIdRange[1]/3*multi, HConfig.TenantIdRange[7]/3*multi, HConfig.TenantIdRange[13]/3*multi);
-		setActivePattern(at2, an2, (int)(totalTenant / 1000 * HConfig.QTPer1000[2]), tenantGroup[0][2], tenantGroup[1][2], tenantGroup[2][2], HConfig.TenantIdRange[3]/3*multi, HConfig.TenantIdRange[9]/3*multi, HConfig.TenantIdRange[15]/3*multi);
+//		setActivePattern(at0, an0, (int)(totalTenant / 1000 * HConfig.QTPer1000[0]), tenantGroup[0][0], tenantGroup[1][0], tenantGroup[2][0], 0, HConfig.TenantIdRange[5]/3*multi, HConfig.TenantIdRange[11]/3*multi);
+//		setActivePattern(at1, an1, (int)(totalTenant / 1000 * HConfig.QTPer1000[1]), tenantGroup[0][1], tenantGroup[1][1], tenantGroup[2][1], HConfig.TenantIdRange[1]/3*multi, HConfig.TenantIdRange[7]/3*multi, HConfig.TenantIdRange[13]/3*multi);
+//		setActivePattern(at2, an2, (int)(totalTenant / 1000 * HConfig.QTPer1000[2]), tenantGroup[0][2], tenantGroup[1][2], tenantGroup[2][2], HConfig.TenantIdRange[3]/3*multi, HConfig.TenantIdRange[9]/3*multi, HConfig.TenantIdRange[15]/3*multi);
+		setActivePattern(at0, an0, tenantGroup[0][0] + tenantGroup[1][0]
+				+ tenantGroup[2][0], tenantGroup[0][0], tenantGroup[1][0],
+				tenantGroup[2][0], startId[0], startId[6], startId[12]);
+		setActivePattern(at1, an1, tenantGroup[0][1] + tenantGroup[1][1]
+				+ tenantGroup[2][1], tenantGroup[0][1], tenantGroup[1][1],
+				tenantGroup[2][1], startId[2], startId[8], startId[14]);
+		setActivePattern(at2, an2, tenantGroup[0][2] + tenantGroup[1][2]
+				+ tenantGroup[2][2], tenantGroup[0][2], tenantGroup[1][2],
+				tenantGroup[2][2], startId[4], startId[10], startId[16]);
+
 	}
 	
 	public static void setActivePattern(int[] a, int an, int total, int g0, int g1, int g2, int start0, int start1, int start2){
