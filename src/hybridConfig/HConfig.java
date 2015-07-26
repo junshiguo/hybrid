@@ -9,7 +9,7 @@ public class HConfig {
 	public static int totalTenant = 3000;
 	
 	public static int[] ValueQT = { 5, 50, 500 };  // per minute
-	public static int[] ValueDS = {7, 16, 35 };  // MB
+	public static int[] ValueDS = {10, 20, 29 };  // MB
 	public static double[] ValueWP = { 0.6, 0.4 };  //
 	public static double[] PercentQT = { 0.3, 0.5, 0.2 };
 	public static int[] QTPer1000 = {300, 500, 200};

@@ -37,7 +37,28 @@ public class WorkLoadGenerator {
 	public static double throt = 0.8;
 	
 	public static void main(String[] args) throws IOException{
-		totalTenant = 1667;
+		totalTenant = 2000;
+		exchangeRatio = 0.1;
+		HConfig.init(totalTenant);
+		initStartId();
+		String path = "../load/";
+		
+		int activeratios[] = {25, 30, 35, 40};
+		for(int d : activeratios){
+			activeRatio = d*1.0/100.0;
+			for(int id = 0; id < 5; id++){
+				String loadfile = path+"550500_0."+d+"_test"+(id+1);
+				activeNumber = (int) (activeRatio * totalTenant);
+				activeTenant = new int[activeNumber];
+				inactiveTenant = new int[totalTenant - activeNumber];
+				generateLoad1(loadfile);
+			}
+		}
+		
+	}
+	
+	public static void main1(String[] args) throws IOException{
+		totalTenant = 2000;
 		activeRatio = 0.25;
 		exchangeRatio = 0.1;
 		if(args.length > 0){
@@ -68,12 +89,18 @@ public class WorkLoadGenerator {
 		if(args.length > 4){
 			throt = Double.parseDouble(args[4]);
 		}
+		if(args.length  > 5){
+			totalInterval = Integer.parseInt(args[5]);
+		}
+		if(args.length > 6){
+			FULL_WORKLOAD = true;
+		}
 		activeNumber = (int) (activeRatio * totalTenant);
 		activeTenant = new int[activeNumber];
 		inactiveTenant = new int[totalTenant - activeNumber];
 		HConfig.init(totalTenant);
 		initStartId();
-		generateLoad1();
+		generateLoad1("load.txt");
 	}
 //	public static void main(String[] args){
 //		totalTenant = 1667;
@@ -140,15 +167,23 @@ public class WorkLoadGenerator {
 		}
 	}
 	
+	public static void setBursty(){
+		isBursty = new boolean[totalInterval];
+		for(int i = 0; i < totalInterval; i++){
+			isBursty[i] = false;
+		}
+		isBursty[2] = isBursty[3] = isBursty[5] = true;
+	}
+	
 	/**
 	 * each minute is a line of workload
 	 * @throws IOException
 	 */
-	public static void generateLoad1() throws IOException{
+	public static void generateLoad1(String loadfile) throws IOException{
 		setBursty();
 		setActivePattern(percentActive);
 		FileWriter fstream = null;
-		fstream = new FileWriter("load.txt", false);
+		fstream = new FileWriter(loadfile, false);
 		BufferedWriter out = new BufferedWriter(fstream);
 		DecimalFormat df = new DecimalFormat("0.00");
 		out.write(""+totalTenant+" "+(totalInterval+1)+" "+df.format(activeRatio)+" "+df.format(exchangeRatio));
@@ -197,7 +232,7 @@ public class WorkLoadGenerator {
 						load[tenantId] = QT;
 					}else{
 						if(isBursty[intervalId]){
-							load[tenantId] = (int) (PossionDistribution.getRandomNumber((int) ((QT)*throt)));
+							load[tenantId] = (int) (PossionDistribution.getRandomNumber(QT) * throt);
 //							if(ran.nextBoolean()){
 //								load[tenantId] = (int) (PossionDistribution.getRandomNumber((int) (QT)) * (1+bias));
 //							}else{
@@ -330,14 +365,6 @@ public class WorkLoadGenerator {
 		}
 //		}
 		out.close();
-	}
-	
-	public static void setBursty(){
-		isBursty = new boolean[totalInterval];
-		for(int i = 0; i < totalInterval; i++){
-			isBursty[i] = false;
-		}
-		isBursty[2] = isBursty[3] = isBursty[5] = true;
 	}
 	
 	public static void setActivePattern(){
